@@ -1,0 +1,18 @@
+%% USPSC-Abstract.tex
+\begin{resumo}[Abstract]
+ \begin{otherlanguage*}{english}
+	\begin{flushleft}
+		\setlength{\absparsep}{0pt} % ajusta o espaçamento dos parágrafos do resumo
+ 		\SingleSpacing
+ 		\imprimirautorabr~~\textbf{\imprimirtitleabstract}.	\imprimirdata.  \pageref{LastPage} p.
+		\imprimirtipotrabalhoabs~-~\imprimirinstituicao, \imprimirlocal, 	\imprimirdata.
+ 	\end{flushleft}
+	\OnehalfSpacing
+This work addresses the low-level optimization of inference kernels applied to computer vision models, with a specific focus on the Vision Transformer (ViT) architecture. The primary objective is to mitigate the data transfer bottleneck between High Bandwidth Memory (HBM) and the GPU's Streaming Multiprocessors (SM), a phenomenon commonly known as the ``Memory Wall.'' The proposed methodology is based on the development and implementation of a fused attention kernel using the OpenAI Triton low-level programming language. The technical approach explores tiling strategies and manual management of Static Random Access Memory (SRAM), enabling dot-product, softmax, and value weighting operations to occur within a single global memory read cycle. For performance validation, a comparative analysis was conducted between the custom kernel and the standard PyTorch Eager mode implementation, utilizing hardware diagnostic tools such as NVIDIA Nsight Compute and the Roofline Model. Experimental results demonstrate a significant reduction in inference latency and a decrease in memory bus traffic, shifting the kernel execution from a memory-bound state to a compute-bound state. The study concludes that low-level kernel programming and operator fusion are critical requirements for the scalability of large-scale AI models, providing essential gains in energy efficiency and throughput necessary for high-availability production systems.
+
+   \vspace{\onelineskip}
+
+   \noindent
+   \textbf{Keywords}: Computer Vision. Vision Transformers. Kernel Optimization. OpenAI Triton. Performance Engineering.
+ \end{otherlanguage*}
+\end{resumo}

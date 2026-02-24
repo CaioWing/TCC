@@ -1,0 +1,42 @@
+%% USPSC-Cap2-Desenvolvimento.tex
+
+\chapter{Desenvolvimento}\label{cap_desenvolvimento}
+
+Neste capítulo, apresentam-se os conceitos fundamentais para a compreensão da otimização de kernels de inferência. A discussão abrange desde a arquitetura dos Vision Transformers até as minúcias da hierarquia de memória em Unidades de Processamento Gráfico (GPUs), culminando nas ferramentas de programação de baixo nível.
+
+\section{Vision Transformers e a Mecânica de Atenção}
+
+Os Vision Transformers (ViT) representam uma mudança de paradigma na visão computacional ao transpor a arquitetura de autoatenção, originalmente concebida para processamento de linguagem natural \cite{vaswani2017}, para o domínio de imagens. Segundo \citeonline{dosovitskiy2020}, o ViT decompõe uma imagem em patches fixos, os quais são tratados como sequências de tokens, permitindo que o modelo aprenda relações globais entre diferentes regiões da cena desde as camadas iniciais.
+
+O cerne dessa arquitetura é o mecanismo de Scaled Dot-Product Attention, definido matematicamente pela Equação \ref{eq:attention}:
+
+\begin{equation}
+\label{eq:attention}
+\text{Attention}(Q, K, V) = \text{softmax}\!\left(\frac{QK^T}{\sqrt{d_k}}\right)V
+\end{equation}
+
+Onde $Q$, $K$ e $V$ representam as matrizes de Query, Key e Value. Embora eficaz, essa operação apresenta uma complexidade computacional $O(N^2)$, onde $N$ é o número de patches. Como apontam \citeonline{dao2022}, o gargalo dessa operação em GPUs modernas não é o poder computacional bruto, mas sim a latência de memória gerada pela leitura e escrita de matrizes intermediárias de atenção.
+
+\section{Arquitetura de GPU e a ``Parede de Memória'' (Memory Wall)}
+
+Para entender a necessidade de otimização de baixo nível, é preciso distinguir os diferentes níveis de memória em uma GPU. A memória principal, conhecida como High Bandwidth Memory (HBM), possui alta capacidade, porém latência significativamente superior à memória estática interna do chip, a SRAM.
+
+O desequilíbrio entre a velocidade de processamento e a velocidade de transferência de dados é o que a literatura denomina como Memory Wall. Sobre este desafio, \citeonline{wulfmckee1995} observam:
+
+\begin{citacao}
+{[...]} a disparidade entre a velocidade dos processadores e a velocidade da memória principal tem crescido exponencialmente. Se essa tendência continuar, a performance dos sistemas será limitada não pela frequência de clock do processador, mas pela taxa na qual os dados podem ser entregues a ele.
+\end{citacao}
+
+Dessa forma, otimizar um kernel significa maximizar o tempo que o dado permanece na SRAM (ou Shared Memory), minimizando acessos à HBM. Em implementações padrão de bibliotecas de alto nível, cada etapa da Equação \ref{eq:attention} resulta em uma escrita e leitura na HBM, o que degrada o throughput do sistema.
+
+\section{OpenAI Triton}
+
+Historicamente, a escrita de kernels otimizados exigia o uso de CUDA C++, uma linguagem de alta complexidade que demanda gerenciamento manual de threads e sincronização de blocos. O OpenAI Triton surge como uma alternativa de abstração que permite a escrita de kernels altamente performáticos utilizando uma sintaxe baseada em Python.
+
+De acordo com \citeonline{tillet2019}, o Triton introduz um paradigma baseado em blocos (tiles), onde o compilador é responsável por otimizar automaticamente o agendamento de tarefas e o uso dos registradores, permitindo que o desenvolvedor foque na lógica de movimentação de dados na hierarquia de memória.
+
+\section{Fusão de Operadores e Flash Attention}
+
+A técnica de fusão de operadores (Operator Fusion) consiste em agrupar múltiplas operações matemáticas em um único kernel executável. No contexto de modelos de visão, isso significa realizar o cálculo do Softmax e a multiplicação por $V$ enquanto os dados de $Q$ ainda residem nos registradores da GPU.
+
+Esta técnica é levada ao estado da arte pelo algoritmo Flash Attention. Como sintetizado por \citeonline{dao2022}, a fusão de operadores permite que o modelo evite a materialização da matriz de atenção $N \times N$ na memória principal, resultando em acelerações que podem chegar a $3\times$ em relação às implementações tradicionais, reduzindo simultaneamente o consumo de memória.

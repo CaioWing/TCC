@@ -1,0 +1,14 @@
+%% USPSC-Resumo.tex
+\setlength{\absparsep}{18pt} % ajusta o espaçamento dos parágrafos do resumo
+\begin{resumo}
+	\begin{flushleft}
+			\setlength{\absparsep}{0pt} % ajusta o espaçamento da referência
+			\SingleSpacing
+			\imprimirautorabr~~\textbf{\imprimirtituloresumo}.	\imprimirdata. \pageref{LastPage} p.
+			\imprimirtipotrabalho~-~\imprimirinstituicao, \imprimirlocal, \imprimirdata.
+ 	\end{flushleft}
+\OnehalfSpacing
+Este trabalho aborda a otimização de baixo nível de kernels de inferência aplicados a modelos de visão computacional, com foco específico na arquitetura Vision Transformer (ViT). O objetivo principal consiste em mitigar o gargalo de transferência de dados entre a memória de alta largura de banda (HBM) e os processadores de fluxo (SM) da GPU, fenômeno conhecido como ``Memory Wall''. A metodologia proposta fundamenta-se no desenvolvimento e implementação de um kernel de atenção fundido (fused attention) utilizando a linguagem de programação de baixo nível OpenAI Triton. A abordagem técnica explora estratégias de tiling e gerenciamento manual da memória estática de acesso aleatório (SRAM), permitindo que operações de produto escalar, softmax e ponderação de valores ocorram em um único ciclo de leitura da memória global. Para a validação dos resultados, realizou-se uma análise comparativa de desempenho entre o kernel customizado e a implementação padrão (Eager mode) do framework PyTorch, utilizando ferramentas de diagnóstico de hardware como o NVIDIA Nsight Compute e o Modelo Roofline. Os resultados experimentais demonstram uma redução significativa na latência de inferência e uma diminuição no tráfego de dados no barramento de memória, deslocando a execução do kernel de um estado limitado por memória (memory-bound) para um estado limitado por processamento (compute-bound). Conclui-se que a programação de kernels de baixo nível e a fusão de operadores são requisitos essenciais para a escalabilidade de modelos de inteligência artificial de larga escala, proporcionando ganhos críticos de eficiência energética e throughput necessários para sistemas de produção de alta disponibilidade.
+
+\textbf{Palavras-chave}: Visão Computacional. Vision Transformers. Otimização de Kernels. OpenAI Triton. Engenharia de Performance.
+\end{resumo}
