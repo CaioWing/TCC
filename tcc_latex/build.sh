@@ -3,24 +3,24 @@
 # Uso: ./build.sh [clean]
 
 MAIN="USPSC-TCC-modelo-EESC"
-LATEX="pdflatex -interaction=nonstopmode"
+BUILDDIR="build"
+LATEX="pdflatex -interaction=nonstopmode -output-directory=$BUILDDIR"
 BIBTEX="bibtex"
 
 if [ "$1" = "clean" ]; then
-    rm -f *.aux *.bbl *.blg *.idx *.lof *.log *.lot *.loq *.toc \
-          USPSC-TA-PreTextual/*.aux \
-          USPSC-TA-Textual/*.aux \
-          USPSC-TA-PosTextual/*.aux \
-          "$MAIN.pdf"
+    rm -rf "$BUILDDIR"
+    find . -name "*.aux" -not -path "./.git/*" -delete
     echo "Arquivos temporários removidos."
     exit 0
 fi
+
+mkdir -p "$BUILDDIR"
 
 echo "[1/4] Primeira passagem pdflatex..."
 $LATEX "$MAIN.tex"
 
 echo "[2/4] BibTeX..."
-$BIBTEX "$MAIN"
+$BIBTEX "$BUILDDIR/$MAIN"
 
 echo "[3/4] Segunda passagem pdflatex..."
 $LATEX "$MAIN.tex"
@@ -28,11 +28,11 @@ $LATEX "$MAIN.tex"
 echo "[4/4] Terceira passagem pdflatex..."
 $LATEX "$MAIN.tex"
 
-if [ -f "$MAIN.pdf" ]; then
+if [ -f "$BUILDDIR/$MAIN.pdf" ]; then
     echo ""
-    echo "PDF gerado com sucesso: $MAIN.pdf"
+    echo "PDF gerado com sucesso: $BUILDDIR/$MAIN.pdf"
 else
     echo ""
-    echo "Erro na compilação. Verifique $MAIN.log"
+    echo "Erro na compilação. Verifique $BUILDDIR/$MAIN.log"
     exit 1
 fi
