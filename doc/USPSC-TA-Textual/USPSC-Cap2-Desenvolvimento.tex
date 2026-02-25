@@ -6,7 +6,7 @@ Neste capítulo, apresentam-se os conceitos fundamentais para a compreensão da 
 
 \section{Vision Transformers e a Mecânica de Atenção}
 
-Os Vision Transformers (ViT) representam uma mudança de paradigma na visão computacional ao transpor a arquitetura de autoatenção, originalmente concebida para processamento de linguagem natural \cite{vaswani2017}, para o domínio de imagens. Segundo \citeonline{dosovitskiy2020}, o ViT decompõe uma imagem em patches fixos, os quais são tratados como sequências de tokens, permitindo que o modelo aprenda relações globais entre diferentes regiões da cena desde as camadas iniciais.
+Os Vision Transformers (ViT) representam uma mudança de paradigma na visão computacional ao transpor a arquitetura de autoatenção, originalmente concebida para processamento de linguagem natural \cite{vaswani2023attentionneed}, para o domínio de imagens. Segundo \citeonline{dosovitskiy2021imageworth16x16words}, o ViT decompõe uma imagem em patches fixos, os quais são tratados como sequências de tokens, permitindo que o modelo aprenda relações globais entre diferentes regiões da cena desde as camadas iniciais.
 
 O cerne dessa arquitetura é o mecanismo de Scaled Dot-Product Attention, definido matematicamente pela Equação \ref{eq:attention}:
 
@@ -15,7 +15,7 @@ O cerne dessa arquitetura é o mecanismo de Scaled Dot-Product Attention, defini
 \text{Attention}(Q, K, V) = \text{softmax}\!\left(\frac{QK^T}{\sqrt{d_k}}\right)V
 \end{equation}
 
-Onde $Q$, $K$ e $V$ representam as matrizes de Query, Key e Value. Embora eficaz, essa operação apresenta uma complexidade computacional $O(N^2)$, onde $N$ é o número de patches. Como apontam \citeonline{dao2022}, o gargalo dessa operação em GPUs modernas não é o poder computacional bruto, mas sim a latência de memória gerada pela leitura e escrita de matrizes intermediárias de atenção.
+Onde $Q$, $K$ e $V$ representam as matrizes de Query, Key e Value. Embora eficaz, essa operação apresenta uma complexidade computacional $O(N^2)$, onde $N$ é o número de patches. Como apontam \citeonline{dao2022flashattentionfastmemoryefficientexact}, o gargalo dessa operação em GPUs modernas não é o poder computacional bruto, mas sim a latência de memória gerada pela leitura e escrita de matrizes intermediárias de atenção.
 
 \section{Arquitetura de GPU e a ``Parede de Memória'' (Memory Wall)}
 
@@ -39,4 +39,4 @@ De acordo com \citeonline{tillet2019}, o Triton introduz um paradigma baseado em
 
 A técnica de fusão de operadores (Operator Fusion) consiste em agrupar múltiplas operações matemáticas em um único kernel executável. No contexto de modelos de visão, isso significa realizar o cálculo do Softmax e a multiplicação por $V$ enquanto os dados de $Q$ ainda residem nos registradores da GPU.
 
-Esta técnica é levada ao estado da arte pelo algoritmo Flash Attention. Como sintetizado por \citeonline{dao2022}, a fusão de operadores permite que o modelo evite a materialização da matriz de atenção $N \times N$ na memória principal, resultando em acelerações que podem chegar a $3\times$ em relação às implementações tradicionais, reduzindo simultaneamente o consumo de memória.
+Esta técnica é levada ao estado da arte pelo algoritmo Flash Attention. Como sintetizado por \citeonline{dao2022flashattentionfastmemoryefficientexact}, a fusão de operadores permite que o modelo evite a materialização da matriz de atenção $N \times N$ na memória principal, resultando em acelerações que podem chegar a $3\times$ em relação às implementações tradicionais, reduzindo simultaneamente o consumo de memória.
