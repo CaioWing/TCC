@@ -8,6 +8,16 @@ Neste capítulo, apresentam-se os conceitos fundamentais para a compreensão da 
 
 Os Vision Transformers (ViT) representam uma mudança de paradigma na visão computacional ao transpor a arquitetura de autoatenção, originalmente concebida para processamento de linguagem natural \cite{vaswani2023attentionneed}, para o domínio de imagens. Segundo \citeonline{dosovitskiy2021imageworth16x16words}, o ViT decompõe uma imagem em patches fixos, os quais são tratados como sequências de tokens, permitindo que o modelo aprenda relações globais entre diferentes regiões da cena desde as camadas iniciais.
 
+Como referência visual da arquitetura, a Figura \ref{fig:vit_arquitetura} apresenta o fluxo do ViT, desde a tokenização em patches até o codificador Transformer e a cabeça de classificação.
+
+\begin{figure}[H]
+    \centering
+    \caption{Arquitetura do Vision Transformer (ViT)}
+    \includegraphics[width=\textwidth]{figures/vit_DOSOVITSKIY.png}
+    \label{fig:vit_arquitetura}
+    \fonte{Adaptado de \citeonline{dosovitskiy2021imageworth16x16words}.}
+\end{figure}
+
 O cerne dessa arquitetura é o mecanismo de Scaled Dot-Product Attention, definido matematicamente pela Equação \ref{eq:attention}:
 
 \begin{equation}
@@ -24,7 +34,7 @@ Para entender a necessidade de otimização de baixo nível, é preciso distingu
 O desequilíbrio entre a velocidade de processamento e a velocidade de transferência de dados é o que a literatura denomina como Memory Wall. Sobre este desafio, \citeonline{wulfmckee1995} observam:
 
 \begin{citacao}
-{[...]} a disparidade entre a velocidade dos processadores e a velocidade da memória principal tem crescido exponencialmente. Se essa tendência continuar, a performance dos sistemas será limitada não pela frequência de clock do processador, mas pela taxa na qual os dados podem ser entregues a ele.
+{[...]} a disparidade entre a velocidade dos processadores e a velocidade da memória principal tem crescido exponencialmente. Se essa tendência continuar, a performance dos sistemas será limitada não pela frequência de clock do processador, mas pela taxa na qual os dados podem ser entregues a ele \cite{wulfmckee1995} (tradução do autor).
 \end{citacao}
 
 Dessa forma, otimizar um kernel significa maximizar o tempo que o dado permanece na SRAM (ou Shared Memory), minimizando acessos à HBM. Em implementações padrão de bibliotecas de alto nível, cada etapa da Equação \ref{eq:attention} resulta em uma escrita e leitura na HBM, o que degrada o throughput do sistema.
@@ -39,4 +49,33 @@ De acordo com \citeonline{tillet2019}, o Triton introduz um paradigma baseado em
 
 A técnica de fusão de operadores (Operator Fusion) consiste em agrupar múltiplas operações matemáticas em um único kernel executável. No contexto de modelos de visão, isso significa realizar o cálculo do Softmax e a multiplicação por $V$ enquanto os dados de $Q$ ainda residem nos registradores da GPU.
 
-Esta técnica é levada ao estado da arte pelo algoritmo Flash Attention. Como sintetizado por \citeonline{dao2022flashattentionfastmemoryefficientexact}, a fusão de operadores permite que o modelo evite a materialização da matriz de atenção $N \times N$ na memória principal, resultando em acelerações que podem chegar a $3\times$ em relação às implementações tradicionais, reduzindo simultaneamente o consumo de memória.
+Como referência visual do método, a Figura \ref{fig:flashattention_esquema} ilustra a hierarquia de memória, o particionamento em blocos e o ganho de desempenho obtido pelo kernel fundido do FlashAttention.
+
+\begin{figure}[H]
+    \centering
+    \caption{Esquema do FlashAttention e comparação de tempo de execução}
+    \includegraphics[width=\textwidth]{figures/flashattention.png}
+    \label{fig:flashattention_esquema}
+    \fonte{Adaptado de \citeonline{dao2022flashattentionfastmemoryefficientexact}.}
+\end{figure}
+
+Esta técnica é levada ao estado da arte pelo algoritmo Flash Attention. Como sintetizado por \citeonline{dao2022flashattentionfastmemoryefficientexact}, a fusão de operadores permite que o modelo evite a materialização da matriz de atenção $N \times N$ na memória principal, resultando em acelerações significativas em relação às implementações tradicionais, reduzindo simultaneamente o consumo de memória.
+
+
+\chapter{Metodologia}
+
+\section{Ambiente Experimental}
+
+\section{Design do Kernel Customizado}
+
+\section{Implementação do Softmax Online}
+
+\section{Protocolo de Avaliação}
+
+\chapter{Resultados e Discussões}
+
+\section{Análise Comparativa de Latência}
+
+\section{Profiling de Baixo Nível}
+
+\section{Modelo Roofline}
