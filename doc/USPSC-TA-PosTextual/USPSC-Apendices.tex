@@ -6,57 +6,134 @@
 \begin{apendicesenv}
 % Imprime uma página indicando o início dos apêndices
 \partapendices
-\chapter{apêndice(s)}
-Elemento opcional, que consiste em texto ou documento elaborado pelo autor, a fim de complementar sua argumentação, conforme a ABNT NBR 14724 \cite{nbr14724}.
+\chapter{Comparação entre Softmax padrão e Softmax com Triton}
+\label{ap:softmax_naive_triton}
 
-Os apêndices devem ser identificados por letras maiúsculas consecutivas, seguidas de hífen e pelos respectivos títulos. Excepcionalmente, utilizam-se letras maiúsculas dobradas na identificação dos apêndices, quando esgotadas as 26 letras do alfabeto. A paginação deve ser contínua, dando seguimento ao texto principal. \cite{aguia2020}
-% ----------------------------------------------------------
-\chapter{Exemplo de tabela centralizada verticalmente e horizontalmente}
-\index{tabelas}A \autoref{tab-centralizada} exemplifica como proceder para obter uma tabela centralizada verticalmente e horizontalmente.
-% utilize \usepackage{array} no PREAMBULO (ver em USPSC-modelo.tex) obter uma tabela centralizada verticalmente e horizontalmente
-\begin{table}[htb]
-\ABNTEXfontereduzida
-\caption[Exemplo de tabela centralizada verticalmente e horizontalmente]{Exemplo de tabela centralizada verticalmente e horizontalmente}
-\label{tab-centralizada}
+Este apêndice apresenta uma comparação entre duas abordagens para cálculo de \textit{softmax} em linhas de uma matriz: uma implementação padrão em PyTorch e uma implementação otimizada com OpenAI Triton.
 
-\begin{tabular}{ >{\centering\arraybackslash}m{6cm}  >{\centering\arraybackslash}m{6cm} }
-\hline
- \centering \textbf{Coluna A} & \textbf{Coluna B}\\
-\hline
-  Coluna A, Linha 1 & Este é um texto bem maior para exemplificar como é centralizado verticalmente e horizontalmente na tabela. Segundo parágrafo para verificar como fica na tabela\\
-  Quando o texto da coluna A, linha 2 é bem maior do que o das demais colunas  & Coluna B, linha 2\\
-\hline
-\end{tabular}
-\begin{flushleft}
-		Fonte: Elaborada pelos autores.\
-\end{flushleft}
-\end{table}
+\section{Implementação padrão em PyTorch}
 
-% ----------------------------------------------------------
-\chapter{Exemplo de tabela com grade}
-\index{tabelas}A \autoref{tab-grade} exemplifica a inclusão de traços estruturadores de conteúdo para melhor compreensão do conteúdo da tabela, em conformidade com as normas de apresentação tabular do IBGE.
-% utilize \usepackage{array} no PREAMBULO (ver em USPSC-modelo.tex) obter uma tabela centralizada verticalmente e horizontalmente
-\begin{table}[htb]
-\ABNTEXfontereduzida
-\caption[Exemplo de tabelas com grade]{Exemplo de tabelas com grade}
-\label{tab-grade}
-\begin{tabular}{ >{\centering\arraybackslash}m{8cm} | >{\centering\arraybackslash}m{6cm} }
-\hline
- \centering \textbf{Coluna A} & \textbf{Coluna B}\\
-\hline
-  A1 & B1\\
-\hline
-  A2 & B2\\
-\hline
-  A3 & B3\\
-\hline
-  A4 & B4\\
-\hline
-\end{tabular}
-\begin{flushleft}
-		Fonte: Elaborada pelos autores.\
-\end{flushleft}
-\end{table}
+\begin{verbatim}
+import torch
+
+import triton
+import triton.language as tl
+from triton.runtime import driver
+
+DEVICE = triton.runtime.driver.active.get_active_torch_device()
+
+
+def is_hip():
+    return (
+        triton.runtime.driver.active.get_current_target().backend == "hip"
+    )
+
+
+def is_cdna():
+    return (
+        is_hip()
+        and triton.runtime.driver.active.get_current_target().arch in (
+            'gfx940', 'gfx941', 'gfx942', 'gfx90a', 'gfx908'
+        )
+    )
+
+
+def naive_softmax(x):
+    """Compute row-wise softmax of X using native pytorch
+
+    We subtract the maximum element in order to avoid overflows. Softmax is
+    invariant to this shift.
+    """
+    # read  MN elements ; write M  elements
+    x_max = x.max(dim=1)[0]
+    # read MN + M elements ; write MN elements
+    z = x - x_max[:, None]
+    # read  MN elements ; write MN elements
+    numerator = torch.exp(z)
+    # read  MN elements ; write M  elements
+    denominator = numerator.sum(dim=1)
+    # read MN + M elements ; write MN elements
+    ret = numerator / denominator[:, None]
+    # in total: read 5MN + 2M elements ; wrote 3MN + 2M elements
+    return ret
+\end{verbatim}
+
+\section{Implementação otimizada com Triton}
+
+\begin{verbatim}
+properties = driver.active.utils.get_device_properties(DEVICE.index)
+NUM_SM = properties["multiprocessor_count"]
+NUM_REGS = properties["max_num_regs"]
+SIZE_SMEM = properties["max_shared_mem"]
+WARP_SIZE = properties["warpSize"]
+target = triton.runtime.driver.active.get_current_target()
+kernels = {}
+
+
+def softmax(x):
+    n_rows, n_cols = x.shape
+
+    # The block size of each loop iteration is the smallest power of two
+    # greater than the number of columns in `x`
+    BLOCK_SIZE = triton.next_power_of_2(n_cols)
+
+    # Another trick we can use is to ask the compiler to use more threads
+    # per row by increasing the number of warps (`num_warps`)
+    # over which each row is distributed.
+    num_warps = 8
+
+    # Number of software pipelining stages.
+    num_stages = 4 if SIZE_SMEM > 200000 else 2
+
+    # Allocate output
+    y = torch.empty_like(x)
+
+    # pre-compile kernel to get register usage
+    # and compute thread occupancy.
+    kernel = softmax_kernel.warmup(
+        y, x, x.stride(0), y.stride(0), n_rows, n_cols,
+        BLOCK_SIZE=BLOCK_SIZE, num_stages=num_stages,
+        num_warps=num_warps, grid=(1, )
+    )
+    kernel._init_handles()
+    n_regs = kernel.n_regs
+    size_smem = kernel.metadata.shared
+
+    if is_hip():
+        # NUM_REGS represents the number of regular purpose registers.
+        # On CDNA architectures this is half of all registers available.
+        NUM_GPRS = NUM_REGS
+        if is_cdna():
+            NUM_GPRS = NUM_REGS * 2
+
+        # MAX_NUM_THREADS represents maximum resident threads per SM.
+        MAX_NUM_THREADS = properties["max_threads_per_sm"]
+        max_num_waves = MAX_NUM_THREADS // WARP_SIZE
+        occupancy = min(NUM_GPRS // WARP_SIZE // n_regs, max_num_waves)
+        occupancy = occupancy // num_warps
+    else:
+        occupancy = NUM_REGS // (n_regs * WARP_SIZE * num_warps)
+
+    occupancy = min(occupancy, SIZE_SMEM // size_smem)
+    num_programs = NUM_SM * occupancy
+    num_programs = min(num_programs, n_rows)
+
+    # Create a number of persistent programs.
+    kernel[(num_programs, 1, 1)](
+        y, x, x.stride(0), y.stride(0), n_rows, n_cols,
+        BLOCK_SIZE, num_stages
+    )
+    return y
+\end{verbatim}
+
+\section{Comparação técnica}
+
+\begin{itemize}
+    \item \textbf{Movimentação de memória:} a versão padrão materializa tensores intermediários para cada etapa; a versão Triton busca reduzir leituras e escritas na HBM por meio de execução em blocos e reutilização de dados em SRAM.
+    \item \textbf{Paralelismo:} na implementação Triton, parâmetros como \texttt{BLOCK\_SIZE}, \texttt{num\_warps} e \texttt{num\_stages} são ajustados para aumentar ocupação e throughput.
+    \item \textbf{Consciência de hardware:} o código Triton utiliza propriedades do dispositivo (SMs, registradores e memória compartilhada) para definir o número de programas persistentes, aproximando a implementação do limite arquitetural da GPU.
+    \item \textbf{Objetivo prático:} enquanto a versão padrão prioriza simplicidade e legibilidade, a versão Triton prioriza eficiência computacional e redução da latência em inferência.
+\end{itemize}
 
 
 \end{apendicesenv}

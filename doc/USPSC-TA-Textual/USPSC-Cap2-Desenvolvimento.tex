@@ -18,18 +18,58 @@ Como referência visual da arquitetura, a Figura \ref{fig:vit_arquitetura} apres
     \fonte{Adaptado de \citeonline{dosovitskiy2021imageworth16x16words}.}
 \end{figure}
 
-O cerne dessa arquitetura é o mecanismo de Scaled Dot-Product Attention, definido matematicamente pela Equação \ref{eq:attention}:
+O cerne dessa arquitetura é o mecanismo de autoatenção, cujos componentes fundamentais, o Scaled Dot-Product Attention e sua extensão para o Multi-Head Attention, são ilustrados na Figura \ref{fig:mecanismos_atencao}. Matematicamente, a operação de atenção é definida pela Equação \ref{eq:attention}:
 
 \begin{equation}
 \label{eq:attention}
 \text{Attention}(Q, K, V) = \text{softmax}\!\left(\frac{QK^T}{\sqrt{d_k}}\right)V
 \end{equation}
 
+\begin{figure}[H]
+    \centering
+    \caption{Mecanismos de atenção do Transformer}
+    \begin{subfigure}[b]{0.45\textwidth}
+        \centering
+        \caption{Scaled Dot-Product Attention}
+        \includegraphics[width=0.7\textwidth]{figures/scale-dot-product-attention.png}
+        \label{fig:scaled_dot_product}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.45\textwidth}
+        \centering
+        \caption{Multi-Head Attention}
+        \includegraphics[width=0.9\textwidth]{figures/multi-head-attention.png}
+        \label{fig:multi_head_attention}
+    \end{subfigure}
+    \label{fig:mecanismos_atencao}
+    \fonte{\citeonline{vaswani2023attentionneed}.}
+\end{figure}
+
 Onde $Q$, $K$ e $V$ representam as matrizes de Query, Key e Value. Embora eficaz, essa operação apresenta uma complexidade computacional $O(N^2)$, onde $N$ é o número de patches. Como apontam \citeonline{dao2022flashattentionfastmemoryefficientexact}, o gargalo dessa operação em GPUs modernas não é o poder computacional bruto, mas sim a latência de memória gerada pela leitura e escrita de matrizes intermediárias de atenção.
+
+\subsection{Por que Autoatenção?}
+
+No trabalho original dos Transformers, \citeonline{vaswani2023attentionneed} justificam o uso da autoatenção comparando-a com camadas recorrentes e convolucionais para o mapeamento de uma sequência de entrada em outra de mesmo comprimento. A análise é guiada por três critérios centrais: (i) complexidade computacional por camada, (ii) grau de paralelização e (iii) comprimento do caminho entre dependências de longo alcance.
+
+Sob essa ótica, a autoatenção apresenta uma vantagem estrutural importante: todas as posições da sequência interagem diretamente em uma única camada, com número constante de operações sequenciais. Em contraste, arquiteturas recorrentes exigem dependência temporal passo a passo, com custo sequencial proporcional ao comprimento da sequência. Na prática, isso reduz o paralelismo possível em GPU e limita o throughput.
+
+Também no aspecto de dependências de longo alcance, a autoatenção encurta o caminho de propagação de informação entre dois tokens para ordem constante. Em arquiteturas recorrentes, esse caminho cresce linearmente com o tamanho da sequência; em convolucionais, depende da largura do kernel e da profundidade da pilha de camadas. Essa diferença é relevante porque caminhos menores tendem a facilitar o aprendizado de relações globais.
+
+Em termos de custo assintótico, a autoatenção densa envolve tipicamente $O(n^2 d)$, enquanto camadas recorrentes escalam como $O(nd^2)$ e convoluções dependem de $k$ (largura do kernel). Conforme discutido por \citeonline{vaswani2023attentionneed}, quando $n < d$, cenário comum em representações de linguagem e compatível com várias configurações de tokens em visão, a autoatenção tende a ser computacionalmente mais favorável que abordagens recorrentes, além de ser mais paralelizável.
+
+Por fim, os autores destacam que versões restritas de autoatenção (janela local de tamanho $r$) podem reduzir custo para sequências muito longas, ao custo de aumentar o caminho máximo para $O(n/r)$. Esse compromisso custo--alcance é particularmente útil para conectar a formulação teórica da atenção com o problema de engenharia tratado neste trabalho: minimizar movimentação de dados e latência de memória sem perder capacidade de modelar dependências globais.
 
 \section{Arquitetura de GPU e a ``Parede de Memória'' (Memory Wall)}
 
 Para entender a necessidade de otimização de baixo nível, é preciso distinguir os diferentes níveis de memória em uma GPU. A memória principal, conhecida como High Bandwidth Memory (HBM), possui alta capacidade, porém latência significativamente superior à memória estática interna do chip, a SRAM.
+
+\begin{figure}[H]
+    \centering
+    \caption{Hierarquia de memória com largura de banda e capacidade}
+    \includegraphics[width=0.4\textwidth]{figures/memory_hierarchy_with_bandwidth_memory_size.png}
+    \label{fig:hierarquia_memoria_gpu}
+    \fonte{Adaptado de \citeonline{dao2022flashattentionfastmemoryefficientexact}.}
+\end{figure}
 
 O desequilíbrio entre a velocidade de processamento e a velocidade de transferência de dados é o que a literatura denomina como Memory Wall. Sobre este desafio, \citeonline{wulfmckee1995} observam:
 
@@ -54,7 +94,7 @@ Como referência visual do método, a Figura \ref{fig:flashattention_esquema} il
 \begin{figure}[H]
     \centering
     \caption{Esquema do FlashAttention e comparação de tempo de execução}
-    \includegraphics[width=\textwidth]{figures/flashattention.png}
+    \includegraphics[width=\textwidth]{figures/flash_attention.png}
     \label{fig:flashattention_esquema}
     \fonte{Adaptado de \citeonline{dao2022flashattentionfastmemoryefficientexact}.}
 \end{figure}
@@ -69,6 +109,8 @@ Esta técnica é levada ao estado da arte pelo algoritmo Flash Attention. Como s
 \section{Design do Kernel Customizado}
 
 \section{Implementação do Softmax Online}
+
+A comparação detalhada entre uma implementação padrão de \textit{softmax} em PyTorch e uma versão otimizada com OpenAI Triton é apresentada no \autoref{ap:softmax_naive_triton}. O apêndice inclui os trechos de código e uma análise objetiva dos impactos em movimentação de memória, paralelismo e ocupação do hardware.
 
 \section{Protocolo de Avaliação}
 
