@@ -59,6 +59,43 @@ Em termos de custo assintótico, a autoatenção densa envolve tipicamente $O(n^
 
 Por fim, os autores destacam que versões restritas de autoatenção (janela local de tamanho $r$) podem reduzir custo para sequências muito longas, ao custo de aumentar o caminho máximo para $O(n/r)$. Esse compromisso custo--alcance é particularmente útil para conectar a formulação teórica da atenção com o problema de engenharia tratado neste trabalho: minimizar movimentação de dados e latência de memória sem perder capacidade de modelar dependências globais.
 
+\section{Complexidade Computacional e Movimentação de Dados na Atenção}
+
+A Equação \ref{eq:attention} evidencia que a atenção densa é composta por três
+etapas principais: o produto $QK^T$, a normalização por \textit{softmax} e a
+multiplicação da matriz de probabilidades por $V$. Considerando uma cabeça de
+atenção com $N$ tokens e dimensão $D$, o produto $QK^T$ produz uma matriz de
+scores de dimensão $N \times N$ e possui custo aproximado de $2N^2D$ operações
+de ponto flutuante. A multiplicação final por $V$ possui custo da mesma ordem,
+também próximo de $2N^2D$. Assim, desconsiderando constantes associadas ao
+\textit{softmax}, o custo aritmético do forward de uma cabeça é da ordem de
+$O(N^2D)$.
+
+O custo aritmético, entretanto, não descreve completamente o desempenho em GPU.
+Em uma implementação ingênua, a matriz $QK^T$ é escrita na memória global,
+posteriormente lida para a aplicação do \textit{softmax}, novamente escrita como
+matriz de probabilidades e, por fim, lida para a multiplicação por $V$. Esse
+fluxo materializa um tensor intermediário de tamanho $N \times N$ que pode
+dominar o tráfego em HBM quando $N$ cresce. Em ViTs, esse efeito aparece de
+forma direta: dobrar a resolução espacial ou reduzir o tamanho dos patches
+aumenta o número de tokens e amplia quadraticamente a matriz de atenção.
+
+Para uma configuração com $B$ amostras, $H$ cabeças, $N$ tokens e dimensão de
+cabeça $D$, o custo aritmético aproximado do forward de atenção densa pode ser
+representado por:
+
+\begin{equation}
+    FLOPs \approx 4BHN^2D.
+\end{equation}
+
+Já a matriz intermediária de scores ocupa, sozinha, $BHN^2$ elementos. Em FP16,
+isso corresponde a aproximadamente $2BHN^2$ bytes por materialização. Como uma
+implementação não fundida pode escrever e reler essa estrutura em mais de uma
+etapa, o tráfego efetivo de memória pode superar o tamanho dos tensores de
+entrada e saída. Essa diferença explica por que otimizações como FlashAttention
+e kernels fundidos não buscam apenas reduzir FLOPs, mas reduzir operações de
+entrada e saída na memória global \cite{dao2022flashattentionfastmemoryefficientexact}.
+
 \section{Arquitetura de GPU e a ``Parede de Memória'' (Memory Wall)}
 
 Para entender a necessidade de otimização de baixo nível, é preciso distinguir os diferentes níveis de memória em uma GPU. A memória principal, conhecida como High Bandwidth Memory (HBM), possui alta capacidade, porém latência significativamente superior à memória estática interna do chip, a SRAM.
@@ -79,11 +116,81 @@ O desequilíbrio entre a velocidade de processamento e a velocidade de transfer�
 
 Dessa forma, otimizar um kernel significa maximizar o tempo que o dado permanece na SRAM (ou Shared Memory), minimizando acessos à HBM. Em implementações padrão de bibliotecas de alto nível, cada etapa da Equação \ref{eq:attention} resulta em uma escrita e leitura na HBM, o que degrada o throughput do sistema.
 
+\subsection{Modelo de execução em GPUs}
+
+Uma GPU executa milhares de threads organizadas em blocos, que são escalonados
+nos Streaming Multiprocessors. Cada SM possui recursos limitados de registradores,
+memória compartilhada, unidades de execução e slots para warps residentes. O
+desempenho de um kernel depende, portanto, de uma combinação entre paralelismo,
+ocupação, coalescência de acessos à memória e reutilização local de dados.
+
+Threads são agrupadas em warps, que executam a mesma instrução sobre dados
+distintos. Quando os acessos à memória global são contíguos e alinhados, a GPU
+consegue agrupá-los em transações mais eficientes. Por outro lado, acessos
+irregulares, baixa reutilização de dados ou excesso de registradores por thread
+podem reduzir a ocupação e aumentar a exposição à latência de memória. Em
+kernels de atenção, esses fatores aparecem na escolha do tamanho dos blocos de
+$Q$, $K$ e $V$, no número de warps por programa e na quantidade de dados mantida
+em registradores ou memória compartilhada.
+
+Para o presente trabalho, essa visão é importante porque o objetivo não é apenas
+reescrever uma equação matemática em outra linguagem. O objetivo é organizar a
+mesma computação de modo que cada bloco carregado da HBM seja reutilizado tantas
+vezes quanto possível antes de ser descartado. A eficiência do kernel depende,
+assim, da relação entre trabalho aritmético realizado e bytes transferidos pela
+hierarquia de memória.
+
+\section{Modelo Roofline para Análise de Desempenho}
+
+O Modelo Roofline é uma ferramenta de análise que relaciona o desempenho
+atingível de uma aplicação com sua intensidade aritmética, isto é, a razão entre
+operações de ponto flutuante e bytes movimentados na memória \cite{williams2009roofline}.
+Nesse modelo, o desempenho máximo de um kernel é limitado por dois tetos
+principais: a largura de banda de memória e o pico computacional do hardware.
+
+A intensidade aritmética pode ser escrita como:
+
+\begin{equation}
+    I = \frac{FLOPs}{Bytes}.
+\end{equation}
+
+Quando $I$ é baixo, o kernel tende a ser \textit{memory-bound}: seu desempenho é
+limitado pela taxa com que dados são fornecidos ao processador. Quando $I$ é
+alto, o kernel tende a ser \textit{compute-bound}: a limitação passa a ser a
+capacidade das unidades aritméticas. A fronteira entre esses regimes ocorre no
+ponto em que o produto entre intensidade aritmética e largura de banda de memória
+atinge o pico computacional do dispositivo.
+
+No contexto da atenção em ViTs, o Modelo Roofline permite avaliar se uma
+otimização melhora o desempenho por aumentar o uso das unidades aritméticas ou
+por reduzir o tráfego de memória. Um kernel fundido pode deslocar a operação no
+gráfico Roofline ao evitar a materialização da matriz $N \times N$, aumentando a
+intensidade aritmética efetiva e reduzindo a dependência da HBM. Por esse motivo,
+o modelo é adotado neste trabalho como ferramenta complementar às métricas de
+latência e throughput.
+
 \section{OpenAI Triton}
 
 Historicamente, a escrita de kernels otimizados exigia o uso de CUDA C++, uma linguagem de alta complexidade que demanda gerenciamento manual de threads e sincronização de blocos. O OpenAI Triton surge como uma alternativa de abstração que permite a escrita de kernels altamente performáticos utilizando uma sintaxe baseada em Python.
 
 De acordo com \citeonline{tillet2019}, o Triton introduz um paradigma baseado em blocos (tiles), onde o compilador é responsável por otimizar automaticamente o agendamento de tarefas e o uso dos registradores, permitindo que o desenvolvedor foque na lógica de movimentação de dados na hierarquia de memória.
+
+Na prática, um kernel Triton é escrito como um programa parametrizado por blocos
+de dados. Cada instância do programa identifica sua região de atuação por meio de
+índices como \texttt{program\_id}, carrega blocos com \texttt{tl.load}, executa
+operações vetoriais ou matriciais com primitivas como \texttt{tl.dot} e grava o
+resultado com \texttt{tl.store}. Máscaras booleanas são utilizadas para tratar
+bordas quando as dimensões do tensor não são múltiplas exatas do tamanho do
+bloco.
+
+Parâmetros como \texttt{BLOCK\_M}, \texttt{BLOCK\_N}, \texttt{num\_warps} e
+\texttt{num\_stages} controlam a granularidade do trabalho e influenciam
+ocupação, pressão de registradores e paralelismo. Assim, o Triton oferece uma
+abstração intermediária: mais próxima da hierarquia de memória do que APIs de
+alto nível, mas menos verbosa que CUDA C++. Essa característica o torna adequado
+para o objetivo do trabalho, que é experimentar uma organização de dados
+inspirada em FlashAttention sem deslocar o foco para detalhes excessivos de
+sincronização manual de threads.
 
 \section{Fusão de Operadores e Flash Attention}
 
@@ -106,13 +213,125 @@ Esta técnica é levada ao estado da arte pelo algoritmo Flash Attention. Como s
 
 \section{Ambiente Experimental}
 
+O ambiente experimental deste trabalho foi definido com o objetivo de isolar o
+impacto da implementação do kernel sobre a latência da operação de atenção. Os
+experimentos devem ser executados em uma GPU NVIDIA compatível com CUDA,
+utilizando PyTorch como baseline de alto nível e OpenAI Triton como ferramenta
+de desenvolvimento do kernel customizado. Para garantir reprodutibilidade, cada
+execução deve registrar o modelo da GPU, quantidade de SMs, versão do driver,
+versão do CUDA, versão do PyTorch, versão do Triton, tipo numérico utilizado e
+parâmetros de forma dos tensores.
+
+Os tensores de entrada são organizados no formato
+$[B, H, N, D]$, em que $B$ representa o tamanho do lote, $H$ o número de
+cabeças de atenção, $N$ o número de tokens e $D$ a dimensão de cada cabeça. Esse
+formato é compatível com implementações usuais de Multi-Head Attention em
+modelos ViT. Para representar configurações típicas de visão computacional,
+consideram-se sequências como $N=197$, correspondente a uma imagem de
+$224 \times 224$ particionada em patches de $16 \times 16$ acrescida do token de
+classe, e sequências maiores para avaliar o comportamento quadrático da atenção.
+
+As medições de tempo devem ser feitas com eventos CUDA, após uma etapa de
+aquecimento destinada a amortizar efeitos de compilação JIT, inicialização de
+contexto e variações transientes de frequência. Quando disponível, o perfil de
+baixo nível deve ser coletado com ferramentas como NVIDIA Nsight Compute,
+registrando métricas de tráfego em memória global, ocupação, utilização de SMs e
+throughput computacional.
+
 \section{Design do Kernel Customizado}
+
+O kernel customizado implementa a etapa forward de atenção densa não causal,
+sem dropout, voltada ao cenário de inferência. O cálculo corresponde à Equação
+\ref{eq:attention}, porém evita a materialização completa da matriz
+$QK^T$, de dimensão $N \times N$, na memória global. A operação é decomposta em
+blocos de linhas de $Q$ e blocos de colunas de $K$ e $V$, permitindo que cada
+programa Triton carregue apenas uma fração da sequência por vez.
+
+A estratégia de tiling utiliza dois parâmetros principais: $BLOCK\_M$, que
+define a quantidade de queries processadas por programa, e $BLOCK\_N$, que
+define a quantidade de keys e values carregados a cada iteração. Para cada bloco
+de queries, o kernel percorre a sequência de keys em blocos sucessivos,
+acumulando o resultado parcial da atenção. Desse modo, os valores intermediários
+necessários ao softmax permanecem em registradores ou SRAM durante a execução do
+programa, reduzindo leituras e escritas na HBM.
+
+O escopo inicial da implementação considera tensores contíguos com eixos de
+lote, cabeças, sequência e dimensão por cabeça, além de dimensões de cabeça até
+128 e tipos numéricos de baixa precisão, como FP16 e BF16. Essa delimitação é
+compatível com o objetivo experimental do trabalho: comparar o impacto da fusão
+de operadores e da consciência da hierarquia de memória em um caso
+representativo de atenção em Vision Transformers.
 
 \section{Implementação do Softmax Online}
 
 A comparação detalhada entre uma implementação padrão de \textit{softmax} em PyTorch e uma versão otimizada com OpenAI Triton é apresentada no \autoref{ap:softmax_naive_triton}. O apêndice inclui os trechos de código e uma análise objetiva dos impactos em movimentação de memória, paralelismo e ocupação do hardware.
 
+No kernel de atenção, entretanto, o \textit{softmax} não é computado como uma
+operação isolada. Em vez de armazenar a matriz de scores completa, utiliza-se a
+formulação de \textit{softmax online} empregada pelo FlashAttention
+\cite{dao2022flashattentionfastmemoryefficientexact}. Para cada linha da
+matriz de atenção, o kernel mantém três acumuladores: o maior valor observado
+$m_i$, a soma normalizada $l_i$ e o acumulador vetorial de saída $O_i$.
+
+Ao processar um novo bloco de scores $S_{ij}$, o máximo da linha é atualizado de
+forma incremental:
+
+\begin{equation}
+    m_i^{novo} = \max\left(m_i^{antigo}, \max_j S_{ij}\right).
+\end{equation}
+
+Em seguida, a soma exponencial anterior é reescalada para a nova referência
+numérica:
+
+\begin{equation}
+    l_i^{novo} =
+    e^{m_i^{antigo} - m_i^{novo}} l_i^{antigo}
+    + \sum_j e^{S_{ij} - m_i^{novo}}.
+\end{equation}
+
+O acumulador da saída passa pelo mesmo reescalonamento:
+
+\begin{equation}
+    O_i^{novo} =
+    e^{m_i^{antigo} - m_i^{novo}} O_i^{antigo}
+    + \sum_j e^{S_{ij} - m_i^{novo}} V_j.
+\end{equation}
+
+Ao final da varredura sobre todos os blocos de keys e values, a saída final é
+obtida por $O_i / l_i$. Essa formulação preserva a estabilidade numérica do
+\textit{softmax} tradicional, pois continua subtraindo o maior valor da linha,
+mas permite que a normalização seja realizada em fluxo, sem escrita da matriz
+intermediária de atenção na memória global.
+
 \section{Protocolo de Avaliação}
+
+O protocolo de avaliação compara três implementações: uma versão explícita em
+PyTorch, que materializa as etapas $QK^T$, \textit{softmax} e multiplicação por
+$V$; a função otimizada \texttt{scaled\_dot\_product\_attention} do PyTorch; e o
+kernel customizado em Triton. A primeira serve como referência de corretude e
+como baseline de alto nível mais transparente. A segunda representa uma
+implementação de biblioteca otimizada. A terceira corresponde à contribuição
+experimental deste trabalho.
+
+Para cada configuração de $B$, $H$, $N$, $D$ e tipo numérico, são gerados
+tensores aleatórios em GPU e executadas rodadas de aquecimento antes das
+medições. A latência média é calculada a partir de múltiplas iterações
+sincronizadas por eventos CUDA. A corretude é verificada pelo erro absoluto
+máximo entre a saída do kernel avaliado e a implementação explícita em PyTorch.
+
+Além da latência, calcula-se o throughput aproximado em TFLOP/s. Considerando
+que a atenção densa realiza uma multiplicação $QK^T$ e uma multiplicação
+$PV$, ambas com custo aproximado de $2BHN^2D$ operações de ponto flutuante, o
+custo total do forward é estimado como:
+
+\begin{equation}
+    FLOPs \approx 4BHN^2D.
+\end{equation}
+
+Essa estimativa permite comparar o desempenho obtido com o limite teórico da
+GPU. A interpretação final deve combinar os resultados de latência, throughput,
+tráfego de memória global e Modelo Roofline, distinguindo casos
+\textit{memory-bound} de casos \textit{compute-bound}.
 
 \chapter{Resultados e Discussões}
 
