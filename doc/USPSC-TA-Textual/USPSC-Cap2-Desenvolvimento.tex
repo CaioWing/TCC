@@ -227,9 +227,10 @@ $[B, H, N, D]$, em que $B$ representa o tamanho do lote, $H$ o número de
 cabeças de atenção, $N$ o número de tokens e $D$ a dimensão de cada cabeça. Esse
 formato é compatível com implementações usuais de Multi-Head Attention em
 modelos ViT. Para representar configurações típicas de visão computacional,
-consideram-se sequências como $N=197$, correspondente a uma imagem de
-$224 \times 224$ particionada em patches de $16 \times 16$ acrescida do token de
-classe, e sequências maiores para avaliar o comportamento quadrático da atenção.
+consideram-se comprimentos alinhados como $N=128$, $N=256$, $N=512$, $N=768$ e
+$N=1024$. Essa escolha mantém múltiplos de 32, compatíveis com granularidades
+frequentes de kernels em GPU, e facilita a comparação de escala sem misturar o
+efeito de bordas irregulares com o crescimento quadrático da atenção.
 
 As medições de tempo devem ser feitas com eventos CUDA, após uma etapa de
 aquecimento destinada a amortizar efeitos de compilação JIT, inicialização de
@@ -337,6 +338,160 @@ tráfego de memória global e Modelo Roofline, distinguindo casos
 
 \section{Análise Comparativa de Latência}
 
+Os experimentos foram executados em uma GPU NVIDIA GeForce RTX 5060 com 30 SMs,
+utilizando Python 3.13.12, PyTorch 2.11.0 com CUDA 13.0 e tensores em FP16. A
+configuração avaliada corresponde a $B=1$, $H=12$ e $D=64$. A Tabela
+\ref{tab:resultados_atencao} resume pontos alinhados e usuais em avaliações de
+camadas Transformer, mantendo o número de tokens como múltiplo de 32. Esses
+valores representam uma progressão de sequências pequenas, médias e grandes
+para a operação de atenção. Em seguida, os gráficos apresentam uma varredura
+complementar com $N$ variando de 32 a 1024 em passos de 32, permitindo observar
+a tendência de escala das implementações.
+
+\begin{table}[H]
+    \centering
+    \caption{Resultados comparativos em pontos alinhados de sequência}
+    \label{tab:resultados_atencao}
+    \begin{tabular}{crrrrr}
+        \hline
+        $N$ & Eager (ms) & SDPA (ms) & Triton (ms) & Speedup SDPA & Speedup Triton \\
+        \hline
+        128  & 0,1271 & 0,0274 & 0,0336 & 4,65$\times$ & 3,78$\times$ \\
+        256  & 0,1308 & 0,0248 & 0,0345 & 5,27$\times$ & 3,79$\times$ \\
+        512  & 0,1713 & 0,0321 & 0,0457 & 5,34$\times$ & 3,75$\times$ \\
+        768  & 0,5313 & 0,0678 & 0,0914 & 7,84$\times$ & 5,81$\times$ \\
+        1024 & 0,9855 & 0,1072 & 0,1599 & 9,19$\times$ & 6,16$\times$ \\
+        \hline
+    \end{tabular}
+    \fonte{Elaborada pelo autor.}
+\end{table}
+
+A Figura \ref{fig:attention_latency} mostra a evolução da latência ao longo da
+varredura regular de tokens. As implementações otimizadas permanecem abaixo da
+versão explícita em PyTorch em toda a faixa analisada. Para tamanhos pequenos,
+o custo fixo de lançamento e escalonamento dos kernels tem peso relevante; por
+isso, a latência não cresce proporcionalmente a $N^2$ nos primeiros pontos. À
+medida que a sequência aumenta, o custo quadrático da atenção se torna mais
+visível, especialmente na implementação eager.
+
+\begin{figure}[H]
+    \centering
+    \caption{Comparação de latência entre as implementações de atenção}
+    \includegraphics[width=0.85\textwidth]{figures/attention_latency.pdf}
+    \label{fig:attention_latency}
+    \fonte{Elaborada pelo autor.}
+\end{figure}
+
+O speedup relativo ao eager, apresentado na Figura \ref{fig:attention_speedup},
+mostra que o ganho das versões otimizadas aumenta com o tamanho da sequência. Na
+varredura, o SDPA chega a aproximadamente 9,19$\times$ em $N=1024$, enquanto o
+kernel Triton atinge aproximadamente 6,16$\times$ no mesmo ponto. O Triton
+customizado, portanto, valida o benefício da fusão de operadores em relação à
+implementação explícita, mas fica abaixo do backend especializado do PyTorch na
+maior parte da faixa regular avaliada.
+
+\begin{figure}[H]
+    \centering
+    \caption{Speedup relativo à implementação PyTorch eager}
+    \includegraphics[width=0.85\textwidth]{figures/attention_speedup.pdf}
+    \label{fig:attention_speedup}
+    \fonte{Elaborada pelo autor.}
+\end{figure}
+
+O throughput efetivo, apresentado na Figura \ref{fig:attention_throughput},
+reforça a mesma leitura. Na extremidade da varredura, em $N=1024$, o SDPA
+alcança 30,05 TFLOP/s efetivos, enquanto o Triton atinge 20,14 TFLOP/s. Esses
+valores devem ser interpretados como throughput efetivo da operação de atenção,
+calculado a partir da estimativa $4BHN^2D$, e não como o pico teórico absoluto
+da GPU.
+
+\begin{figure}[H]
+    \centering
+    \caption{Throughput efetivo das implementações de atenção}
+    \includegraphics[width=0.85\textwidth]{figures/attention_throughput.pdf}
+    \label{fig:attention_throughput}
+    \fonte{Elaborada pelo autor.}
+\end{figure}
+
+Do ponto de vista de corretude numérica, os erros máximos observados ficaram na
+ordem de $10^{-4}$ para as implementações otimizadas em FP16. Essa diferença é
+esperada, pois SDPA e Triton podem utilizar ordem de operações, acumulação,
+fusão e instruções internas diferentes da implementação explícita usada como
+referência. O erro nulo da versão eager decorre do fato de ela ser a própria
+referência de comparação.
+
+Em conjunto, os resultados indicam que os pontos alinhados selecionados são
+úteis para resumir o comportamento em tamanhos usuais de sequência, enquanto a
+varredura completa em múltiplos de 32 é mais adequada para discutir
+comportamento assintótico, efeitos de alinhamento e estabilidade do ganho de
+desempenho.
+
 \section{Profiling de Baixo Nível}
 
+Os resultados sugerem que o kernel Triton desenvolvido neste trabalho explora
+corretamente a ideia de evitar a materialização da matriz de atenção, mas ainda
+não atinge o mesmo nível de otimização do backend usado pelo PyTorch SDPA no
+caso maior. Na implementação avaliada, os parâmetros principais do kernel são
+\texttt{BLOCK\_M=16} e \texttt{BLOCK\_N=64}. Para $N=1024$, isso implica
+64 blocos de queries e 16 blocos de keys/values por cabeça. Como
+cada bloco de queries percorre toda a sequência de keys, os blocos de $K$ e $V$
+são recarregados várias vezes ao longo da execução.
+
+Esse padrão é suficiente para demonstrar o benefício da fusão em relação ao
+eager, mas pode limitar a eficiência para sequências maiores. Mesmo usando
+comprimentos múltiplos de 32, a manutenção dos acumuladores do \textit{softmax
+online} em FP32 aumenta a pressão sobre registradores, podendo reduzir ocupação
+dependendo da arquitetura e da configuração escolhida pelo compilador Triton.
+
+Na varredura com múltiplos de 32, os degraus observados nas curvas também são
+coerentes com essa estrutura de blocos. Embora todos os valores sejam múltiplos
+de \texttt{BLOCK\_M=16}, apenas parte deles é múltipla de
+\texttt{BLOCK\_N=64}; além disso, sempre que a sequência cruza um novo limite de
+bloco, aumenta o número de programas ou de iterações internas do kernel. Por
+isso, a curva de latência não precisa ser perfeitamente suave mesmo quando $N$
+cresce de forma regular.
+
+Para complementar as medições de tempo, foi executado profiling com NVIDIA
+Nsight Compute por meio da interface \texttt{nsight-python}. Foram coletados os
+contadores \texttt{dram\_\_bytes.sum},
+\texttt{dram\_\_bytes\_op\_read.sum},
+\texttt{dram\_\_bytes\_op\_write.sum} e
+\texttt{gpu\_\_time\_duration.sum}, permitindo estimar a intensidade
+aritmética efetiva e o throughput de cada implementação. Cada combinação de
+backend e número de tokens foi perfilada em um relatório separado, reduzindo
+interferências entre kernels de biblioteca e kernels gerados pelo Triton.
+
 \section{Modelo Roofline}
+
+A partir dos bytes medidos em DRAM e da estimativa de operações
+$4BHN^2D$, foi construído o gráfico Roofline empírico da
+Figura \ref{fig:attention_roofline}. Os tetos exibidos na figura foram
+normalizados pelos maiores valores observados nesta execução, portanto devem ser
+interpretados como uma referência experimental para comparar os kernels, e não
+como uma calibração completa do pico teórico da GPU.
+
+\begin{figure}[H]
+    \centering
+    \caption{Roofline empírico das implementações de atenção}
+    \includegraphics[width=0.85\textwidth]{figures/attention_roofline.pdf}
+    \label{fig:attention_roofline}
+    \fonte{Elaborada pelo autor.}
+\end{figure}
+
+Em $N=1024$, a implementação eager movimentou aproximadamente 297,3 MB em DRAM,
+com intensidade aritmética de 10,84 FLOP/byte e 3,95 TFLOP/s efetivos. No mesmo
+ponto, o SDPA movimentou aproximadamente 4,94 MB, alcançando
+652,21 FLOP/byte e 29,70 TFLOP/s. O kernel Triton movimentou volume semelhante,
+aproximadamente 4,79 MB, e atingiu 672,37 FLOP/byte, mas permaneceu em
+20,57 TFLOP/s. Essa diferença é importante: ela mostra que o Triton customizado
+de fato reduz a movimentação de memória global em relação ao eager, mas seu
+desempenho inferior ao SDPA não pode ser explicado apenas pelo tráfego de DRAM.
+
+Assim, o Roofline reforça a hipótese central do trabalho e, ao mesmo tempo,
+delimita a contribuição experimental. A fusão de operadores aumenta
+substancialmente a intensidade aritmética ao evitar a materialização da matriz
+intermediária $N \times N$, mas a aproximação do teto de desempenho também
+depende de reutilização local dos blocos, ocupação efetiva, pressão de
+registradores, escalonamento de warps e parâmetros de tiling adequados à GPU
+avaliada. O kernel em Triton é, portanto, eficiente frente ao eager, enquanto o
+SDPA representa uma referência de biblioteca altamente otimizada.

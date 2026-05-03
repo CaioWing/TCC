@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-"""Benchmark dense attention implementations for the TCC experiments."""
-
 from __future__ import annotations
 
 import argparse
@@ -32,7 +30,14 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--batch", type=int, default=1)
     parser.add_argument("--heads", type=int, default=12)
-    parser.add_argument("--seq-lens", type=int, nargs="+", default=[197, 785])
+    parser.add_argument("--seq-lens", type=int, nargs="+", default=[128, 256, 512, 768, 1024])
+    parser.add_argument(
+        "--seq-range",
+        type=int,
+        nargs=3,
+        metavar=("START", "STOP", "STEP"),
+        help="Use an inclusive token sweep, for example: --seq-range 32 1024 32.",
+    )
     parser.add_argument("--head-dims", type=int, nargs="+", default=[64])
     parser.add_argument("--dtype", choices=["fp16", "bf16", "fp32"], default="fp16")
     parser.add_argument("--warmup", type=int, default=25)
@@ -41,7 +46,15 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--csv", type=Path)
     parser.add_argument("--skip-sdpa", action="store_true")
     parser.add_argument("--skip-triton", action="store_true")
-    return parser.parse_args()
+    args = parser.parse_args()
+    if args.seq_range:
+        start, stop, step = args.seq_range
+        if start <= 0 or stop <= 0 or step <= 0:
+            parser.error("--seq-range values must be positive")
+        if start > stop:
+            parser.error("--seq-range START must be <= STOP")
+        args.seq_lens = list(range(start, stop + 1, step))
+    return args
 
 
 def main() -> None:
