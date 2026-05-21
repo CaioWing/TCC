@@ -73,11 +73,10 @@ $O(N^2D)$.
 
 O custo aritmético, entretanto, não descreve completamente o desempenho em GPU.
 Em uma implementação ingênua, a matriz $QK^T$ é escrita na memória global,
-posteriormente lida para a aplicação do \textit{softmax}, novamente escrita como
-matriz de probabilidades e, por fim, lida para a multiplicação por $V$. Esse
-fluxo materializa um tensor intermediário de tamanho $N \times N$ que pode
-dominar o tráfego em HBM quando $N$ cresce. Em ViTs, esse efeito aparece de
-forma direta: dobrar a resolução espacial ou reduzir o tamanho dos patches
+posteriormente lida para a aplicação do \textit{softmax} e usada na multiplicação
+por $V$. Esse fluxo materializa um tensor intermediário de tamanho $N \times N$
+que pode dominar o tráfego em HBM quando $N$ cresce. Em ViTs, esse efeito aparece
+de forma direta: dobrar a resolução espacial ou reduzir o tamanho dos patches
 aumenta o número de tokens e amplia quadraticamente a matriz de atenção.
 
 Para uma configuração com $B$ amostras, $H$ cabeças, $N$ tokens e dimensão de
@@ -114,7 +113,11 @@ O desequilíbrio entre a velocidade de processamento e a velocidade de transfer�
 {[...]} a disparidade entre a velocidade dos processadores e a velocidade da memória principal tem crescido exponencialmente. Se essa tendência continuar, a performance dos sistemas será limitada não pela frequência de clock do processador, mas pela taxa na qual os dados podem ser entregues a ele \cite{wulfmckee1995} (tradução do autor).
 \end{citacao}
 
-Dessa forma, otimizar um kernel significa maximizar o tempo que o dado permanece na SRAM (ou Shared Memory), minimizando acessos à HBM. Em implementações padrão de bibliotecas de alto nível, cada etapa da Equação \ref{eq:attention} resulta em uma escrita e leitura na HBM, o que degrada o throughput do sistema.
+Dessa forma, otimizar um kernel significa maximizar o reuso dos dados em SRAM,
+registradores ou memória compartilhada, minimizando acessos à HBM. Para a
+atenção, essa ideia complementa a análise da seção anterior: não basta executar a
+mesma equação, é preciso organizar o fluxo de dados para evitar escritas e
+leituras intermediárias que degradam o throughput.
 
 \subsection{Modelo de execução em GPUs}
 
@@ -206,7 +209,12 @@ Como referência visual do método, a Figura \ref{fig:flashattention_esquema} il
     \fonte{Adaptado de \citeonline{dao2022flashattentionfastmemoryefficientexact}.}
 \end{figure}
 
-Esta técnica é levada ao estado da arte pelo algoritmo Flash Attention. Como sintetizado por \citeonline{dao2022flashattentionfastmemoryefficientexact}, a fusão de operadores permite que o modelo evite a materialização da matriz de atenção $N \times N$ na memória principal, resultando em acelerações significativas em relação às implementações tradicionais, reduzindo simultaneamente o consumo de memória.
+O FlashAttention explora essa ideia ao reorganizar o cálculo da atenção em
+blocos e evitar a materialização da matriz de atenção $N \times N$ na memória
+principal. Como sintetizado por
+\citeonline{dao2022flashattentionfastmemoryefficientexact}, essa organização
+reduz acessos à HBM e produz acelerações significativas em relação a
+implementações tradicionais, com menor consumo de memória.
 
 
 \chapter{Metodologia}
@@ -320,19 +328,12 @@ medições. A latência média é calculada a partir de múltiplas iterações
 sincronizadas por eventos CUDA. A corretude é verificada pelo erro absoluto
 máximo entre a saída do kernel avaliado e a implementação explícita em PyTorch.
 
-Além da latência, calcula-se o throughput aproximado em TFLOP/s. Considerando
-que a atenção densa realiza uma multiplicação $QK^T$ e uma multiplicação
-$PV$, ambas com custo aproximado de $2BHN^2D$ operações de ponto flutuante, o
-custo total do forward é estimado como:
-
-\begin{equation}
-    FLOPs \approx 4BHN^2D.
-\end{equation}
-
-Essa estimativa permite comparar o desempenho obtido com o limite teórico da
-GPU. A interpretação final deve combinar os resultados de latência, throughput,
-tráfego de memória global e Modelo Roofline, distinguindo casos
-\textit{memory-bound} de casos \textit{compute-bound}.
+Além da latência, calcula-se o throughput aproximado em TFLOP/s a partir da
+estimativa de custo aritmético apresentada na seção de complexidade
+computacional. Essa estimativa permite comparar as implementações sob a mesma
+escala de trabalho. A interpretação final combina latência, throughput, tráfego
+de memória global e Modelo Roofline, distinguindo casos \textit{memory-bound} de
+casos \textit{compute-bound}.
 
 \chapter{Resultados e Discussões}
 
