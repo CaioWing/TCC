@@ -4,6 +4,34 @@
 % ---
 \chapter{Conclusão}
 % ---
-% O comando abaixo insere parágrafos aleatórios só para exemplificar
-Apresentar as conclusões correspondentes aos objetivos ou hipóteses propostos para o desenvolvimento do trabalho, podendo incluir sugestões para novas pesquisas.
+Este trabalho investigou a otimização de kernels de inferência para a operação
+de autoatenção em Vision Transformers, com foco na redução de acessos à memória
+global da GPU. A partir de um kernel customizado em OpenAI Triton, foram
+exploradas técnicas de fusão de operadores, tiling e \textit{softmax online},
+mantendo o escopo restrito ao forward de atenção densa não causal em cenário de
+inferência.
 
+Os resultados confirmam a hipótese principal do trabalho: evitar a materialização
+da matriz intermediária de atenção reduz substancialmente o tráfego em DRAM e
+melhora o desempenho em relação à implementação explícita em PyTorch. Na
+configuração avaliada, o kernel Triton atingiu speedup de até 6,16$\times$ sobre
+o eager em $N=1024$, enquanto o SDPA do PyTorch atingiu 9,19$\times$. O profiling
+de baixo nível reforçou essa leitura: no mesmo ponto, o eager movimentou cerca de
+297,3 MB em DRAM, enquanto Triton e SDPA movimentaram aproximadamente 4,79 MB e
+4,94 MB, respectivamente.
+
+A comparação com o SDPA também delimita a contribuição do trabalho. Embora o
+kernel customizado reduza o tráfego de memória para um patamar semelhante ao da
+biblioteca otimizada, seu throughput permanece inferior. Isso indica que a
+eliminação de escritas intermediárias é condição importante, mas não suficiente,
+para aproximar a execução dos limites efetivos do hardware. Fatores como
+ocupação, pressão de registradores, reutilização local dos blocos, escalonamento
+de warps e escolha dos parâmetros de tiling continuam determinantes para o
+desempenho final.
+
+Assim, a contribuição central não é propor um kernel superior ao estado da arte,
+mas apresentar uma implementação experimental e um protocolo de análise capaz de
+explicar onde os ganhos ocorrem e quais gargalos permanecem. Como trabalhos
+futuros, destacam-se a aplicação de autotuning aos parâmetros do kernel, a
+avaliação em diferentes GPUs e tipos numéricos, a inclusão de atenção causal e a
+extensão para treinamento, incluindo a etapa backward.

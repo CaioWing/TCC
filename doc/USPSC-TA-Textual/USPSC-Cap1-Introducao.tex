@@ -3,27 +3,27 @@
 \chapter[Introdução]{Introdução}
 \label{cap_introducao}
 
-O avanço exponencial dos modelos de Aprendizado de Máquina (ML), particularmente na área de Visão Computacional, tem sido impulsionado pela transição de arquiteturas convolucionais para os Vision Transformers (ViTs) \cite{dosovitskiy2021imageworth16x16words}. Diferente das convoluções, que operam em domínios locais, os ViTs utilizam o mecanismo de autoatenção (Self-Attention) para capturar dependências globais em uma imagem \cite{vaswani2023attentionneed}. No entanto, essa capacidade analítica superior impõe um custo computacional elevado e uma demanda intensiva de memória, apresentando desafios significativos para a implantação desses modelos em ambientes de produção de alta performance \cite{dao2022flashattentionfastmemoryefficientexact}.
+O avanço dos modelos de Aprendizado de Máquina (ML) em Visão Computacional tem sido marcado pela adoção de arquiteturas baseadas em Transformers, especialmente os Vision Transformers (ViTs) \cite{dosovitskiy2021imageworth16x16words}. Diferente das convoluções, que operam majoritariamente em domínios locais, os ViTs utilizam autoatenção (Self-Attention) para capturar dependências globais em uma imagem \cite{vaswani2023attentionneed}. Essa capacidade, porém, impõe alto custo computacional e intensa movimentação de memória, criando desafios para a implantação desses modelos em ambientes de inferência de alto desempenho \cite{dao2022flashattentionfastmemoryefficientexact}.
 
 \section{Contexto e delimitação do tema}
 
-Atualmente, o gargalo da computação de alto desempenho (HPC) em Inteligência Artificial não reside apenas na capacidade aritmética das Unidades de Processamento Gráfico (GPUs), mas na eficiência da movimentação de dados. Este fenômeno, conhecido como Memory Wall, ocorre quando a velocidade de transferência entre a Memória de Alta Largura de Banda (HBM) e os Processadores de Fluxo (SM) da GPU é insuficiente para manter os núcleos de processamento (Tensor Cores) ocupados \cite{wulfmckee1995}.
+Na computação de alto desempenho aplicada à Inteligência Artificial, o gargalo nem sempre está na capacidade aritmética das Unidades de Processamento Gráfico (GPUs), mas na eficiência da movimentação de dados. Esse fenômeno, conhecido como Memory Wall, ocorre quando a transferência entre a Memória de Alta Largura de Banda (HBM) e os Processadores de Fluxo (SM) da GPU não acompanha o ritmo das unidades de execução \cite{wulfmckee1995}.
 
-No desenvolvimento de kernels de inferência, a maioria dos frameworks de alto nível, como PyTorch e TensorFlow, utiliza implementações genéricas. Embora versáteis, essas implementações frequentemente realizam múltiplos acessos à memória global para operações sequenciais. Esta pesquisa delimita-se à otimização de baixo nível desses processos, focando na camada de atenção de Vision Transformers, utilizando a linguagem de programação de kernels OpenAI Triton para maximizar o aproveitamento da hierarquia de memória do hardware \cite{tillet2019}.
+Frameworks de alto nível, como PyTorch e TensorFlow, oferecem implementações versáteis para operações de redes neurais. Entretanto, quando operações sequenciais são executadas como kernels separados, tensores intermediários podem ser escritos e relidos na memória global, aumentando a latência. Esta pesquisa delimita-se à otimização de baixo nível da operação de atenção em Vision Transformers, utilizando OpenAI Triton para explorar explicitamente a hierarquia de memória do hardware \cite{tillet2019}.
 
 \section{Problema de pesquisa}
 
-A implementação padrão da operação de atenção em ViTs possui uma complexidade quadrática em relação ao número de patches da imagem \cite{vaswani2023attentionneed,dosovitskiy2021imageworth16x16words}. Durante a inferência, a necessidade de armazenar e ler matrizes intermediárias de atenção da memória global (VRAM) gera uma latência considerável e um consumo energético ineficiente \cite{dao2022flashattentionfastmemoryefficientexact}. Surge, portanto, a questão: como o desenvolvimento de kernels customizados e a aplicação de técnicas de fusão de operadores podem reduzir a dependência da memória global e aproximar a performance dos modelos de visão do limite teórico do hardware?
+A operação de atenção em ViTs possui complexidade quadrática em relação ao número de patches da imagem \cite{vaswani2023attentionneed,dosovitskiy2021imageworth16x16words}. Em implementações não fundidas, a materialização de matrizes intermediárias de atenção na memória global aumenta a latência e reduz a eficiência do uso da GPU \cite{dao2022flashattentionfastmemoryefficientexact}. Surge, portanto, a questão: como o desenvolvimento de kernels customizados e a aplicação de técnicas de fusão de operadores podem reduzir a dependência da memória global e aproximar o desempenho dos modelos de visão dos limites efetivos do hardware?
 
 \section{Objetivos}
 
-O objetivo central deste trabalho é desenvolver, implementar e validar um kernel de inferência de alto desempenho para a operação de Self-Attention em Vision Transformers.
+O objetivo central deste trabalho é desenvolver, implementar e validar um kernel de inferência de alto desempenho para a operação de autoatenção em Vision Transformers.
 
 Sendo seus objetivos específicos:
 
 \begin{itemize}
     \item Desenvolver um kernel fundido (fused kernel) utilizando OpenAI Triton que integre as operações de produto escalar, softmax e ponderação de valores em um único ciclo de execução na SRAM;
     \item Implementar estratégias de tiling para otimizar o carregamento de blocos de dados nos registradores da GPU;
-    \item Realizar um profiling comparativo entre a implementação proposta e o baseline do PyTorch, utilizando métricas de latência, throughput (TFLOPS) e utilização de banda de memória;
+    \item Realizar um profiling comparativo entre a implementação proposta e baselines em PyTorch, utilizando métricas de latência, throughput (TFLOP/s) e utilização de banda de memória;
     \item Analisar a eficiência do kernel desenvolvido através do Modelo Roofline para identificar gargalos operacionais remanescentes.
 \end{itemize}
