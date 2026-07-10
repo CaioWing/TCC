@@ -107,7 +107,7 @@ def _attention_fwd_kernel(
             other=0.0,
         )
 
-        qk = tl.dot(q, tl.trans(k), input_precision="tf32") * sm_scale_log2
+        qk = tl.dot(q, tl.trans(k)) * sm_scale_log2
         qk = tl.where(
             (offs_m[:, None] < seq_len) & (k_offsets[None, :] < seq_len),
             qk,
@@ -118,14 +118,14 @@ def _attention_fwd_kernel(
         p = tl.exp2(qk - m_ij[:, None])
         alpha = tl.exp2(m_i - m_ij)
         l_i = l_i * alpha + tl.sum(p, axis=1)
-        acc = acc * alpha[:, None] + tl.dot(p.to(v.dtype), v, input_precision="tf32")
+        acc = acc * alpha[:, None] + tl.dot(p.to(v.dtype), v)
         m_i = m_ij
 
     acc = acc / l_i[:, None]
 
     tl.store(
         out_ptr + out_base + offs_m[:, None] * stride_on + offs_d[None, :] * stride_od,
-        acc,
+        acc.to(out_ptr.dtype.element_ty),
         mask=(offs_m[:, None] < seq_len) & (offs_d[None, :] < HEAD_DIM),
     )
 

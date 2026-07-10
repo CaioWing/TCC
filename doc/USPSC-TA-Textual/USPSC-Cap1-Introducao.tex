@@ -5,25 +5,42 @@
 
 O avanço dos modelos de Aprendizado de Máquina (ML) em Visão Computacional tem sido marcado pela adoção de arquiteturas baseadas em Transformers, especialmente os Vision Transformers (ViTs) \cite{dosovitskiy2021imageworth16x16words}. Diferente das convoluções, que operam majoritariamente em domínios locais, os ViTs utilizam autoatenção (Self-Attention) para capturar dependências globais em uma imagem \cite{vaswani2023attentionneed}. Essa capacidade, porém, impõe alto custo computacional e intensa movimentação de memória, criando desafios para a implantação desses modelos em ambientes de inferência de alto desempenho \cite{dao2022flashattentionfastmemoryefficientexact}.
 
+Esse desafio é particularmente relevante no contexto aeronáutico. Veículos Aéreos Não Tripulados (VANTs) executam, de forma crescente, tarefas de percepção baseadas em aprendizado profundo diretamente a bordo, como detecção de obstáculos, odometria visual, inspeção de estruturas e navegação autônoma em ambientes sem GPS \cite{loquercio2021learning,kaufmann2023champion}. Essas cargas de trabalho rodam em computadores embarcados de baixo consumo, como os módulos da família NVIDIA Jetson, sujeitos a restrições de tamanho, peso e potência (SWaP, do inglês \textit{Size, Weight and Power}). Nesse cenário, a latência da percepção precisa caber no período da malha de guiamento e controle do veículo, e cada joule consumido pelo processamento compete diretamente com a autonomia de voo.
+
 \section{Contexto e delimitação do tema}
 
-Na computação de alto desempenho aplicada à Inteligência Artificial, o gargalo nem sempre está na capacidade aritmética das Unidades de Processamento Gráfico (GPUs), mas na eficiência da movimentação de dados. Esse fenômeno, conhecido como Memory Wall, ocorre quando a transferência entre a Memória de Alta Largura de Banda (HBM) e os Processadores de Fluxo (SM) da GPU não acompanha o ritmo das unidades de execução \cite{wulfmckee1995}.
+Na computação de alto desempenho aplicada à Inteligência Artificial, o gargalo nem sempre está na capacidade aritmética das Unidades de Processamento Gráfico (GPUs), mas na eficiência da movimentação de dados. Esse fenômeno, conhecido como Memory Wall, ocorre quando a transferência entre a memória principal e os Streaming Multiprocessors (SM) da GPU não acompanha o ritmo das unidades de execução \cite{wulfmckee1995}. Em plataformas embarcadas, o desequilíbrio é ainda mais acentuado: enquanto uma GPU de desktop recente dispõe de centenas de GB/s de banda de memória dedicada, um módulo como o Jetson Orin Nano oferece cerca de 68~GB/s de banda LPDDR5, compartilhada entre CPU e GPU \cite{nvidia2024orinnano}. Operações limitadas por memória, como a atenção implementada de forma ingênua, são portanto proporcionalmente mais penalizadas no hardware de borda que equipa VANTs.
 
-Frameworks de alto nível, como PyTorch e TensorFlow, oferecem implementações versáteis para operações de redes neurais. Entretanto, quando operações sequenciais são executadas como kernels separados, tensores intermediários podem ser escritos e relidos na memória global, aumentando a latência. Esta pesquisa delimita-se à otimização de baixo nível da operação de atenção em Vision Transformers, utilizando OpenAI Triton para explorar explicitamente a hierarquia de memória do hardware \cite{tillet2019}.
+Frameworks de alto nível, como PyTorch e TensorFlow, oferecem implementações versáteis para operações de redes neurais. Entretanto, quando operações sequenciais são executadas como kernels separados, tensores intermediários podem ser escritos e relidos na memória global, aumentando a latência. Esta pesquisa delimita-se à otimização de baixo nível da operação de atenção em Vision Transformers, utilizando OpenAI Triton para explorar explicitamente a hierarquia de memória do hardware \cite{tillet2019}. O desenvolvimento e a avaliação experimental são realizados em uma GPU de desktop, com a mesma pilha de software (PyTorch, Triton, CUDA) disponível nos módulos embarcados da família Jetson; as implicações dos resultados para inferência embarcada em VANTs são discutidas analiticamente por meio do Modelo Roofline, e a validação em hardware embarcado real é apontada como trabalho futuro.
+
+\section{Justificativa}
+
+A escolha do tema conecta a formação em Engenharia Aeronáutica com uma limitação prática dos sistemas aéreos autônomos: o orçamento de latência e energia da percepção embarcada. Três razões sustentam a abordagem em nível de kernel:
+
+\begin{enumerate}
+    \item \textbf{O gargalo dominante em hardware embarcado é a memória.} Como a banda de memória dos módulos embarcados é uma ordem de grandeza menor que a de GPUs de desktop, otimizações que reduzem tráfego de memória, como a fusão de operadores, tendem a produzir ganhos proporcionalmente maiores em plataformas de borda do que em estações de trabalho \cite{dao2022flashattentionfastmemoryefficientexact,nvidia2024orinnano};
+    \item \textbf{Otimização de kernel preserva o modelo.} Diferentemente de técnicas como quantização agressiva, poda ou substituição de arquitetura \cite{mehta2022mobilevit,cai2023efficientvit}, a otimização em nível de kernel acelera exatamente a mesma computação, sem alterar pesos nem saídas do modelo além de efeitos de arredondamento. Em aplicações aeronáuticas, nas quais o comportamento do sistema de percepção precisa ser validado, essa propriedade é desejável;
+    \item \textbf{Reduzir tráfego de memória reduz energia.} O acesso à DRAM custa ordens de grandeza mais energia que uma operação aritmética no chip \cite{horowitz2014computing}. Em um VANT, menor consumo por inferência traduz-se diretamente em maior autonomia de voo.
+\end{enumerate}
 
 \section{Problema de pesquisa}
 
-A operação de atenção em ViTs possui complexidade quadrática em relação ao número de patches da imagem \cite{vaswani2023attentionneed,dosovitskiy2021imageworth16x16words}. Em implementações não fundidas, a materialização de matrizes intermediárias de atenção na memória global aumenta a latência e reduz a eficiência do uso da GPU \cite{dao2022flashattentionfastmemoryefficientexact}. Surge, portanto, a questão: como o desenvolvimento de kernels customizados e a aplicação de técnicas de fusão de operadores podem reduzir a dependência da memória global e aproximar o desempenho dos modelos de visão dos limites efetivos do hardware?
+A operação de atenção em ViTs possui complexidade quadrática em relação ao número de patches da imagem \cite{vaswani2023attentionneed,dosovitskiy2021imageworth16x16words}. Em implementações não fundidas, a materialização de matrizes intermediárias de atenção na memória global aumenta a latência e reduz a eficiência do uso da GPU \cite{dao2022flashattentionfastmemoryefficientexact}. Surge, portanto, a questão: como o desenvolvimento de kernels customizados e a aplicação de técnicas de fusão de operadores podem reduzir a dependência da memória global e aproximar o desempenho dos modelos de visão dos limites efetivos do hardware, em particular do hardware embarcado de baixo consumo utilizado em VANTs?
 
 \section{Objetivos}
 
-O objetivo central deste trabalho é desenvolver, implementar e validar um kernel de inferência de alto desempenho para a operação de autoatenção em Vision Transformers.
+O objetivo central deste trabalho é desenvolver, implementar e validar um kernel de inferência de alto desempenho para a operação de autoatenção em Vision Transformers, avaliando suas implicações para inferência embarcada.
 
 Sendo seus objetivos específicos:
 
 \begin{itemize}
-    \item Desenvolver um kernel fundido (fused kernel) utilizando OpenAI Triton que integre as operações de produto escalar, softmax e ponderação de valores em um único ciclo de execução na SRAM;
+    \item Desenvolver um kernel fundido (fused kernel) utilizando OpenAI Triton que integre as operações de produto escalar, softmax e ponderação de valores em um único kernel, mantendo os dados intermediários em registradores e SRAM;
     \item Implementar estratégias de tiling para otimizar o carregamento de blocos de dados nos registradores da GPU;
     \item Realizar um profiling comparativo entre a implementação proposta e baselines em PyTorch, utilizando métricas de latência, throughput (TFLOP/s) e utilização de banda de memória;
-    \item Analisar a eficiência do kernel desenvolvido através do Modelo Roofline para identificar gargalos operacionais remanescentes.
+    \item Analisar a eficiência do kernel desenvolvido através do Modelo Roofline para identificar gargalos operacionais remanescentes;
+    \item Discutir, a partir das intensidades aritméticas medidas, as implicações dos resultados para inferência em plataformas embarcadas típicas de VANTs.
 \end{itemize}
+
+\section{Organização do trabalho}
+
+O restante deste documento está organizado da seguinte forma. O Capítulo~\ref{cap_fundamentacao} apresenta a fundamentação teórica: a arquitetura dos Vision Transformers, o custo computacional e de movimentação de dados da atenção, a hierarquia de memória de GPUs, o Modelo Roofline e as ferramentas de programação de baixo nível. O Capítulo~\ref{cap_metodologia} descreve o ambiente experimental, o design do kernel customizado e o protocolo de avaliação. O Capítulo~\ref{cap_resultados} apresenta os resultados comparativos de latência, o profiling de baixo nível, a análise Roofline e a discussão das implicações para inferência embarcada em VANTs. Por fim, o Capítulo~\ref{cap_conclusao} retoma os objetivos, sintetiza as contribuições e aponta trabalhos futuros.

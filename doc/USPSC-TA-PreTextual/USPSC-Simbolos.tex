@@ -5,6 +5,14 @@
   \item[$V$] Matriz \textit{Value}
   \item[$K^T$] Transposta da matriz $K$
   \item[$d_k$] Dimensionalidade dos vetores de chave
+  \item[$B$] Tamanho do lote (\textit{batch})
+  \item[$H$] Número de cabeças de atenção
   \item[$N$] Número de \textit{patches} (tokens) da entrada
+  \item[$D$] Dimensão de cada cabeça de atenção
+  \item[$I$] Intensidade aritmética (FLOPs por byte)
+  \item[$S_{ij}$] Bloco de \textit{scores} de atenção
+  \item[$m_i$] Máximo acumulado da linha no \textit{softmax online}
+  \item[$l_i$] Soma exponencial acumulada no \textit{softmax online}
+  \item[$O_i$] Acumulador vetorial de saída no \textit{softmax online}
   \item[$O(N^2)$] Complexidade computacional quadrática em função de $N$
 \end{simbolos}

@@ -9,7 +9,7 @@
 \chapter{Comparação entre Softmax padrão e Softmax com Triton}
 \label{ap:softmax_naive_triton}
 
-Este apêndice apresenta uma comparação entre duas abordagens para cálculo de \textit{softmax} em linhas de uma matriz: uma implementação padrão em PyTorch e uma implementação otimizada com OpenAI Triton.
+Este apêndice apresenta uma comparação entre duas abordagens para cálculo de \textit{softmax} em linhas de uma matriz: uma implementação padrão em PyTorch e uma implementação otimizada com OpenAI Triton. As implementações apresentadas a seguir são adaptadas do tutorial oficial \textit{Fused Softmax} da documentação do OpenAI Triton \cite{triton2025tutorials}, e são reproduzidas aqui como material didático de apoio à discussão do Capítulo~\ref{cap_metodologia}.
 
 \section{Implementação padrão em PyTorch}
 
@@ -59,6 +59,46 @@ def naive_softmax(x):
 \end{verbatim}
 
 \section{Implementação otimizada com Triton}
+
+O kernel abaixo processa uma linha inteira da matriz por programa, mantendo-a
+em SRAM durante todo o cálculo, de modo que cada elemento é lido da memória
+global uma única vez:
+
+\begin{verbatim}
+@triton.jit
+def softmax_kernel(output_ptr, input_ptr, input_row_stride,
+                   output_row_stride, n_rows, n_cols,
+                   BLOCK_SIZE: tl.constexpr,
+                   num_stages: tl.constexpr):
+    # starting row of the program
+    row_start = tl.program_id(0)
+    row_step = tl.num_programs(0)
+    for row_idx in tl.range(row_start, n_rows, row_step,
+                            num_stages=num_stages):
+        # The stride represents how much we need to increase the
+        # pointer to advance 1 row
+        row_start_ptr = input_ptr + row_idx * input_row_stride
+        # The block size is the next power of two greater than
+        # n_cols, so we can fit each row in a single block
+        col_offsets = tl.arange(0, BLOCK_SIZE)
+        input_ptrs = row_start_ptr + col_offsets
+        # Load the row into SRAM, using a mask since BLOCK_SIZE
+        # may be greater than n_cols
+        mask = col_offsets < n_cols
+        row = tl.load(input_ptrs, mask=mask, other=-float('inf'))
+        # Subtract maximum for numerical stability
+        row_minus_max = row - tl.max(row, axis=0)
+        numerator = tl.exp(row_minus_max)
+        denominator = tl.sum(numerator, axis=0)
+        softmax_output = numerator / denominator
+        # Write back output to DRAM
+        output_ptrs = (output_ptr + row_idx * output_row_stride
+                       + col_offsets)
+        tl.store(output_ptrs, softmax_output, mask=mask)
+\end{verbatim}
+
+A função auxiliar a seguir consulta as propriedades do dispositivo para
+dimensionar o número de programas persistentes lançados:
 
 \begin{verbatim}
 properties = driver.active.utils.get_device_properties(DEVICE.index)
@@ -135,6 +175,145 @@ def softmax(x):
     \item \textbf{Objetivo prático:} enquanto a versão padrão prioriza simplicidade e legibilidade, a versão Triton prioriza eficiência computacional e redução da latência em inferência.
 \end{itemize}
 
+\chapter{Código do kernel de atenção fundido}
+\label{ap:kernel_atencao}
+
+Este apêndice apresenta o código-fonte do kernel de atenção fundido
+desenvolvido neste trabalho, descrito no Capítulo~\ref{cap_metodologia}. O
+kernel implementa o forward de atenção densa não causal com \textit{softmax
+online}, e os acumuladores $m_i$, $l_i$ e $O_i$ são mantidos em FP32. Por
+eficiência, as exponenciais são calculadas em base 2 (\texttt{tl.exp2}), com o
+fator $\log_2 e$ incorporado à escala $1/\sqrt{d_k}$, transformação equivalente
+a $e^x = 2^{x \log_2 e}$.
+
+\begin{verbatim}
+@triton.jit
+def _attention_fwd_kernel(
+    q_ptr, k_ptr, v_ptr, out_ptr,
+    # strides de Q, K, V e O nos eixos [B, H, N, D]
+    stride_qb, stride_qh, stride_qn, stride_qd,
+    stride_kb, stride_kh, stride_kn, stride_kd,
+    stride_vb, stride_vh, stride_vn, stride_vd,
+    stride_ob, stride_oh, stride_on, stride_od,
+    num_heads: tl.constexpr,
+    seq_len: tl.constexpr,
+    sm_scale_log2: tl.constexpr,
+    BLOCK_M: tl.constexpr,
+    BLOCK_N: tl.constexpr,
+    BLOCK_D: tl.constexpr,
+    HEAD_DIM: tl.constexpr,
+):
+    pid_m = tl.program_id(0)
+    pid_bh = tl.program_id(1)
+
+    batch_idx = pid_bh // num_heads
+    head_idx = pid_bh - batch_idx * num_heads
+
+    offs_m = pid_m * BLOCK_M + tl.arange(0, BLOCK_M)
+    offs_n = tl.arange(0, BLOCK_N)
+    offs_d = tl.arange(0, BLOCK_D)
+
+    q_base = batch_idx * stride_qb + head_idx * stride_qh
+    k_base = batch_idx * stride_kb + head_idx * stride_kh
+    v_base = batch_idx * stride_vb + head_idx * stride_vh
+    out_base = batch_idx * stride_ob + head_idx * stride_oh
+
+    # Bloco de queries mantido em registradores durante toda a
+    # varredura de keys/values
+    q = tl.load(
+        q_ptr + q_base + offs_m[:, None] * stride_qn
+              + offs_d[None, :] * stride_qd,
+        mask=(offs_m[:, None] < seq_len)
+             & (offs_d[None, :] < HEAD_DIM),
+        other=0.0,
+    )
+
+    # Acumuladores do softmax online (FP32)
+    m_i = tl.full((BLOCK_M,), -float("inf"), tl.float32)
+    l_i = tl.zeros((BLOCK_M,), tl.float32)
+    acc = tl.zeros((BLOCK_M, BLOCK_D), tl.float32)
+
+    for start_n in range(0, seq_len, BLOCK_N):
+        k_offsets = start_n + offs_n
+        k = tl.load(
+            k_ptr + k_base + k_offsets[:, None] * stride_kn
+                  + offs_d[None, :] * stride_kd,
+            mask=(k_offsets[:, None] < seq_len)
+                 & (offs_d[None, :] < HEAD_DIM),
+            other=0.0,
+        )
+        v = tl.load(
+            v_ptr + v_base + k_offsets[:, None] * stride_vn
+                  + offs_d[None, :] * stride_vd,
+            mask=(k_offsets[:, None] < seq_len)
+                 & (offs_d[None, :] < HEAD_DIM),
+            other=0.0,
+        )
+
+        qk = tl.dot(q, tl.trans(k)) * sm_scale_log2
+        qk = tl.where(
+            (offs_m[:, None] < seq_len)
+            & (k_offsets[None, :] < seq_len),
+            qk,
+            -float("inf"),
+        )
+
+        # Atualizacao incremental do maximo, da soma e da saida
+        m_ij = tl.maximum(m_i, tl.max(qk, axis=1))
+        p = tl.exp2(qk - m_ij[:, None])
+        alpha = tl.exp2(m_i - m_ij)
+        l_i = l_i * alpha + tl.sum(p, axis=1)
+        acc = acc * alpha[:, None] + tl.dot(p.to(v.dtype), v)
+        m_i = m_ij
+
+    acc = acc / l_i[:, None]
+
+    tl.store(
+        out_ptr + out_base + offs_m[:, None] * stride_on
+                + offs_d[None, :] * stride_od,
+        acc.to(out_ptr.dtype.element_ty),
+        mask=(offs_m[:, None] < seq_len)
+             & (offs_d[None, :] < HEAD_DIM),
+    )
+\end{verbatim}
+
+O wrapper em Python valida as entradas, calcula a grade de lançamento com um
+programa por bloco de queries e por par (lote, cabeça), e define os parâmetros
+de compilação:
+
+\begin{verbatim}
+def triton_flash_attention(q, k, v, *,
+                           block_m: int = 16,
+                           block_n: int = 64):
+    """Run the custom dense attention forward kernel."""
+    _validate_qkv(q, k, v)
+    if not q.is_cuda:
+        raise RuntimeError(
+            "triton_flash_attention requires CUDA tensors")
+
+    q, k, v = q.contiguous(), k.contiguous(), v.contiguous()
+    batch, heads, seq_len, head_dim = q.shape
+
+    block_d = triton.next_power_of_2(head_dim)
+    out = torch.empty_like(q)
+    grid = (triton.cdiv(seq_len, block_m), batch * heads)
+    sm_scale_log2 = (1.0 / math.sqrt(head_dim)) * _LOG2_E
+    num_warps = 4 if head_dim <= 64 else 8
+
+    _attention_fwd_kernel[grid](
+        q, k, v, out,
+        q.stride(0), q.stride(1), q.stride(2), q.stride(3),
+        k.stride(0), k.stride(1), k.stride(2), k.stride(3),
+        v.stride(0), v.stride(1), v.stride(2), v.stride(3),
+        out.stride(0), out.stride(1), out.stride(2),
+        out.stride(3),
+        heads, seq_len, sm_scale_log2,
+        BLOCK_M=block_m, BLOCK_N=block_n,
+        BLOCK_D=block_d, HEAD_DIM=head_dim,
+        num_warps=num_warps, num_stages=3,
+    )
+    return out
+\end{verbatim}
 
 \end{apendicesenv}
 % ---

@@ -3,35 +3,65 @@
 % Conclusão
 % ---
 \chapter{Conclusão}
+\label{cap_conclusao}
 % ---
 Este trabalho investigou a otimização de kernels de inferência para a operação
 de autoatenção em Vision Transformers, com foco na redução de acessos à memória
-global da GPU. A partir de um kernel customizado em OpenAI Triton, foram
-exploradas técnicas de fusão de operadores, tiling e \textit{softmax online},
-mantendo o escopo restrito ao forward de atenção densa não causal em cenário de
-inferência.
+global da GPU e nas implicações para inferência embarcada em VANTs. A partir de
+um kernel customizado em OpenAI Triton, foram exploradas técnicas de fusão de
+operadores, tiling e \textit{softmax online}, mantendo o escopo restrito ao
+forward de atenção densa não causal em cenário de inferência.
+
+Retomando os objetivos específicos definidos no Capítulo~\ref{cap_introducao},
+todos foram cumpridos. O kernel fundido foi desenvolvido em Triton, integrando
+produto escalar, softmax e ponderação de valores em um único kernel, com
+estratégia de tiling parametrizada por blocos de queries e de keys/values. O
+profiling comparativo foi realizado contra dois baselines em PyTorch, a
+implementação explícita e o SDPA, cobrindo latência, throughput efetivo, erro
+numérico e tráfego de DRAM medido com NVIDIA Nsight Compute. A análise pelo
+Modelo Roofline, calibrada com os tetos nominais da GPU avaliada, identificou
+os gargalos remanescentes do kernel. Por fim, as intensidades aritméticas
+medidas foram utilizadas para projetar o comportamento das implementações em
+hardware embarcado representativo de VANTs.
 
 Os resultados confirmam a hipótese principal do trabalho: evitar a materialização
 da matriz intermediária de atenção reduz substancialmente o tráfego em DRAM e
 melhora o desempenho em relação à implementação explícita em PyTorch. Na
 configuração avaliada, o kernel Triton atingiu speedup de até 6,16$\times$ sobre
-o eager em $N=1024$, enquanto o SDPA do PyTorch atingiu 9,19$\times$. O profiling
-de baixo nível reforçou essa leitura: no mesmo ponto, o eager movimentou cerca de
-297,3 MB em DRAM, enquanto Triton e SDPA movimentaram aproximadamente 4,79 MB e
-4,94 MB, respectivamente.
+o eager em $N=1024$, mantendo 3,77$\times$ mesmo no caso realista $N=197$ do
+ViT-B/16, enquanto o SDPA do PyTorch atingiu 9,19$\times$. O profiling
+de baixo nível reforçou essa leitura: no ponto $N=1024$, o eager movimentou cerca
+de 297,3 MB em DRAM, enquanto Triton e SDPA movimentaram aproximadamente 4,79 MB
+e 4,94 MB, respectivamente, cruzando do regime \textit{memory-bound} para o
+\textit{compute-bound}.
 
 A comparação com o SDPA também delimita a contribuição do trabalho. Embora o
 kernel customizado reduza o tráfego de memória para um patamar semelhante ao da
-biblioteca otimizada, seu throughput permanece inferior. Isso indica que a
+biblioteca otimizada, seu throughput permanece inferior, cerca de 54\% do pico
+FP16 estimado da GPU contra 77\% do SDPA, que no ambiente avaliado corresponde
+ao FlashAttention-2 integrado ao PyTorch. Isso indica que a
 eliminação de escritas intermediárias é condição importante, mas não suficiente,
 para aproximar a execução dos limites efetivos do hardware. Fatores como
 ocupação, pressão de registradores, reutilização local dos blocos, escalonamento
 de warps e escolha dos parâmetros de tiling continuam determinantes para o
 desempenho final.
 
+Do ponto de vista da aplicação aeronáutica, a análise da
+Seção~\ref{sec:implicacoes_embarcado} indica que o benefício da fusão de
+operadores tende a ser ainda maior no hardware embarcado que equipa VANTs: em um
+módulo como o Jetson Orin Nano, a implementação ingênua ficaria confinada pela
+banda de memória a menos de 8\% do pico computacional, enquanto o kernel fundido
+passaria ao regime \textit{compute-bound}. A redução do tráfego de DRAM
+traduz-se, adicionalmente, em menor custo energético por inferência, fator
+diretamente ligado à autonomia de voo.
+
 Assim, a contribuição central não é propor um kernel superior ao estado da arte,
 mas apresentar uma implementação experimental e um protocolo de análise capaz de
-explicar onde os ganhos ocorrem e quais gargalos permanecem. Como trabalhos
-futuros, destacam-se a aplicação de autotuning aos parâmetros do kernel, a
-avaliação em diferentes GPUs e tipos numéricos, a inclusão de atenção causal e a
-extensão para treinamento, incluindo a etapa backward.
+explicar onde os ganhos ocorrem, quais gargalos permanecem e o que os resultados
+implicam para a percepção embarcada em sistemas aéreos autônomos. Como trabalhos
+futuros, destacam-se: a validação experimental em módulos embarcados da família
+Jetson, incluindo medição de potência e energia por inferência; a integração do
+kernel em um modelo ViT completo, medindo o impacto na latência de ponta a
+ponta da inferência; a aplicação de autotuning aos parâmetros do kernel; a
+avaliação em diferentes GPUs e tipos numéricos; a inclusão de atenção causal; e
+a extensão para treinamento, incluindo a etapa backward.
