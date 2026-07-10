@@ -344,8 +344,13 @@ afeta a leitura dos volumes de DRAM medidos no baseline eager.
 
 Para cada configuração de $B$, $H$, $N$, $D$ e tipo numérico, são gerados
 tensores aleatórios em GPU e executadas rodadas de aquecimento antes das
-medições. A latência média é calculada a partir de múltiplas iterações
-sincronizadas por eventos CUDA. A corretude é verificada pelo erro absoluto
+medições. Em cada execução, a latência média é calculada a partir de 100
+iterações sincronizadas por eventos CUDA, precedidas de 25 iterações de
+aquecimento. Como a GPU avaliada não opera com frequências travadas e
+compartilha o dispositivo com a interface gráfica do sistema, cada configuração
+foi medida em cinco execuções independentes, reportando-se a mediana, de modo a
+reduzir a influência de variações transientes de clock e de carga. A corretude
+é verificada pelo erro absoluto
 máximo entre a saída do kernel avaliado e a implementação explícita em PyTorch.
 
 Além da latência, calcula-se o throughput aproximado em TFLOP/s a partir da
@@ -377,18 +382,18 @@ a tendência de escala das implementações.
 
 \begin{table}[H]
     \centering
-    \caption{Resultados comparativos de latência por comprimento de sequência}
+    \caption{Resultados comparativos de latência por comprimento de sequência (mediana de cinco execuções independentes)}
     \label{tab:resultados_atencao}
     \begin{tabular}{crrrrr}
         \hline
         $N$ & Eager (ms) & SDPA (ms) & Triton (ms) & Speedup SDPA & Speedup Triton \\
         \hline
-        128  & 0,1271 & 0,0274 & 0,0336 & 4,65$\times$ & 3,78$\times$ \\
-        197  & 0,1332 & 0,0261 & 0,0353 & 5,10$\times$ & 3,77$\times$ \\
-        256  & 0,1308 & 0,0248 & 0,0345 & 5,27$\times$ & 3,79$\times$ \\
-        512  & 0,1713 & 0,0321 & 0,0457 & 5,34$\times$ & 3,75$\times$ \\
-        768  & 0,5313 & 0,0678 & 0,0914 & 7,84$\times$ & 5,81$\times$ \\
-        1024 & 0,9855 & 0,1072 & 0,1599 & 9,19$\times$ & 6,16$\times$ \\
+        128  & 0,1367 & 0,0251 & 0,0332 & 5,44$\times$ & 4,12$\times$ \\
+        197  & 0,1655 & 0,0255 & 0,0367 & 6,49$\times$ & 4,51$\times$ \\
+        256  & 0,1333 & 0,0242 & 0,0373 & 5,51$\times$ & 3,57$\times$ \\
+        512  & 0,1480 & 0,0316 & 0,0457 & 4,68$\times$ & 3,24$\times$ \\
+        768  & 0,5096 & 0,0707 & 0,0997 & 7,21$\times$ & 5,11$\times$ \\
+        1024 & 1,0003 & 0,1165 & 0,1615 & 8,58$\times$ & 6,20$\times$ \\
         \hline
     \end{tabular}
     \fonte{Elaborada pelo autor.}
@@ -396,11 +401,16 @@ a tendência de escala das implementações.
 
 O ponto $N=197$ merece destaque por corresponder a uma configuração real de
 modelo, e não a um tamanho alinhado artificialmente. Nele, o kernel Triton
-mantém speedup de 3,77$\times$ sobre o eager, praticamente idêntico ao obtido
-nos pontos alinhados vizinhos, o que indica que o tratamento de bordas por
+mantém speedup de 4,51$\times$ sobre o eager, da mesma ordem dos pontos
+alinhados vizinhos, o que indica que o tratamento de bordas por
 máscaras não degrada o desempenho quando $N$ não é múltiplo do tamanho de
-bloco. Nessa escala, entretanto, o custo fixo de lançamento de kernels domina a
-latência e os ganhos absolutos são modestos (cerca de 0,1~ms por camada de
+bloco. Observa-se, inclusive, que a implementação eager é mais lenta em
+$N=197$ do que em $N=256$: dimensões não alinhadas penalizam a seleção de
+kernels das bibliotecas de álgebra linear usadas pela versão explícita,
+enquanto as implementações fundidas, que já tratam bordas por máscaras,
+mostram-se insensíveis ao desalinhamento. Nessa escala, entretanto, o custo
+fixo de lançamento de kernels domina a
+latência e os ganhos absolutos são modestos (cerca de 0,13~ms por camada de
 atenção); o benefício da fusão torna-se mais expressivo em resoluções de
 entrada maiores ou patches menores, que elevam $N$.
 
@@ -422,8 +432,8 @@ visível, especialmente na implementação eager.
 
 O speedup relativo ao eager, apresentado na Figura \ref{fig:attention_speedup},
 mostra que o ganho das versões otimizadas aumenta com o tamanho da sequência. Na
-varredura, o SDPA chega a aproximadamente 9,19$\times$ em $N=1024$, enquanto o
-kernel Triton atinge aproximadamente 6,16$\times$ no mesmo ponto. O Triton
+varredura, o SDPA chega a aproximadamente 8,67$\times$ em $N=1024$, enquanto o
+kernel Triton atinge aproximadamente 6,41$\times$ no mesmo ponto. O Triton
 customizado, portanto, valida o benefício da fusão de operadores em relação à
 implementação explícita, mas fica abaixo do backend especializado do PyTorch na
 maior parte da faixa regular avaliada.
@@ -438,7 +448,7 @@ maior parte da faixa regular avaliada.
 
 O throughput efetivo, apresentado na Figura \ref{fig:attention_throughput},
 reforça a mesma leitura. Na extremidade da varredura, em $N=1024$, o SDPA
-alcança 30,05 TFLOP/s efetivos, enquanto o Triton atinge 20,14 TFLOP/s. Esses
+alcança 27,82 TFLOP/s efetivos, enquanto o Triton atinge 20,56 TFLOP/s. Esses
 valores devem ser interpretados como throughput efetivo da operação de atenção,
 calculado a partir da estimativa $4BHN^2D$, e não como o pico teórico absoluto
 da GPU.
@@ -452,7 +462,7 @@ da GPU.
 \end{figure}
 
 Do ponto de vista de corretude numérica, os erros máximos observados ficaram na
-ordem de $10^{-4}$ para as implementações otimizadas em FP16. Essa diferença é
+ordem de $10^{-4}$ a $10^{-3}$ para as implementações otimizadas em FP16. Essa diferença é
 esperada, pois SDPA e Triton podem utilizar ordem de operações, acumulação,
 fusão e instruções internas diferentes da implementação explícita usada como
 referência. O erro nulo da versão eager decorre do fato de ela ser a própria

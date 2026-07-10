@@ -27,9 +27,9 @@ hardware embarcado representativo de VANTs.
 Os resultados confirmam a hipótese principal do trabalho: evitar a materialização
 da matriz intermediária de atenção reduz substancialmente o tráfego em DRAM e
 melhora o desempenho em relação à implementação explícita em PyTorch. Na
-configuração avaliada, o kernel Triton atingiu speedup de até 6,16$\times$ sobre
-o eager em $N=1024$, mantendo 3,77$\times$ mesmo no caso realista $N=197$ do
-ViT-B/16, enquanto o SDPA do PyTorch atingiu 9,19$\times$. O profiling
+configuração avaliada, o kernel Triton atingiu speedup de 6,20$\times$ sobre
+o eager em $N=1024$, mantendo 4,51$\times$ mesmo no caso realista $N=197$ do
+ViT-B/16, enquanto o SDPA do PyTorch atingiu 8,58$\times$. O profiling
 de baixo nível reforçou essa leitura: no ponto $N=1024$, o eager movimentou cerca
 de 297,3 MB em DRAM, enquanto Triton e SDPA movimentaram aproximadamente 4,79 MB
 e 4,94 MB, respectivamente, cruzando do regime \textit{memory-bound} para o
