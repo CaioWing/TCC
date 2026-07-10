@@ -1,6 +1,6 @@
 %% USPSC-Cap2-Desenvolvimento.tex
 
-\chapter{Desenvolvimento}\label{cap_desenvolvimento}
+\chapter{Fundamentação Teórica}\label{cap_fundamentacao}
 
 Neste capítulo, apresentam-se os conceitos fundamentais para a compreensão da otimização de kernels de inferência. A discussão abrange desde a arquitetura dos Vision Transformers até as minúcias da hierarquia de memória em Unidades de Processamento Gráfico (GPUs), culminando nas ferramentas de programação de baixo nível.
 
@@ -217,16 +217,16 @@ reduz acessos à HBM e produz acelerações significativas em relação a
 implementações tradicionais, com menor consumo de memória.
 
 
-\chapter{Metodologia}
+\chapter{Metodologia}\label{cap_metodologia}
 
 \section{Ambiente Experimental}
 
 O ambiente experimental deste trabalho foi definido com o objetivo de isolar o
 impacto da implementação do kernel sobre a latência da operação de atenção. Os
-experimentos devem ser executados em uma GPU NVIDIA compatível com CUDA,
+experimentos foram executados em uma GPU NVIDIA compatível com CUDA,
 utilizando PyTorch como baseline de alto nível e OpenAI Triton como ferramenta
 de desenvolvimento do kernel customizado. Para garantir reprodutibilidade, cada
-execução deve registrar o modelo da GPU, quantidade de SMs, versão do driver,
+execução registrou o modelo da GPU, quantidade de SMs, versão do driver,
 versão do CUDA, versão do PyTorch, versão do Triton, tipo numérico utilizado e
 parâmetros de forma dos tensores.
 
@@ -234,16 +234,23 @@ Os tensores de entrada são organizados no formato
 $[B, H, N, D]$, em que $B$ representa o tamanho do lote, $H$ o número de
 cabeças de atenção, $N$ o número de tokens e $D$ a dimensão de cada cabeça. Esse
 formato é compatível com implementações usuais de Multi-Head Attention em
-modelos ViT. Para representar configurações típicas de visão computacional,
-consideram-se comprimentos alinhados como $N=128$, $N=256$, $N=512$, $N=768$ e
-$N=1024$. Essa escolha mantém múltiplos de 32, compatíveis com granularidades
-frequentes de kernels em GPU, e facilita a comparação de escala sem misturar o
-efeito de bordas irregulares com o crescimento quadrático da atenção.
+modelos ViT. Adota-se $B=1$, refletindo o cenário de inferência embarcada em
+tempo real, no qual cada quadro capturado pela câmera é processado
+individualmente, sem acúmulo de lote. Para o estudo de escala, consideram-se
+comprimentos alinhados $N=128$, $N=256$, $N=512$, $N=768$ e $N=1024$: múltiplos
+de 32 são compatíveis com granularidades frequentes de kernels em GPU e
+permitem observar o crescimento quadrático da atenção sem misturar o efeito de
+bordas irregulares. Como esses valores não correspondem a um modelo real
+específico, avalia-se adicionalmente $N=197$, comprimento de sequência do
+ViT-B/16 com entrada $224 \times 224$ (196 patches mais o token de classe)
+\cite{dosovitskiy2021imageworth16x16words}, representativo do caso de uso
+prático e não múltiplo do tamanho de bloco do kernel, o que também exercita o
+tratamento de bordas por máscaras.
 
-As medições de tempo devem ser feitas com eventos CUDA, após uma etapa de
+As medições de tempo foram feitas com eventos CUDA, após uma etapa de
 aquecimento destinada a amortizar efeitos de compilação JIT, inicialização de
-contexto e variações transientes de frequência. Quando disponível, o perfil de
-baixo nível deve ser coletado com ferramentas como NVIDIA Nsight Compute,
+contexto e variações transientes de frequência. O perfil de
+baixo nível foi coletado com NVIDIA Nsight Compute,
 registrando métricas de tráfego em memória global, ocupação, utilização de SMs e
 throughput computacional.
 
@@ -277,7 +284,8 @@ A comparação detalhada entre uma implementação padrão de \textit{softmax} e
 
 No kernel de atenção, entretanto, o \textit{softmax} não é computado como uma
 operação isolada. Em vez de armazenar a matriz de scores completa, utiliza-se a
-formulação de \textit{softmax online} empregada pelo FlashAttention
+formulação de \textit{softmax online}, proposta originalmente por
+\citeonline{milakov2018online} e empregada pelo FlashAttention
 \cite{dao2022flashattentionfastmemoryefficientexact}. Para cada linha da
 matriz de atenção, o kernel mantém três acumuladores: o maior valor observado
 $m_i$, a soma normalizada $l_i$ e o acumulador vetorial de saída $O_i$.
@@ -316,11 +324,23 @@ intermediária de atenção na memória global.
 
 O protocolo de avaliação compara três implementações: uma versão explícita em
 PyTorch, que materializa as etapas $QK^T$, \textit{softmax} e multiplicação por
-$V$; a função otimizada \texttt{scaled\_dot\_product\_attention} do PyTorch; e o
-kernel customizado em Triton. A primeira serve como referência de corretude e
-como baseline de alto nível mais transparente. A segunda representa uma
-implementação de biblioteca otimizada. A terceira corresponde à contribuição
-experimental deste trabalho.
+$V$; a função otimizada \texttt{scaled\_dot\_product\_attention} (SDPA) do
+PyTorch; e o kernel customizado em Triton. A primeira serve como referência de
+corretude e como baseline de alto nível mais transparente. A segunda representa
+uma implementação de biblioteca otimizada: no ambiente avaliado, verificou-se
+por meio do \texttt{torch.profiler} que a chamada é despachada para o kernel
+\texttt{pytorch\_flash::flash\_fwd\_kernel}, correspondente à implementação do
+FlashAttention-2 \cite{dao2023flashattention2} integrada ao PyTorch. O kernel
+customizado, portanto, é comparado diretamente com uma implementação
+representativa do estado da arte. A terceira implementação corresponde à
+contribuição experimental deste trabalho.
+
+Na implementação explícita, o \textit{softmax} é calculado em FP32 por
+estabilidade numérica, o que materializa a matriz $N \times N$ em precisão
+simples (4 bytes por elemento) e amplia o tráfego de memória do baseline em
+relação à estimativa de $2BHN^2$ bytes apresentada para FP16 na seção de
+complexidade computacional. Essa escolha é registrada explicitamente porque
+afeta a leitura dos volumes de DRAM medidos no baseline eager.
 
 Para cada configuração de $B$, $H$, $N$, $D$ e tipo numérico, são gerados
 tensores aleatórios em GPU e executadas rodadas de aquecimento antes das
@@ -330,12 +350,17 @@ máximo entre a saída do kernel avaliado e a implementação explícita em PyTo
 
 Além da latência, calcula-se o throughput aproximado em TFLOP/s a partir da
 estimativa de custo aritmético apresentada na seção de complexidade
-computacional. Essa estimativa permite comparar as implementações sob a mesma
+computacional, seguindo a convenção usual de desconsiderar as operações do
+\textit{softmax} \cite{dao2022flashattentionfastmemoryefficientexact}. Essa
+estimativa permite comparar as implementações sob a mesma
 escala de trabalho. A interpretação final combina latência, throughput, tráfego
 de memória global e Modelo Roofline, distinguindo casos \textit{memory-bound} de
-casos \textit{compute-bound}.
+casos \textit{compute-bound}. Cabe observar que as métricas de perfil coletadas
+quantificam o tráfego em DRAM; a eficiência do uso de SRAM é avaliada de forma
+indireta, pela redução desse tráfego, uma vez que dados reutilizados em
+registradores e SRAM deixam de ser relidos da memória global.
 
-\chapter{Resultados e Discussões}
+\chapter{Resultados e Discussões}\label{cap_resultados}
 
 \section{Análise Comparativa de Latência}
 
@@ -343,7 +368,8 @@ Os experimentos foram executados em uma GPU NVIDIA GeForce RTX 5060 com 30 SMs,
 utilizando Python 3.13.12, PyTorch 2.11.0 com CUDA 13.0 e tensores em FP16. A
 configuração avaliada corresponde a $B=1$, $H=12$ e $D=64$. A Tabela
 \ref{tab:resultados_atencao} resume pontos alinhados e usuais em avaliações de
-camadas Transformer, mantendo o número de tokens como múltiplo de 32. Esses
+camadas Transformer, mantendo o número de tokens como múltiplo de 32, além do
+ponto $N=197$, correspondente ao ViT-B/16 com entrada $224 \times 224$. Esses
 valores representam uma progressão de sequências pequenas, médias e grandes
 para a operação de atenção. Em seguida, os gráficos apresentam uma varredura
 complementar com $N$ variando de 32 a 1024 em passos de 32, permitindo observar
@@ -351,13 +377,14 @@ a tendência de escala das implementações.
 
 \begin{table}[H]
     \centering
-    \caption{Resultados comparativos em pontos alinhados de sequência}
+    \caption{Resultados comparativos de latência por comprimento de sequência}
     \label{tab:resultados_atencao}
     \begin{tabular}{crrrrr}
         \hline
         $N$ & Eager (ms) & SDPA (ms) & Triton (ms) & Speedup SDPA & Speedup Triton \\
         \hline
         128  & 0,1271 & 0,0274 & 0,0336 & 4,65$\times$ & 3,78$\times$ \\
+        197  & 0,1332 & 0,0261 & 0,0353 & 5,10$\times$ & 3,77$\times$ \\
         256  & 0,1308 & 0,0248 & 0,0345 & 5,27$\times$ & 3,79$\times$ \\
         512  & 0,1713 & 0,0321 & 0,0457 & 5,34$\times$ & 3,75$\times$ \\
         768  & 0,5313 & 0,0678 & 0,0914 & 7,84$\times$ & 5,81$\times$ \\
@@ -366,6 +393,16 @@ a tendência de escala das implementações.
     \end{tabular}
     \fonte{Elaborada pelo autor.}
 \end{table}
+
+O ponto $N=197$ merece destaque por corresponder a uma configuração real de
+modelo, e não a um tamanho alinhado artificialmente. Nele, o kernel Triton
+mantém speedup de 3,77$\times$ sobre o eager, praticamente idêntico ao obtido
+nos pontos alinhados vizinhos, o que indica que o tratamento de bordas por
+máscaras não degrada o desempenho quando $N$ não é múltiplo do tamanho de
+bloco. Nessa escala, entretanto, o custo fixo de lançamento de kernels domina a
+latência e os ganhos absolutos são modestos (cerca de 0,1~ms por camada de
+atenção); o benefício da fusão torna-se mais expressivo em resoluções de
+entrada maiores ou patches menores, que elevam $N$.
 
 A Figura \ref{fig:attention_latency} mostra a evolução da latência ao longo da
 varredura regular de tokens. As implementações otimizadas permanecem abaixo da
@@ -465,11 +502,13 @@ interferências entre kernels de biblioteca e kernels gerados pelo Triton.
 \section{Modelo Roofline}
 
 A partir dos bytes medidos em DRAM e da estimativa de operações
-$4BHN^2D$, foi construído o gráfico Roofline empírico da
-Figura \ref{fig:attention_roofline}. Os tetos exibidos na figura foram
-normalizados pelos maiores valores observados nesta execução, portanto devem ser
-interpretados como uma referência experimental para comparar os kernels, e não
-como uma calibração completa do pico teórico da GPU.
+$4BHN^2D$, foi construído o gráfico Roofline da
+Figura \ref{fig:attention_roofline}. Os tetos exibidos correspondem às
+características da GPU avaliada: 448~GB/s de banda de memória GDDR7, valor
+nominal da RTX 5060, e aproximadamente 38~TFLOP/s de pico FP16 denso em Tensor
+Cores, estimado a partir das especificações oficiais do fabricante. O ponto de
+inflexão entre os regimes \textit{memory-bound} e \textit{compute-bound} da GPU
+ocorre, portanto, em torno de 86~FLOP/byte.
 
 \begin{figure}[H]
     \centering
@@ -480,11 +519,18 @@ como uma calibração completa do pico teórico da GPU.
 \end{figure}
 
 Em $N=1024$, a implementação eager movimentou aproximadamente 297,3 MB em DRAM,
-com intensidade aritmética de 10,84 FLOP/byte e 3,95 TFLOP/s efetivos. No mesmo
+com intensidade aritmética de 10,84 FLOP/byte e 3,95 TFLOP/s efetivos. Por estar
+bem abaixo do ponto de inflexão, o eager opera em regime claramente
+\textit{memory-bound}: seu teto imposto pela banda de memória é de cerca de
+4,9~TFLOP/s ($10{,}84 \times 448$~GB/s), do qual a implementação atinge
+aproximadamente 81\%. No mesmo
 ponto, o SDPA movimentou aproximadamente 4,94 MB, alcançando
 652,21 FLOP/byte e 29,70 TFLOP/s. O kernel Triton movimentou volume semelhante,
 aproximadamente 4,79 MB, e atingiu 672,37 FLOP/byte, mas permaneceu em
-20,57 TFLOP/s. Essa diferença é importante: ela mostra que o Triton customizado
+20,57 TFLOP/s. Ambas as implementações fundidas cruzam para o regime
+\textit{compute-bound}: o SDPA opera em torno de 77\% do pico FP16 estimado da
+GPU, enquanto o Triton alcança cerca de 54\%. Essa diferença é importante: ela
+mostra que o Triton customizado
 de fato reduz a movimentação de memória global em relação ao eager, mas seu
 desempenho inferior ao SDPA não pode ser explicado apenas pelo tráfego de DRAM.
 
@@ -496,3 +542,54 @@ depende de reutilização local dos blocos, ocupação efetiva, pressão de
 registradores, escalonamento de warps e parâmetros de tiling adequados à GPU
 avaliada. O kernel em Triton é, portanto, eficiente frente ao eager, enquanto o
 SDPA representa uma referência de biblioteca altamente otimizada.
+
+\section{Implicações para Inferência Embarcada em VANTs}
+\label{sec:implicacoes_embarcado}
+
+Uma propriedade útil do Modelo Roofline é que a intensidade aritmética é uma
+característica do algoritmo e do fluxo de dados, não do hardware: os valores de
+FLOP/byte medidos nesta seção transferem-se diretamente para outras GPUs,
+enquanto os tetos de banda e de pico computacional mudam com a plataforma. Isso
+permite projetar, de forma analítica, o comportamento das três implementações
+no hardware embarcado típico de VANTs, mesmo sem repetir os experimentos nesses
+módulos.
+
+Considere-se o NVIDIA Jetson Orin Nano, módulo representativo da classe de
+computadores embarcados utilizados em VANTs de pequeno porte, com cerca de
+68~GB/s de banda de memória LPDDR5 compartilhada entre CPU e GPU e pico da ordem
+de 10~TFLOP/s em FP16 denso \cite{nvidia2024orinnano}. Com a intensidade
+aritmética medida de 10,84 FLOP/byte, a implementação eager ficaria limitada
+pela banda de memória a aproximadamente $10{,}84 \times 68 \approx
+0{,}74$~TFLOP/s, menos de 8\% do pico computacional do módulo, e isso no cenário
+otimista em que toda a banda estivesse disponível para a GPU. Já as
+implementações fundidas, com intensidade aritmética superior a 650 FLOP/byte,
+teriam teto de memória acima de 44~TFLOP/s, muito além do pico do módulo: sua
+limitação passaria a ser exclusivamente computacional. Em outras palavras, no
+hardware embarcado o kernel fundido pode, em princípio, explorar todo o
+potencial aritmético do dispositivo, enquanto a implementação ingênua fica
+confinada a uma fração pequena dele. Como a razão entre pico computacional e
+banda de memória é maior no módulo embarcado (cerca de 147~FLOP/byte no Orin
+Nano contra 86~FLOP/byte na RTX 5060 avaliada), o benefício relativo da fusão
+de operadores tende a ser maior no drone do que na estação de trabalho.
+
+Há ainda uma implicação energética direta. O acesso à DRAM consome ordens de
+grandeza mais energia por byte do que operações aritméticas realizadas no chip
+\cite{horowitz2014computing}. A redução de aproximadamente 297~MB para menos de
+5~MB de tráfego em DRAM por operação de atenção, observada em $N=1024$,
+representa portanto não apenas ganho de latência, mas redução do custo
+energético por inferência, fator que em um VANT se converte em autonomia de
+voo. A quantificação experimental desse ganho energético, por meio de medição
+de potência durante a inferência, é apontada como trabalho futuro.
+
+Duas ressalvas delimitam essa análise. Primeiro, trata-se de uma projeção
+analítica: latências absolutas não são transferíveis entre plataformas, e
+efeitos como o compartilhamento da banda de memória com a CPU, limites térmicos
+e diferenças de arquitetura entre gerações de GPU só podem ser capturados por
+experimentos no módulo real, viáveis com a mesma pilha de software utilizada
+neste trabalho, uma vez que PyTorch e Triton são suportados no ambiente JetPack
+dos módulos Jetson. Segundo, a otimização em nível de kernel é complementar, e
+não concorrente, às abordagens em nível de arquitetura de modelo voltadas a
+dispositivos móveis, como MobileViT \cite{mehta2022mobilevit} e EfficientViT
+\cite{cai2023efficientvit}: um modelo compacto projetado para a borda também
+executa operações de atenção e igualmente se beneficia de kernels que evitem a
+materialização de tensores intermediários.
