@@ -1,605 +1,259 @@
 %% USPSC-Cap2-Desenvolvimento.tex
 
-\chapter{Fundamentação Teórica}\label{cap_fundamentacao}
+\chapter[Fundamentação teórica]{Fundamentação teórica}
+\label{cap_fundamentacao}
 
-Neste capítulo, apresentam-se os conceitos fundamentais para a compreensão da otimização de kernels de inferência. A discussão abrange desde a arquitetura dos Vision Transformers até as minúcias da hierarquia de memória em Unidades de Processamento Gráfico (GPUs), culminando nas ferramentas de programação de baixo nível.
+Este capítulo reúne os modelos usados para avaliar a energia por quilômetro quadrado inspecionado. Ele parte da física de voo do multirrotor e passa pela geometria do imageamento aéreo, pela detecção de objetos e pela computação embarcada. Ao final, os modelos são combinados em uma formulação única do problema de co-projeto. Sempre que possível, a modelagem segue a bibliografia das disciplinas do curso de Engenharia Aeronáutica da EESC: Projeto e Desempenho de Hélices \cite{usp2026saa0189}, Desempenho de Aeronaves \cite{usp2026saa0183}, Dinâmica de Voo \cite{usp2026saa0184}, Princípios de Aviônica e Navegação \cite{usp2026saa0167}, Sistemas Embarcados para Veículos Aéreos \cite{usp2026saa0356} e Redes Neurais e Aprendizagem de Máquina \cite{usp2026saa0358}. O currículo não tem disciplina dedicada a asas rotativas. Por isso, para os efeitos específicos de rotores, a referência é o texto de \citeonline{leishman2006}, que estende ao rotor a mesma teoria da quantidade de movimento usada no estudo de hélices.
 
-\section{Vision Transformers e a Mecânica de Atenção}
+\section{Potência de um rotor pela teoria da quantidade de movimento}
+\label{sec_momento}
 
-Os Vision Transformers (ViT) representam uma mudança de paradigma na visão computacional ao transpor a arquitetura de autoatenção, originalmente concebida para processamento de linguagem natural \cite{vaswani2023attentionneed}, para o domínio de imagens. Segundo \citeonline{dosovitskiy2021imageworth16x16words}, o ViT decompõe uma imagem em patches fixos, os quais são tratados como sequências de tokens, permitindo que o modelo aprenda relações globais entre diferentes regiões da cena desde as camadas iniciais.
-
-Como referência visual da arquitetura, a Figura \ref{fig:vit_arquitetura} apresenta o fluxo do ViT, desde a tokenização em patches até o codificador Transformer e a cabeça de classificação.
-
-\begin{figure}[H]
-    \centering
-    \caption{Arquitetura do Vision Transformer (ViT)}
-    \includegraphics[width=\textwidth]{figures/vit_DOSOVITSKIY.png}
-    \label{fig:vit_arquitetura}
-    \fonte{Adaptado de \citeonline{dosovitskiy2021imageworth16x16words}.}
-\end{figure}
-
-O cerne dessa arquitetura é o mecanismo de autoatenção, cujos componentes fundamentais, o Scaled Dot-Product Attention e sua extensão para o Multi-Head Attention, são ilustrados na Figura \ref{fig:mecanismos_atencao}. Matematicamente, a operação de atenção é definida pela Equação \ref{eq:attention}:
-
+A teoria da quantidade de movimento modela o rotor como um disco atuador ideal, de área $A$, que acelera o ar de forma uniforme e sem perdas por atrito ou rotação da esteira \cite{glauert1948,leishman2006}. Em pairado, o ar entra no disco com velocidade induzida $v_h$ e deixa a esteira, muito abaixo do disco, com velocidade $2v_h$. Aplicando a conservação da massa, da quantidade de movimento e da energia a um volume de controle que envolve o rotor e a esteira, obtêm-se a tração $T$ e a velocidade induzida em pairado:
 \begin{equation}
-\label{eq:attention}
-\text{Attention}(Q, K, V) = \text{softmax}\!\left(\frac{QK^T}{\sqrt{d_k}}\right)V
+  T = 2\rho A v_h^{2}
+  \qquad\Longrightarrow\qquad
+  v_h = \sqrt{\frac{T}{2\rho A}},
+  \label{eq_vh}
+\end{equation}
+em que $\rho$ é a densidade do ar. A potência ideal necessária para gerar essa tração é o produto da tração pela velocidade induzida:
+\begin{equation}
+  P_{h,\mathrm{ideal}} = T v_h = \frac{T^{3/2}}{\sqrt{2\rho A}}.
+  \label{eq_ph}
 \end{equation}
 
-\begin{figure}[H]
-    \centering
-    \caption{Mecanismos de atenção do Transformer}
-    \begin{subfigure}[b]{0.45\textwidth}
-        \centering
-        \caption{Scaled Dot-Product Attention}
-        \includegraphics[width=0.7\textwidth]{figures/scale-dot-product-attention.png}
-        \label{fig:scaled_dot_product}
-    \end{subfigure}
-    \hfill
-    \begin{subfigure}[b]{0.45\textwidth}
-        \centering
-        \caption{Multi-Head Attention}
-        \includegraphics[width=0.9\textwidth]{figures/multi-head-attention.png}
-        \label{fig:multi_head_attention}
-    \end{subfigure}
-    \label{fig:mecanismos_atencao}
-    \fonte{\citeonline{vaswani2023attentionneed}.}
-\end{figure}
-
-Onde $Q$, $K$ e $V$ representam as matrizes de Query, Key e Value. Embora eficaz, essa operação apresenta uma complexidade computacional $O(N^2)$, onde $N$ é o número de patches. Como apontam \citeonline{dao2022flashattentionfastmemoryefficientexact}, o gargalo dessa operação em GPUs modernas não é o poder computacional bruto, mas sim a latência de memória gerada pela leitura e escrita de matrizes intermediárias de atenção.
-
-\subsection{Por que Autoatenção?}
-
-No trabalho original dos Transformers, \citeonline{vaswani2023attentionneed} justificam o uso da autoatenção comparando-a com camadas recorrentes e convolucionais para o mapeamento de uma sequência de entrada em outra de mesmo comprimento. A análise é guiada por três critérios centrais: (i) complexidade computacional por camada, (ii) grau de paralelização e (iii) comprimento do caminho entre dependências de longo alcance.
-
-Sob essa ótica, a autoatenção apresenta uma vantagem estrutural importante: todas as posições da sequência interagem diretamente em uma única camada, com número constante de operações sequenciais. Em contraste, arquiteturas recorrentes exigem dependência temporal passo a passo, com custo sequencial proporcional ao comprimento da sequência. Na prática, isso reduz o paralelismo possível em GPU e limita o throughput.
-
-Também no aspecto de dependências de longo alcance, a autoatenção encurta o caminho de propagação de informação entre dois tokens para ordem constante. Em arquiteturas recorrentes, esse caminho cresce linearmente com o tamanho da sequência; em convolucionais, depende da largura do kernel e da profundidade da pilha de camadas. Essa diferença é relevante porque caminhos menores tendem a facilitar o aprendizado de relações globais.
-
-Em termos de custo assintótico, a autoatenção densa envolve tipicamente $O(n^2 d)$, enquanto camadas recorrentes escalam como $O(nd^2)$ e convoluções dependem de $k$ (largura do kernel). Conforme discutido por \citeonline{vaswani2023attentionneed}, quando $n < d$, cenário comum em representações de linguagem e compatível com várias configurações de tokens em visão, a autoatenção tende a ser computacionalmente mais favorável que abordagens recorrentes, além de ser mais paralelizável.
-
-Por fim, os autores destacam que versões restritas de autoatenção (janela local de tamanho $r$) podem reduzir custo para sequências muito longas, ao custo de aumentar o caminho máximo para $O(n/r)$. Esse compromisso custo--alcance é particularmente útil para conectar a formulação teórica da atenção com o problema de engenharia tratado neste trabalho: minimizar movimentação de dados e latência de memória sem perder capacidade de modelar dependências globais.
-
-\section{Complexidade Computacional e Movimentação de Dados na Atenção}
-
-A Equação \ref{eq:attention} evidencia que a atenção densa é composta por três
-etapas principais: o produto $QK^T$, a normalização por \textit{softmax} e a
-multiplicação da matriz de probabilidades por $V$. Considerando uma cabeça de
-atenção com $N$ tokens e dimensão $D$, o produto $QK^T$ produz uma matriz de
-scores de dimensão $N \times N$ e possui custo aproximado de $2N^2D$ operações
-de ponto flutuante. A multiplicação final por $V$ possui custo da mesma ordem,
-também próximo de $2N^2D$. Assim, desconsiderando constantes associadas ao
-\textit{softmax}, o custo aritmético do forward de uma cabeça é da ordem de
-$O(N^2D)$.
-
-O custo aritmético, entretanto, não descreve completamente o desempenho em GPU.
-Em uma implementação ingênua, a matriz $QK^T$ é escrita na memória global,
-posteriormente lida para a aplicação do \textit{softmax} e usada na multiplicação
-por $V$. Esse fluxo materializa um tensor intermediário de tamanho $N \times N$
-que pode dominar o tráfego em HBM quando $N$ cresce. Em ViTs, esse efeito aparece
-de forma direta: dobrar a resolução espacial ou reduzir o tamanho dos patches
-aumenta o número de tokens e amplia quadraticamente a matriz de atenção.
-
-Para uma configuração com $B$ amostras, $H$ cabeças, $N$ tokens e dimensão de
-cabeça $D$, o custo aritmético aproximado do forward de atenção densa pode ser
-representado por:
-
+Um rotor real consome mais do que esse valor, por causa da não uniformidade da velocidade induzida, das perdas na ponta das pás e do arrasto de perfil das seções \cite{leishman2006}. A qualidade aerodinâmica do rotor em pairado é medida pela figura de mérito,
 \begin{equation}
-    FLOPs \approx 4BHN^2D.
+  FM = \frac{P_{h,\mathrm{ideal}}}{P_{h}},
+  \label{eq_fm}
+\end{equation}
+em que $P_h$ é a potência efetivamente absorvida pelo rotor.
+
+Para o problema deste trabalho, a consequência mais importante da Equação~\eqref{eq_ph} vem do pairado, em que a tração equilibra o peso, $T = mg$. Nesse caso, a potência cresce com a massa elevada a $3/2$. Para uma pequena variação de massa $\Delta m$,
+\begin{equation}
+  \frac{\Delta P_h}{P_h} \approx \frac{3}{2}\,\frac{\Delta m}{m}.
+  \label{eq_dm}
+\end{equation}
+Assim, um acréscimo de 10\% na massa do veículo, causado por exemplo pelo computador de bordo, seu dissipador e cabeamento, aumenta em cerca de 15\% a potência de pairado. Esse efeito se soma ao consumo elétrico do próprio computador.
+
+\section{Voo à frente e curva de potência requerida}
+\label{sec_voo_frente}
+
+Em voo à frente com velocidade $V$, o disco do rotor recebe, além da velocidade induzida $v_i$, uma componente de escoamento livre. Uma hipótese proposta por Glauert e apresentada em detalhe por \citeonline{leishman2006} é que a tração continue dada pela vazão mássica através do disco multiplicada pelo dobro da velocidade induzida, o que leva à expressão implícita
+\begin{equation}
+  v_i = \frac{v_h^{2}}{\sqrt{(V\cos\alpha_d)^{2} + (V\sin\alpha_d + v_i)^{2}}},
+  \label{eq_glauert}
+\end{equation}
+em que $\alpha_d$ é o ângulo de ataque do disco, negativo quando o disco é inclinado para a frente. Para velocidades bem maiores que $v_h$, a Equação~\eqref{eq_glauert} tende a $v_i \approx v_h^{2}/V$. Ou seja, a potência induzida cai com a velocidade, porque o rotor passa a processar uma massa de ar maior por unidade de tempo.
+
+A potência total requerida em voo nivelado é usualmente decomposta em três parcelas \cite{leishman2006}:
+\begin{equation}
+  P(V) = \underbrace{\kappa\, T\, v_i(V)}_{\text{induzida}}
+       + \underbrace{\frac{\sigma C_{d0}}{8}\,\rho A (\Omega R)^{3}\left(1 + K\mu^{2}\right)}_{\text{perfil}}
+       + \underbrace{\tfrac{1}{2}\rho V^{3} f_e}_{\text{parasita}}.
+  \label{eq_pv}
+\end{equation}
+Os termos da Equação~\eqref{eq_pv} são os seguintes:
+\begin{itemize}
+    \item $\kappa > 1$ é um fator empírico de correção das perdas induzidas;
+    \item $\sigma$ é a solidez do rotor;
+    \item $C_{d0}$ é o coeficiente de arrasto de perfil médio das seções da pá;
+    \item $\Omega R$ é a velocidade de ponta da pá;
+    \item $\mu = V\cos\alpha_d/(\Omega R)$ é a razão de avanço;
+    \item $K$ é uma constante empírica que representa o aumento do arrasto de perfil em voo à frente;
+    \item $f_e$ é a área equivalente de placa plana da fuselagem, ou seja, o produto de seu coeficiente de arrasto pela área de referência.
+\end{itemize}
+Em um multirrotor com $N$ rotores, as duas primeiras parcelas são somadas sobre os rotores, e a parcela parasita é a da aeronave como um todo.
+
+A soma de uma parcela decrescente, a induzida, com uma crescente, a parasita, dá à curva $P(V)$ o formato característico de ``balde'' das aeronaves de asas rotativas. A potência é alta em pairado, passa por um mínimo em velocidade intermediária e volta a crescer em alta velocidade \cite{leishman2006}. Esse é o mesmo tipo de curva de potência requerida estudado no desempenho de aeronaves de asa fixa \cite{ojha1995,saarlas2006,roskam2000}, e dele derivam as velocidades características da Seção~\ref{sec_desempenho}.
+
+\subsection{Equilíbrio em cruzeiro e estimativa do arrasto}
+
+Um multirrotor produz força propulsiva inclinando o vetor de tração. Em voo nivelado, retilíneo e com velocidade constante, o equilíbrio de forças no referencial da trajetória \cite{etkin1996} fornece
+\begin{equation}
+  T\cos\theta = mg, \qquad T\sin\theta = D = \tfrac{1}{2}\rho V^{2} f_e,
+  \label{eq_equilibrio}
+\end{equation}
+em que $\theta$ é o ângulo de arfagem e $D$ é o arrasto da aeronave. Dividindo uma equação pela outra,
+\begin{equation}
+  \tan\theta = \frac{\rho V^{2} f_e}{2 m g}
+  \qquad\Longrightarrow\qquad
+  f_e = \frac{2 m g \tan\theta}{\rho V^{2}}.
+  \label{eq_fe}
+\end{equation}
+A Equação~\eqref{eq_fe} permite estimar a área equivalente de placa plana a partir do ângulo de arfagem registrado na telemetria, desde que a massa seja conhecida. Na presença de vento, $V$ deve ser a velocidade em relação ao ar, e não em relação ao solo. Em uma trajetória de ida e volta, o vento contribui com sinais opostos nas duas pernas, enquanto o arrasto não muda de sinal, o que permite separar os dois efeitos.
+
+\subsection{Da potência mecânica à potência elétrica}
+
+Os motores, os controladores eletrônicos de velocidade e a bateria acrescentam perdas entre a potência mecânica no eixo e a potência retirada da bateria. Em forma simplificada,
+\begin{equation}
+  P_{el} = \frac{P(V)}{\eta_{m}} + P_{av},
+  \label{eq_pel}
+\end{equation}
+em que $\eta_m$ é a eficiência combinada de motores e controladores e $P_{av}$ é a potência dos aviônicos e demais cargas fixas, como controlador de voo, rádio e gimbal. Modelos empíricos de consumo construídos a partir de medições em voo seguem essa estrutura e tratam explicitamente o efeito da velocidade e da carga paga sobre a energia consumida por multirrotores \cite{abeywickrama2018energy}. Quando a telemetria registra a tensão $U(t)$ e a corrente $I(t)$ da bateria, a potência elétrica total é medida diretamente, e a energia de um trecho de voo é dada por
+\begin{equation}
+  E = \int_{t_0}^{t_1} U(t)\,I(t)\,\mathrm{d}t.
+  \label{eq_energia}
 \end{equation}
 
-Já a matriz intermediária de scores ocupa, sozinha, $BHN^2$ elementos. Em FP16,
-isso corresponde a aproximadamente $2BHN^2$ bytes por materialização. Como uma
-implementação não fundida pode escrever e reler essa estrutura em mais de uma
-etapa, o tráfego efetivo de memória pode superar o tamanho dos tensores de
-entrada e saída. Essa diferença explica por que otimizações como FlashAttention
-e kernels fundidos não buscam apenas reduzir FLOPs, mas reduzir operações de
-entrada e saída na memória global \cite{dao2022flashattentionfastmemoryefficientexact}.
+\section{Desempenho: autonomia, alcance e energia por área}
+\label{sec_desempenho}
 
-\section{Arquitetura de GPU e a ``Parede de Memória'' (Memory Wall)}
-
-Para entender a necessidade de otimização de baixo nível, é preciso distinguir os diferentes níveis de memória em uma GPU. A memória principal, conhecida como High Bandwidth Memory (HBM), possui alta capacidade, porém latência significativamente superior à memória estática interna do chip, a SRAM.
-
-\begin{figure}[H]
-    \centering
-    \caption{Hierarquia de memória com largura de banda e capacidade}
-    \includegraphics[width=0.4\textwidth]{figures/memory_hierarchy_with_bandwidth_memory_size.png}
-    \label{fig:hierarquia_memoria_gpu}
-    \fonte{Adaptado de \citeonline{dao2022flashattentionfastmemoryefficientexact}.}
-\end{figure}
-
-O desequilíbrio entre a velocidade de processamento e a velocidade de transferência de dados é o que a literatura denomina como Memory Wall. Sobre este desafio, \citeonline{wulfmckee1995} observam:
-
-\begin{citacao}
-{[...]} a disparidade entre a velocidade dos processadores e a velocidade da memória principal tem crescido exponencialmente. Se essa tendência continuar, a performance dos sistemas será limitada não pela frequência de clock do processador, mas pela taxa na qual os dados podem ser entregues a ele \cite{wulfmckee1995} (tradução do autor).
-\end{citacao}
-
-Dessa forma, otimizar um kernel significa maximizar o reuso dos dados em SRAM,
-registradores ou memória compartilhada, minimizando acessos à HBM. Para a
-atenção, essa ideia complementa a análise da seção anterior: não basta executar a
-mesma equação, é preciso organizar o fluxo de dados para evitar escritas e
-leituras intermediárias que degradam o throughput.
-
-\subsection{Modelo de execução em GPUs}
-
-Uma GPU executa milhares de threads organizadas em blocos, que são escalonados
-nos Streaming Multiprocessors. Cada SM possui recursos limitados de registradores,
-memória compartilhada, unidades de execução e slots para warps residentes. O
-desempenho de um kernel depende, portanto, de uma combinação entre paralelismo,
-ocupação, coalescência de acessos à memória e reutilização local de dados.
-
-Threads são agrupadas em warps, que executam a mesma instrução sobre dados
-distintos. Quando os acessos à memória global são contíguos e alinhados, a GPU
-consegue agrupá-los em transações mais eficientes. Por outro lado, acessos
-irregulares, baixa reutilização de dados ou excesso de registradores por thread
-podem reduzir a ocupação e aumentar a exposição à latência de memória. Em
-kernels de atenção, esses fatores aparecem na escolha do tamanho dos blocos de
-$Q$, $K$ e $V$, no número de warps por programa e na quantidade de dados mantida
-em registradores ou memória compartilhada.
-
-Para o presente trabalho, essa visão é importante porque o objetivo não é apenas
-reescrever uma equação matemática em outra linguagem. O objetivo é organizar a
-mesma computação de modo que cada bloco carregado da HBM seja reutilizado tantas
-vezes quanto possível antes de ser descartado. A eficiência do kernel depende,
-assim, da relação entre trabalho aritmético realizado e bytes transferidos pela
-hierarquia de memória.
-
-\section{Modelo Roofline para Análise de Desempenho}
-
-O Modelo Roofline é uma ferramenta de análise que relaciona o desempenho
-atingível de uma aplicação com sua intensidade aritmética, isto é, a razão entre
-operações de ponto flutuante e bytes movimentados na memória \cite{williams2009roofline}.
-Nesse modelo, o desempenho máximo de um kernel é limitado por dois tetos
-principais: a largura de banda de memória e o pico computacional do hardware.
-
-A intensidade aritmética pode ser escrita como:
-
+Para uma aeronave elétrica com energia útil de bateria $E_b$, a autonomia e o alcance em voo com velocidade constante são
 \begin{equation}
-    I = \frac{FLOPs}{Bytes}.
+  t_{\mathrm{aut}} = \frac{E_b}{P_{el}(V)}, \qquad
+  R = V\,t_{\mathrm{aut}} = \frac{E_b\,V}{P_{el}(V)}.
+  \label{eq_aut}
+\end{equation}
+A autonomia máxima ocorre na velocidade de potência mínima, $V_{Pmin}$. O alcance máximo ocorre na velocidade que minimiza a razão $P_{el}/V$, que é a energia gasta por metro percorrido. Essa velocidade, $V_{Rmax}$, é encontrada graficamente como o ponto de tangência entre a curva $P_{el}(V)$ e uma reta que passa pela origem, exatamente como na análise clássica de desempenho de aeronaves \cite{ojha1995,saarlas2006,roskam2000}:
+\begin{equation}
+  \frac{\mathrm{d}P_{el}}{\mathrm{d}V}\bigg|_{V_{Rmax}} = \frac{P_{el}(V_{Rmax})}{V_{Rmax}}.
+  \label{eq_vrmax}
 \end{equation}
 
-Quando $I$ é baixo, o kernel tende a ser \textit{memory-bound}: seu desempenho é
-limitado pela taxa com que dados são fornecidos ao processador. Quando $I$ é
-alto, o kernel tende a ser \textit{compute-bound}: a limitação passa a ser a
-capacidade das unidades aritméticas. A fronteira entre esses regimes ocorre no
-ponto em que o produto entre intensidade aritmética e largura de banda de memória
-atinge o pico computacional do dispositivo.
-
-No contexto da atenção em ViTs, o Modelo Roofline permite avaliar se uma
-otimização melhora o desempenho por aumentar o uso das unidades aritméticas ou
-por reduzir o tráfego de memória. Um kernel fundido pode deslocar a operação no
-gráfico Roofline ao evitar a materialização da matriz $N \times N$, aumentando a
-intensidade aritmética efetiva e reduzindo a dependência da HBM. Por esse motivo,
-o modelo é adotado neste trabalho como ferramenta complementar às métricas de
-latência e throughput.
-
-\section{OpenAI Triton}
-
-Historicamente, a escrita de kernels otimizados exigia o uso de CUDA C++, uma linguagem de alta complexidade que demanda gerenciamento manual de threads e sincronização de blocos. O OpenAI Triton surge como uma alternativa de abstração que permite a escrita de kernels altamente performáticos utilizando uma sintaxe baseada em Python.
-
-De acordo com \citeonline{tillet2019}, o Triton introduz um paradigma baseado em blocos (tiles), onde o compilador é responsável por otimizar automaticamente o agendamento de tarefas e o uso dos registradores, permitindo que o desenvolvedor foque na lógica de movimentação de dados na hierarquia de memória.
-
-Na prática, um kernel Triton é escrito como um programa parametrizado por blocos
-de dados. Cada instância do programa identifica sua região de atuação por meio de
-índices como \texttt{program\_id}, carrega blocos com \texttt{tl.load}, executa
-operações vetoriais ou matriciais com primitivas como \texttt{tl.dot} e grava o
-resultado com \texttt{tl.store}. Máscaras booleanas são utilizadas para tratar
-bordas quando as dimensões do tensor não são múltiplas exatas do tamanho do
-bloco.
-
-Parâmetros como \texttt{BLOCK\_M}, \texttt{BLOCK\_N}, \texttt{num\_warps} e
-\texttt{num\_stages} controlam a granularidade do trabalho e influenciam
-ocupação, pressão de registradores e paralelismo. Assim, o Triton oferece uma
-abstração intermediária: mais próxima da hierarquia de memória do que APIs de
-alto nível, mas menos verbosa que CUDA C++. Essa característica o torna adequado
-para o objetivo do trabalho, que é experimentar uma organização de dados
-inspirada em FlashAttention sem deslocar o foco para detalhes excessivos de
-sincronização manual de threads.
-
-\section{Fusão de Operadores e Flash Attention}
-
-A técnica de fusão de operadores (Operator Fusion) consiste em agrupar múltiplas operações matemáticas em um único kernel executável. No contexto de modelos de visão, isso significa realizar o cálculo do Softmax e a multiplicação por $V$ enquanto os dados de $Q$ ainda residem nos registradores da GPU.
-
-Como referência visual do método, a Figura \ref{fig:flashattention_esquema} ilustra a hierarquia de memória, o particionamento em blocos e o ganho de desempenho obtido pelo kernel fundido do FlashAttention.
-
-\begin{figure}[H]
-    \centering
-    \caption{Esquema do FlashAttention e comparação de tempo de execução}
-    \includegraphics[width=\textwidth]{figures/flash_attention.png}
-    \label{fig:flashattention_esquema}
-    \fonte{Adaptado de \citeonline{dao2022flashattentionfastmemoryefficientexact}.}
-\end{figure}
-
-O FlashAttention explora essa ideia ao reorganizar o cálculo da atenção em
-blocos e evitar a materialização da matriz de atenção $N \times N$ na memória
-principal. Como sintetizado por
-\citeonline{dao2022flashattentionfastmemoryefficientexact}, essa organização
-reduz acessos à HBM e produz acelerações significativas em relação a
-implementações tradicionais, com menor consumo de memória.
-
-
-\chapter{Metodologia}\label{cap_metodologia}
-
-\section{Ambiente Experimental}
-
-O ambiente experimental deste trabalho foi definido com o objetivo de isolar o
-impacto da implementação do kernel sobre a latência da operação de atenção. Os
-experimentos foram executados em uma GPU NVIDIA compatível com CUDA,
-utilizando PyTorch como baseline de alto nível e OpenAI Triton como ferramenta
-de desenvolvimento do kernel customizado. Para garantir reprodutibilidade, cada
-execução registrou o modelo da GPU, quantidade de SMs, versão do driver,
-versão do CUDA, versão do PyTorch, versão do Triton, tipo numérico utilizado e
-parâmetros de forma dos tensores.
-
-Os tensores de entrada são organizados no formato
-$[B, H, N, D]$, em que $B$ representa o tamanho do lote, $H$ o número de
-cabeças de atenção, $N$ o número de tokens e $D$ a dimensão de cada cabeça. Esse
-formato é compatível com implementações usuais de Multi-Head Attention em
-modelos ViT. Adota-se $B=1$, refletindo o cenário de inferência embarcada em
-tempo real, no qual cada quadro capturado pela câmera é processado
-individualmente, sem acúmulo de lote. Para o estudo de escala, consideram-se
-comprimentos alinhados $N=128$, $N=256$, $N=512$, $N=768$ e $N=1024$: múltiplos
-de 32 são compatíveis com granularidades frequentes de kernels em GPU e
-permitem observar o crescimento quadrático da atenção sem misturar o efeito de
-bordas irregulares. Como esses valores não correspondem a um modelo real
-específico, avalia-se adicionalmente $N=197$, comprimento de sequência do
-ViT-B/16 com entrada $224 \times 224$ (196 patches mais o token de classe)
-\cite{dosovitskiy2021imageworth16x16words}, representativo do caso de uso
-prático e não múltiplo do tamanho de bloco do kernel, o que também exercita o
-tratamento de bordas por máscaras.
-
-As medições de tempo foram feitas com eventos CUDA, após uma etapa de
-aquecimento destinada a amortizar efeitos de compilação JIT, inicialização de
-contexto e variações transientes de frequência. O perfil de
-baixo nível foi coletado com NVIDIA Nsight Compute,
-registrando métricas de tráfego em memória global, ocupação, utilização de SMs e
-throughput computacional.
-
-\section{Design do Kernel Customizado}
-
-O kernel customizado implementa a etapa forward de atenção densa não causal,
-sem dropout, voltada ao cenário de inferência. O cálculo corresponde à Equação
-\ref{eq:attention}, porém evita a materialização completa da matriz
-$QK^T$, de dimensão $N \times N$, na memória global. A operação é decomposta em
-blocos de linhas de $Q$ e blocos de colunas de $K$ e $V$, permitindo que cada
-programa Triton carregue apenas uma fração da sequência por vez.
-
-A estratégia de tiling utiliza dois parâmetros principais: $BLOCK\_M$, que
-define a quantidade de queries processadas por programa, e $BLOCK\_N$, que
-define a quantidade de keys e values carregados a cada iteração. Para cada bloco
-de queries, o kernel percorre a sequência de keys em blocos sucessivos,
-acumulando o resultado parcial da atenção. Desse modo, os valores intermediários
-necessários ao softmax permanecem em registradores ou SRAM durante a execução do
-programa, reduzindo leituras e escritas na HBM.
-
-O escopo inicial da implementação considera tensores contíguos com eixos de
-lote, cabeças, sequência e dimensão por cabeça, além de dimensões de cabeça até
-128 e tipos numéricos de baixa precisão, como FP16 e BF16. Essa delimitação é
-compatível com o objetivo experimental do trabalho: comparar o impacto da fusão
-de operadores e da consciência da hierarquia de memória em um caso
-representativo de atenção em Vision Transformers.
-
-\section{Implementação do Softmax Online}
-
-A comparação detalhada entre uma implementação padrão de \textit{softmax} em PyTorch e uma versão otimizada com OpenAI Triton é apresentada no \autoref{ap:softmax_naive_triton}. O apêndice inclui os trechos de código e uma análise objetiva dos impactos em movimentação de memória, paralelismo e ocupação do hardware.
-
-No kernel de atenção, entretanto, o \textit{softmax} não é computado como uma
-operação isolada. Em vez de armazenar a matriz de scores completa, utiliza-se a
-formulação de \textit{softmax online}, proposta originalmente por
-\citeonline{milakov2018online} e empregada pelo FlashAttention
-\cite{dao2022flashattentionfastmemoryefficientexact}. Para cada linha da
-matriz de atenção, o kernel mantém três acumuladores: o maior valor observado
-$m_i$, a soma normalizada $l_i$ e o acumulador vetorial de saída $O_i$.
-
-Ao processar um novo bloco de scores $S_{ij}$, o máximo da linha é atualizado de
-forma incremental:
-
+Em uma missão de inspeção, o objetivo não é percorrer uma distância, mas cobrir uma área. Se a câmera imageia uma faixa de largura $w$ e as passadas adjacentes não se sobrepõem, a taxa de cobertura de área é $Vw$. A energia por unidade de área inspecionada é então
 \begin{equation}
-    m_i^{novo} = \max\left(m_i^{antigo}, \max_j S_{ij}\right).
+  e = \frac{P_{el,\mathrm{tot}}(V)}{V\,w},
+  \label{eq_e_area}
 \end{equation}
+em que $P_{el,\mathrm{tot}}$ inclui a propulsão, os aviônicos e o computador de bordo. Para uma largura de faixa fixa, minimizar $e$ equivale a voar na velocidade de alcance máximo da curva de potência total. A largura $w$, por sua vez, cresce com a altitude, como mostra a Seção~\ref{sec_imageamento}. Dessa forma, a Equação~\eqref{eq_e_area} une, em uma só métrica, a mecânica de voo, a geometria do imageamento e o consumo da computação. O planejamento de cobertura com consciência energética segue a mesma ideia, ao minimizar a energia de voo sob restrições de cobertura e de resolução \cite{difranco2016coverage}. Neste trabalho, a formulação é estendida para incluir também o custo da percepção.
 
-Em seguida, a soma exponencial anterior é reescalada para a nova referência
-numérica:
+\section{Geometria do imageamento aéreo}
+\label{sec_imageamento}
 
+\subsection{Resolução no solo, pegada e cobertura}
+
+Para uma câmera do tipo \textit{pinhole} apontada para o nadir, sobre terreno plano, cada pixel corresponde no solo a um quadrado de lado
 \begin{equation}
-    l_i^{novo} =
-    e^{m_i^{antigo} - m_i^{novo}} l_i^{antigo}
-    + \sum_j e^{S_{ij} - m_i^{novo}}.
+  GSD = \frac{h\,p}{f_c},
+  \label{eq_gsd}
 \end{equation}
+em que $h$ é a altura de voo sobre o terreno, $p$ é o tamanho físico do pixel no sensor e $f_c$ é a distância focal \cite{wolf2014}. Para uma imagem com $N_x \times N_y$ pixels, sendo $N_x$ na direção transversal ao voo, a pegada no solo tem largura $w = N_x\,GSD$ e comprimento $L = N_y\,GSD$. Ambos crescem linearmente com a altitude.
 
-O acumulador da saída passa pelo mesmo reescalonamento:
-
+Quando a aeronave voa com velocidade $V$ e grava vídeo com taxa de quadros $f_q$, cada ponto do solo permanece no campo de visão durante
 \begin{equation}
-    O_i^{novo} =
-    e^{m_i^{antigo} - m_i^{novo}} O_i^{antigo}
-    + \sum_j e^{S_{ij} - m_i^{novo}} V_j.
+  t_{v} = \frac{L}{V},
+  \qquad\text{e aparece em}\qquad
+  n_{v} = \frac{f_q\,L}{V}\ \text{quadros}.
+  \label{eq_visibilidade}
 \end{equation}
+A área nova que entra no campo de visão por unidade de tempo é $Vw$, e a fração nova de cada quadro em relação ao anterior é $V/(f_q L)$. Esse grande número de observações redundantes de um mesmo ponto é o que a estratégia de memória geográfica explora.
 
-Ao final da varredura sobre todos os blocos de keys e values, a saída final é
-obtida por $O_i / l_i$. Essa formulação preserva a estabilidade numérica do
-\textit{softmax} tradicional, pois continua subtraindo o maior valor da linha,
-mas permite que a normalização seja realizada em fluxo, sem escrita da matriz
-intermediária de atenção na memória global.
+Um objeto de dimensão característica $s$ ocupa $s/GSD$ pixels na imagem. A altitude define, portanto, um compromisso: subir aumenta $w$ e reduz a energia por área na Equação~\eqref{eq_e_area}, mas diminui o tamanho dos objetos em pixels e, com ele, a probabilidade de detecção.
 
-\section{Protocolo de Avaliação}
+\subsection{Borrão de movimento}
 
-O protocolo de avaliação compara três implementações: uma versão explícita em
-PyTorch, que materializa as etapas $QK^T$, \textit{softmax} e multiplicação por
-$V$; a função otimizada \texttt{scaled\_dot\_product\_attention} (SDPA) do
-PyTorch; e o kernel customizado em Triton. A primeira serve como referência de
-corretude e como baseline de alto nível mais transparente. A segunda representa
-uma implementação de biblioteca otimizada: no ambiente avaliado, verificou-se
-por meio do \texttt{torch.profiler} que a chamada é despachada para o kernel
-\texttt{pytorch\_flash::flash\_fwd\_kernel}, correspondente à implementação do
-FlashAttention-2 \cite{dao2023flashattention2} integrada ao PyTorch. O kernel
-customizado, portanto, é comparado diretamente com uma implementação
-representativa do estado da arte. A terceira implementação corresponde à
-contribuição experimental deste trabalho.
+Durante o tempo de exposição $t_e$ de cada quadro, a aeronave se desloca $V t_e$, o que espalha a imagem de um ponto do solo por
+\begin{equation}
+  b = \frac{V\,t_e}{GSD}\ \text{pixels}.
+  \label{eq_borrao}
+\end{equation}
+O borrão cresce com a velocidade e diminui com a altitude, porque o $GSD$ aumenta. Velocidades altas, que seriam favoráveis à energia por área, podem assim degradar a detecção de objetos pequenos.
 
-Na implementação explícita, o \textit{softmax} é calculado em FP32 por
-estabilidade numérica, o que materializa a matriz $N \times N$ em precisão
-simples (4 bytes por elemento) e amplia o tráfego de memória do baseline em
-relação à estimativa de $2BHN^2$ bytes apresentada para FP16 na seção de
-complexidade computacional. Essa escolha é registrada explicitamente porque
-afeta a leitura dos volumes de DRAM medidos no baseline eager.
+\subsection{Georreferenciamento das detecções}
+\label{sec_georref}
 
-Para cada configuração de $B$, $H$, $N$, $D$ e tipo numérico, são gerados
-tensores aleatórios em GPU e executadas rodadas de aquecimento antes das
-medições. Em cada execução, a latência média é calculada a partir de 100
-iterações sincronizadas por eventos CUDA, precedidas de 25 iterações de
-aquecimento. Como a GPU avaliada não opera com frequências travadas e
-compartilha o dispositivo com a interface gráfica do sistema, cada configuração
-foi medida em cinco execuções independentes, reportando-se a mediana, de modo a
-reduzir a influência de variações transientes de clock e de carga. A corretude
-é verificada pelo erro absoluto
-máximo entre a saída do kernel avaliado e a implementação explícita em PyTorch.
+Para transformar uma detecção na imagem em uma posição no solo, são necessários a posição da aeronave e a orientação da câmera em cada quadro. Com a câmera estabilizada no nadir por um \textit{gimbal}, um pixel $(u, v)$ afastado do ponto principal $(c_x, c_y)$ corresponde, no referencial da câmera, a um deslocamento no solo de $GSD\,(u - c_x)$ e $GSD\,(v - c_y)$. Esse deslocamento é levado ao referencial local norte-leste por uma rotação de ângulo igual ao rumo da câmera, $\psi$, seguindo as convenções de referenciais e de sequências de rotação da dinâmica de voo \cite{etkin1996}:
+\begin{equation}
+  \begin{bmatrix} \Delta n \\ \Delta e \end{bmatrix}
+  = GSD
+  \begin{bmatrix} \cos\psi & -\sin\psi \\ \sin\psi & \cos\psi \end{bmatrix}
+  \begin{bmatrix} -(v - c_y) \\ u - c_x \end{bmatrix}.
+  \label{eq_georref}
+\end{equation}
+Na Equação~\eqref{eq_georref}, o eixo vertical da imagem, crescente para baixo, aponta no sentido oposto ao rumo, e o eixo horizontal aponta para a direita da aeronave. Os deslocamentos são então somados à posição da aeronave, convertida de latitude $\phi$ e longitude $\lambda$ para coordenadas locais por meio dos raios de curvatura do elipsoide WGS-84 \cite{kayton1997}:
+\begin{equation}
+  \Delta n = R_M\,\Delta\phi, \qquad \Delta e = R_N\cos\phi\,\Delta\lambda,
+  \qquad
+  R_N = \frac{a}{\sqrt{1 - \epsilon^{2}\sin^{2}\phi}}, \qquad
+  R_M = \frac{a\,(1-\epsilon^{2})}{(1 - \epsilon^{2}\sin^{2}\phi)^{3/2}},
+  \label{eq_raios}
+\end{equation}
+em que $a$ é o semieixo maior e $\epsilon$ é a excentricidade do elipsoide. Para áreas da ordem de um bairro, com poucos quilômetros de extensão, o erro dessa aproximação local é pequeno diante da incerteza do posicionamento por satélite.
 
-Além da latência, calcula-se o throughput aproximado em TFLOP/s a partir da
-estimativa de custo aritmético apresentada na seção de complexidade
-computacional, seguindo a convenção usual de desconsiderar as operações do
-\textit{softmax} \cite{dao2022flashattentionfastmemoryefficientexact}. Essa
-estimativa permite comparar as implementações sob a mesma
-escala de trabalho. A interpretação final combina latência, throughput, tráfego
-de memória global e Modelo Roofline, distinguindo casos \textit{memory-bound} de
-casos \textit{compute-bound}. Cabe observar que as métricas de perfil coletadas
-quantificam o tráfego em DRAM; a eficiência do uso de SRAM é avaliada de forma
-indireta, pela redução desse tráfego, uma vez que dados reutilizados em
-registradores e SRAM deixam de ser relidos da memória global.
+\section{Detecção de objetos com redes neurais}
+\label{sec_deteccao}
 
-\chapter{Resultados e Discussões}\label{cap_resultados}
+\subsection{Redes convolucionais e detectores de estágio único}
 
-\section{Análise Comparativa de Latência}
+Redes neurais artificiais aprendem a aproximar funções a partir de exemplos, ajustando seus pesos por retropropagação do erro \cite{haykin2009}. Em visão computacional, as redes convolucionais exploram a estrutura espacial da imagem por meio de filtros com pesos compartilhados. Entre os detectores de objetos baseados nessas redes, os de estágio único tratam a detecção como um problema de regressão. Uma única passada da rede prevê, para cada região de uma grade sobre a imagem, as caixas delimitadoras, uma medida de confiança e as probabilidades de classe \cite{redmon2016yolo}. Essa formulação dispensa a etapa separada de propostas de regiões e é o que torna esses detectores adequados ao processamento em tempo real. A família YOLO, que deu origem a essa abordagem, é hoje mantida em implementações abertas, como a da Ultralytics, que oferece modelos de tamanhos diferentes com compromissos distintos entre precisão e custo computacional \cite{jocher2024yolo11}.
 
-Os experimentos foram executados em uma GPU NVIDIA GeForce RTX 5060 com 30 SMs,
-utilizando Python 3.13.12, PyTorch 2.11.0 com CUDA 13.0 e tensores em FP16. A
-configuração avaliada corresponde a $B=1$, $H=12$ e $D=64$. A Tabela
-\ref{tab:resultados_atencao} resume pontos alinhados e usuais em avaliações de
-camadas Transformer, mantendo o número de tokens como múltiplo de 32, além do
-ponto $N=197$, correspondente ao ViT-B/16 com entrada $224 \times 224$. Esses
-valores representam uma progressão de sequências pequenas, médias e grandes
-para a operação de atenção. Em seguida, os gráficos apresentam uma varredura
-complementar com $N$ variando de 32 a 1024 em passos de 32, permitindo observar
-a tendência de escala das implementações.
+Um quadro 4K não é processado de uma só vez na resolução nativa. Para não reduzir os objetos pequenos a poucos pixels, a imagem é dividida em recortes de lado $s_t$ pixels, cada um processado por uma passada da rede. O número de passadas por quadro é
+\begin{equation}
+  n_t = \left\lceil \frac{N_x}{s_t} \right\rceil \left\lceil \frac{N_y}{s_t} \right\rceil.
+  \label{eq_recortes}
+\end{equation}
+Para $N_x \times N_y = 3840 \times 2160$ e $s_t = 640$, sem sobreposição entre recortes, são $6 \times 4 = 24$ passadas por quadro.
 
-\begin{table}[H]
-    \centering
-    \caption{Resultados comparativos de latência por comprimento de sequência (mediana de cinco execuções independentes)}
-    \label{tab:resultados_atencao}
-    \begin{tabular}{crrrrr}
-        \hline
-        $N$ & Eager (ms) & SDPA (ms) & Triton (ms) & Speedup SDPA & Speedup Triton \\
-        \hline
-        128  & 0,1367 & 0,0251 & 0,0332 & 5,44$\times$ & 4,12$\times$ \\
-        197  & 0,1655 & 0,0255 & 0,0367 & 6,49$\times$ & 4,51$\times$ \\
-        256  & 0,1333 & 0,0242 & 0,0373 & 5,51$\times$ & 3,57$\times$ \\
-        512  & 0,1480 & 0,0316 & 0,0457 & 4,68$\times$ & 3,24$\times$ \\
-        768  & 0,5096 & 0,0707 & 0,0997 & 7,21$\times$ & 5,11$\times$ \\
-        1024 & 1,0003 & 0,1165 & 0,1615 & 8,58$\times$ & 6,20$\times$ \\
-        \hline
-    \end{tabular}
-    \fonte{Elaborada pelo autor.}
-\end{table}
+\subsection{Métricas de detecção}
 
-O ponto $N=197$ merece destaque por corresponder a uma configuração real de
-modelo, e não a um tamanho alinhado artificialmente. Nele, o kernel Triton
-mantém speedup de 4,51$\times$ sobre o eager, da mesma ordem dos pontos
-alinhados vizinhos, o que indica que o tratamento de bordas por
-máscaras não degrada o desempenho quando $N$ não é múltiplo do tamanho de
-bloco. Observa-se, inclusive, que a implementação eager é mais lenta em
-$N=197$ do que em $N=256$: dimensões não alinhadas penalizam a seleção de
-kernels das bibliotecas de álgebra linear usadas pela versão explícita,
-enquanto as implementações fundidas, que já tratam bordas por máscaras,
-mostram-se insensíveis ao desalinhamento. Nessa escala, entretanto, o custo
-fixo de lançamento de kernels domina a
-latência e os ganhos absolutos são modestos (cerca de 0,13~ms por camada de
-atenção); o benefício da fusão torna-se mais expressivo em resoluções de
-entrada maiores ou patches menores, que elevam $N$.
+Uma caixa prevista $B_p$ é considerada correta quando sua sobreposição com a caixa anotada $B_g$, medida pela razão entre interseção e união,
+\begin{equation}
+  IoU = \frac{|B_p \cap B_g|}{|B_p \cup B_g|},
+  \label{eq_iou}
+\end{equation}
+supera um limiar, tipicamente 0,5 \cite{everingham2010voc}. A partir das contagens de verdadeiros positivos ($VP$), falsos positivos ($FP$) e falsos negativos ($FN$), definem-se a precisão e a revocação:
+\begin{equation}
+  \mathcal{P} = \frac{VP}{VP + FP}, \qquad \mathcal{R} = \frac{VP}{VP + FN}.
+  \label{eq_pr}
+\end{equation}
+A precisão média (AP) é a área sob a curva precisão--revocação obtida variando o limiar de confiança, e a mAP é a média da AP entre as classes \cite{everingham2010voc}.
 
-A Figura \ref{fig:attention_latency} mostra a evolução da latência ao longo da
-varredura regular de tokens. As implementações otimizadas permanecem abaixo da
-versão explícita em PyTorch em toda a faixa analisada. Para tamanhos pequenos,
-o custo fixo de lançamento e escalonamento dos kernels tem peso relevante; por
-isso, a latência não cresce proporcionalmente a $N^2$ nos primeiros pontos. À
-medida que a sequência aumenta, o custo quadrático da atenção se torna mais
-visível, especialmente na implementação eager.
+\subsection{Dos quadros aos focos únicos}
 
-\begin{figure}[H]
-    \centering
-    \caption{Comparação de latência entre as implementações de atenção}
-    \includegraphics[width=0.85\textwidth]{figures/attention_latency.pdf}
-    \label{fig:attention_latency}
-    \fonte{Elaborada pelo autor.}
-\end{figure}
+Métricas por quadro, como a mAP, contam o mesmo objeto tantas vezes quantas ele aparece no vídeo. Para a vigilância, o que importa é quantos criadouros distintos foram encontrados. Por isso, as detecções são associadas ao longo do tempo e do espaço para formar \textit{focos únicos}. A associação temporal pode ser feita por rastreadores que combinam um filtro de Kalman, para predizer a posição de cada objeto no quadro seguinte, com o algoritmo húngaro, para associar predições e novas detecções \cite{bewley2016sort}. A associação espacial agrupa as posições georreferenciadas (Seção~\ref{sec_georref}) de uma mesma classe que estejam a menos de uma distância limite. A revocação de focos únicos é definida como
+\begin{equation}
+  \mathcal{R}_f = \frac{\#\{\text{focos reais com ao menos um foco previsto da mesma classe a menos de } d_{\max}\}}{\#\{\text{focos reais}\}},
+  \label{eq_recall_focos}
+\end{equation}
+em que os focos reais são os objetos anotados, identificados por um número único ao longo do vídeo.
 
-O speedup relativo ao eager, apresentado na Figura \ref{fig:attention_speedup},
-mostra que o ganho das versões otimizadas aumenta com o tamanho da sequência. Na
-varredura, o SDPA chega a aproximadamente 8,67$\times$ em $N=1024$, enquanto o
-kernel Triton atinge aproximadamente 6,41$\times$ no mesmo ponto. O Triton
-customizado, portanto, valida o benefício da fusão de operadores em relação à
-implementação explícita, mas fica abaixo do backend especializado do PyTorch na
-maior parte da faixa regular avaliada.
+\section{Computação embarcada}
+\label{sec_embarcada}
 
-\begin{figure}[H]
-    \centering
-    \caption{Speedup relativo à implementação PyTorch eager}
-    \includegraphics[width=0.85\textwidth]{figures/attention_speedup.pdf}
-    \label{fig:attention_speedup}
-    \fonte{Elaborada pelo autor.}
-\end{figure}
+\subsection{Restrição de tempo real}
 
-O throughput efetivo, apresentado na Figura \ref{fig:attention_throughput},
-reforça a mesma leitura. Na extremidade da varredura, em $N=1024$, o SDPA
-alcança 27,82 TFLOP/s efetivos, enquanto o Triton atinge 20,56 TFLOP/s. Esses
-valores devem ser interpretados como throughput efetivo da operação de atenção,
-calculado a partir da estimativa $4BHN^2D$, e não como o pico teórico absoluto
-da GPU.
+Em um sistema de tempo real, cada tarefa precisa terminar dentro de um prazo \cite{laplante2004}. Se a percepção processa todos os quadros, o tempo de computação por quadro $C$ deve respeitar $C \leq 1/f_q$. De forma mais geral, para um conjunto de tarefas periódicas com tempos de computação $C_j$ e períodos $T_j$, a utilização do processador,
+\begin{equation}
+  U = \sum_j \frac{C_j}{T_j},
+  \label{eq_utilizacao}
+\end{equation}
+deve ficar abaixo de 1 para que o sistema seja viável \cite{laplante2004}. No contexto deste trabalho, isso define uma taxa máxima de passadas da rede, $r_{\max}$, para cada combinação de computador de bordo, modo de potência e tamanho de modelo.
 
-\begin{figure}[H]
-    \centering
-    \caption{Throughput efetivo das implementações de atenção}
-    \includegraphics[width=0.85\textwidth]{figures/attention_throughput.pdf}
-    \label{fig:attention_throughput}
-    \fonte{Elaborada pelo autor.}
-\end{figure}
+\subsection{Energia da computação}
 
-Do ponto de vista de corretude numérica, os erros máximos observados ficaram na
-ordem de $10^{-4}$ a $10^{-3}$ para as implementações otimizadas em FP16. Essa diferença é
-esperada, pois SDPA e Triton podem utilizar ordem de operações, acumulação,
-fusão e instruções internas diferentes da implementação explícita usada como
-referência. O erro nulo da versão eager decorre do fato de ela ser a própria
-referência de comparação.
+A potência média do computador de bordo pode ser modelada como uma parcela fixa, consumida mesmo sem processamento, mais uma parcela proporcional à taxa de inferências:
+\begin{equation}
+  P_c = P_{c0} + r\,E_{\mathrm{inf}},
+  \label{eq_pc}
+\end{equation}
+em que $r$ é o número de passadas da rede por segundo e $E_{\mathrm{inf}}$ é a energia adicional de cada passada, medida integrando a potência do módulo durante a inferência e descontando a parcela fixa. Módulos embarcados como o NVIDIA Jetson Orin Nano oferecem modos de potência que limitam frequências e consumo, de 7~W a 25~W \cite{nvidia2024orinnano,nvidia2025jetpack62}. Com isso, $P_{c0}$, $E_{\mathrm{inf}}$ e $r_{\max}$ dependem do modo escolhido.
 
-Em conjunto, os resultados indicam que os pontos alinhados selecionados são
-úteis para resumir o comportamento em tamanhos usuais de sequência, enquanto a
-varredura completa em múltiplos de 32 é mais adequada para discutir
-comportamento assintótico, efeitos de alinhamento e estabilidade do ganho de
-desempenho.
+A taxa de inferências $r$ depende da estratégia de processamento. Com as definições das Equações~\eqref{eq_visibilidade} e \eqref{eq_recortes}, três casos de referência são:
+\begin{itemize}
+    \item \textbf{quadro inteiro}: $r = n_t f_q$, todos os recortes de todos os quadros;
+    \item \textbf{pular quadros}: $r = n_t f_q / k$, processando um quadro a cada $k$;
+    \item \textbf{memória geográfica}: $r \approx n_v^{\ast}\,V w / A_t$, em que $A_t = (s_t\,GSD)^{2}$ é a área de solo coberta por um recorte e $n_v^{\ast} \leq n_v$ é o número desejado de observações de cada ponto.
+\end{itemize}
+Nos dois primeiros casos, a taxa de inferências independe da velocidade de voo. Na memória geográfica, ela é proporcional à taxa de cobertura de área. Esse contraste tem uma consequência direta sobre a energia de computação por unidade de área, $P_c/(Vw)$. Com quadro inteiro, essa energia diminui com a velocidade, porque o mesmo consumo é diluído em mais área. Com memória geográfica, a parcela proporcional às inferências fica constante, igual a $n_v^{\ast} E_{\mathrm{inf}}/A_t$, e só a parcela fixa $P_{c0}$ diminui com a velocidade.
 
-\section{Profiling de Baixo Nível}
+\section{Formulação do problema de co-projeto}
+\label{sec_coprojeto}
 
-Os resultados sugerem que o kernel Triton desenvolvido neste trabalho explora
-corretamente a ideia de evitar a materialização da matriz de atenção, mas ainda
-não atinge o mesmo nível de otimização do backend usado pelo PyTorch SDPA no
-caso maior. Na implementação avaliada, os parâmetros principais do kernel são
-\texttt{BLOCK\_M=16} e \texttt{BLOCK\_N=64}. Para $N=1024$, isso implica
-64 blocos de queries e 16 blocos de keys/values por cabeça. Como
-cada bloco de queries percorre toda a sequência de keys, os blocos de $K$ e $V$
-são recarregados várias vezes ao longo da execução.
+Os trabalhos de arquitetura de computação para veículos aéreos mostraram que o desempenho do computador de bordo limita a velocidade segura do veículo e, com isso, o tempo e a energia da missão \cite{boroujerdian2018mavbench,krishnan2020sky}. Os trabalhos de planejamento de cobertura, por sua vez, otimizam a energia de voo sob restrições de resolução \cite{difranco2016coverage}. Este trabalho combina as duas perspectivas. Reunindo as Equações~\eqref{eq_pv}, \eqref{eq_pel}, \eqref{eq_e_area}, \eqref{eq_gsd} e \eqref{eq_pc}, a energia por área inspecionada é escrita como função da altitude $h$, da velocidade $V$, da estratégia de inferência $\pi$ e do hardware embarcado $H$:
+\begin{equation}
+  e(h, V, \pi, H) =
+  \frac{ \dfrac{P\!\left(V;\, m_0 + m_H\right)}{\eta_m} + P_{av} + P_{c0}(H) + r(\pi, h, V)\,E_{\mathrm{inf}}(H) }
+       { V\, w(h) },
+  \label{eq_coprojeto}
+\end{equation}
+em que $m_0$ é a massa da aeronave sem o computador e $m_H$ é a massa acrescentada pelo hardware. O ponto de operação ótimo resolve
+\begin{equation}
+  \min_{h,\,V,\,\pi,\,H}\ e(h, V, \pi, H)
+  \quad \text{sujeito a} \quad
+  \mathcal{R}_f(h, V, \pi) \geq \mathcal{R}_{\min},
+  \quad r(\pi, h, V) \leq r_{\max}(H),
+  \label{eq_otimizacao}
+\end{equation}
+em que $\mathcal{R}_{\min}$ é a revocação de focos únicos exigida pela vigilância.
 
-Esse padrão é suficiente para demonstrar o benefício da fusão em relação ao
-eager, mas pode limitar a eficiência para sequências maiores. Mesmo usando
-comprimentos múltiplos de 32, a manutenção dos acumuladores do \textit{softmax
-online} em FP32 aumenta a pressão sobre registradores, podendo reduzir ocupação
-dependendo da arquitetura e da configuração escolhida pelo compilador Triton.
-
-Na varredura com múltiplos de 32, os degraus observados nas curvas também são
-coerentes com essa estrutura de blocos. Embora todos os valores sejam múltiplos
-de \texttt{BLOCK\_M=16}, apenas parte deles é múltipla de
-\texttt{BLOCK\_N=64}; além disso, sempre que a sequência cruza um novo limite de
-bloco, aumenta o número de programas ou de iterações internas do kernel. Por
-isso, a curva de latência não precisa ser perfeitamente suave mesmo quando $N$
-cresce de forma regular.
-
-Para complementar as medições de tempo, foi executado profiling com NVIDIA
-Nsight Compute por meio da interface \texttt{nsight-python}. Foram coletados os
-contadores \texttt{dram\_\_bytes.sum},
-\texttt{dram\_\_bytes\_op\_read.sum},
-\texttt{dram\_\_bytes\_op\_write.sum} e
-\texttt{gpu\_\_time\_duration.sum}, permitindo estimar a intensidade
-aritmética efetiva e o throughput de cada implementação. Cada combinação de
-backend e número de tokens foi perfilada em um relatório separado, reduzindo
-interferências entre kernels de biblioteca e kernels gerados pelo Triton.
-
-\section{Modelo Roofline}
-
-A partir dos bytes medidos em DRAM e da estimativa de operações
-$4BHN^2D$, foi construído o gráfico Roofline da
-Figura \ref{fig:attention_roofline}. Os tetos exibidos correspondem às
-características da GPU avaliada: 448~GB/s de banda de memória GDDR7, valor
-nominal da RTX 5060, e aproximadamente 38~TFLOP/s de pico FP16 denso em Tensor
-Cores, estimado a partir das especificações oficiais do fabricante. O ponto de
-inflexão entre os regimes \textit{memory-bound} e \textit{compute-bound} da GPU
-ocorre, portanto, em torno de 86~FLOP/byte.
-
-\begin{figure}[H]
-    \centering
-    \caption{Roofline empírico das implementações de atenção}
-    \includegraphics[width=0.85\textwidth]{figures/attention_roofline.pdf}
-    \label{fig:attention_roofline}
-    \fonte{Elaborada pelo autor.}
-\end{figure}
-
-Em $N=1024$, a implementação eager movimentou aproximadamente 297,3 MB em DRAM,
-com intensidade aritmética de 10,84 FLOP/byte e 3,95 TFLOP/s efetivos. Por estar
-bem abaixo do ponto de inflexão, o eager opera em regime claramente
-\textit{memory-bound}: seu teto imposto pela banda de memória é de cerca de
-4,9~TFLOP/s ($10{,}84 \times 448$~GB/s), do qual a implementação atinge
-aproximadamente 81\%. No mesmo
-ponto, o SDPA movimentou aproximadamente 4,94 MB, alcançando
-652,21 FLOP/byte e 29,70 TFLOP/s. O kernel Triton movimentou volume semelhante,
-aproximadamente 4,79 MB, e atingiu 672,37 FLOP/byte, mas permaneceu em
-20,57 TFLOP/s. Ambas as implementações fundidas cruzam para o regime
-\textit{compute-bound}: o SDPA opera em torno de 77\% do pico FP16 estimado da
-GPU, enquanto o Triton alcança cerca de 54\%. Essa diferença é importante: ela
-mostra que o Triton customizado
-de fato reduz a movimentação de memória global em relação ao eager, mas seu
-desempenho inferior ao SDPA não pode ser explicado apenas pelo tráfego de DRAM.
-
-Assim, o Roofline reforça a hipótese central do trabalho e, ao mesmo tempo,
-delimita a contribuição experimental. A fusão de operadores aumenta
-substancialmente a intensidade aritmética ao evitar a materialização da matriz
-intermediária $N \times N$, mas a aproximação do teto de desempenho também
-depende de reutilização local dos blocos, ocupação efetiva, pressão de
-registradores, escalonamento de warps e parâmetros de tiling adequados à GPU
-avaliada. O kernel em Triton é, portanto, eficiente frente ao eager, enquanto o
-SDPA representa uma referência de biblioteca altamente otimizada.
-
-\section{Implicações para Inferência Embarcada em VANTs}
-\label{sec:implicacoes_embarcado}
-
-Uma propriedade útil do Modelo Roofline é que a intensidade aritmética é uma
-característica do algoritmo e do fluxo de dados, não do hardware: os valores de
-FLOP/byte medidos nesta seção transferem-se diretamente para outras GPUs,
-enquanto os tetos de banda e de pico computacional mudam com a plataforma. Isso
-permite projetar, de forma analítica, o comportamento das três implementações
-no hardware embarcado típico de VANTs, mesmo sem repetir os experimentos nesses
-módulos.
-
-Considere-se o NVIDIA Jetson Orin Nano, módulo representativo da classe de
-computadores embarcados utilizados em VANTs de pequeno porte, com cerca de
-68~GB/s de banda de memória LPDDR5 compartilhada entre CPU e GPU e pico da ordem
-de 10~TFLOP/s em FP16 denso \cite{nvidia2024orinnano}. Com a intensidade
-aritmética medida de 10,84 FLOP/byte, a implementação eager ficaria limitada
-pela banda de memória a aproximadamente $10{,}84 \times 68 \approx
-0{,}74$~TFLOP/s, menos de 8\% do pico computacional do módulo, e isso no cenário
-otimista em que toda a banda estivesse disponível para a GPU. Já as
-implementações fundidas, com intensidade aritmética superior a 650 FLOP/byte,
-teriam teto de memória acima de 44~TFLOP/s, muito além do pico do módulo: sua
-limitação passaria a ser exclusivamente computacional. Em outras palavras, no
-hardware embarcado o kernel fundido pode, em princípio, explorar todo o
-potencial aritmético do dispositivo, enquanto a implementação ingênua fica
-confinada a uma fração pequena dele. Como a razão entre pico computacional e
-banda de memória é maior no módulo embarcado (cerca de 147~FLOP/byte no Orin
-Nano contra 86~FLOP/byte na RTX 5060 avaliada), o benefício relativo da fusão
-de operadores tende a ser maior no drone do que na estação de trabalho.
-
-Há ainda uma implicação energética direta. O acesso à DRAM consome ordens de
-grandeza mais energia por byte do que operações aritméticas realizadas no chip
-\cite{horowitz2014computing}. A redução de aproximadamente 297~MB para menos de
-5~MB de tráfego em DRAM por operação de atenção, observada em $N=1024$,
-representa portanto não apenas ganho de latência, mas redução do custo
-energético por inferência, fator que em um VANT se converte em autonomia de
-voo. A quantificação experimental desse ganho energético, por meio de medição
-de potência durante a inferência, é apontada como trabalho futuro.
-
-Duas ressalvas delimitam essa análise. Primeiro, trata-se de uma projeção
-analítica: latências absolutas não são transferíveis entre plataformas, e
-efeitos como o compartilhamento da banda de memória com a CPU, limites térmicos
-e diferenças de arquitetura entre gerações de GPU só podem ser capturados por
-experimentos no módulo real, viáveis com a mesma pilha de software utilizada
-neste trabalho, uma vez que PyTorch e Triton são suportados no ambiente JetPack
-dos módulos Jetson. Segundo, a otimização em nível de kernel é complementar, e
-não concorrente, às abordagens em nível de arquitetura de modelo voltadas a
-dispositivos móveis, como MobileViT \cite{mehta2022mobilevit} e EfficientViT
-\cite{cai2023efficientvit}: um modelo compacto projetado para a borda também
-executa operações de atenção e igualmente se beneficia de kernels que evitem a
-materialização de tensores intermediários.
+A Equação~\eqref{eq_coprojeto} deixa visíveis os compromissos discutidos ao longo deste capítulo. A altitude aumenta $w$, mas reduz o tamanho dos objetos em pixels e, com ele, $\mathcal{R}_f$. A velocidade desloca o ponto de operação na curva de potência e aumenta o borrão. A estratégia de inferência altera $r$. O hardware altera $P_{c0}$, $E_{\mathrm{inf}}$ e $r_{\max}$, e também a massa, que entra na potência de propulsão pela Equação~\eqref{eq_dm}. Os capítulos seguintes descrevem como cada termo é medido ou estimado a partir dos dados da base MBG-V2 e do computador embarcado de referência.
