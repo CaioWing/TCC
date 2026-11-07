@@ -143,13 +143,20 @@ Em uma fotografia vertical sobre terreno plano, a escala da imagem é a razão e
   GSD = \frac{h\,p}{f_c},
   \label{eq_gsd}
 \end{equation}
-em que $h$ é a altura de voo sobre o terreno, $p$ é o tamanho físico do pixel no sensor e $f_c$ é a distância focal. Para uma imagem com $N_x \times N_y$ pixels, sendo $N_x$ na direção transversal ao voo, a pegada no solo tem largura $w = N_x\,GSD$ e comprimento $L = N_y\,GSD$. Ambos crescem linearmente com a altitude.
+em que $h$ é a altura de voo sobre o terreno, $p$ é o tamanho físico do pixel no sensor e $f_c$ é a distância focal. Para uma imagem com $N_x \times N_y$ pixels, sendo $N_x$ na direção transversal ao voo, a pegada no solo tem largura e comprimento
+\begin{equation}
+  w = N_x\,GSD = \frac{N_x\,p}{f_c}\,h,
+  \qquad
+  L = N_y\,GSD = \frac{N_y\,p}{f_c}\,h.
+  \label{eq_pegada}
+\end{equation}
+Os fatores $N_x p/f_c$ e $N_y p/f_c$ dependem apenas da câmera: são iguais a $2\tan(\beta_x/2)$ e $2\tan(\beta_y/2)$, em que $\beta_x$ e $\beta_y$ são os ângulos de campo de visão nas duas direções. Para uma câmera fixa, portanto, a largura e o comprimento da pegada crescem na mesma proporção que a altura de voo.
 
 Quando a aeronave voa com velocidade $V$ e grava vídeo com taxa de quadros $f_q$, cada ponto do solo permanece no campo de visão durante
 \begin{equation}
   t_{v} = \frac{L}{V},
   \qquad\text{e aparece em}\qquad
-  n_{v} = \frac{f_q\,L}{V}\ \text{quadros}.
+  n_{v} = \frac{f_q\,L}{V} = \frac{f_q\,N_y\,p}{f_c}\,\frac{h}{V}\ \text{quadros}.
   \label{eq_visibilidade}
 \end{equation}
 A área nova que entra no campo de visão por unidade de tempo é $Vw$, e a fração nova de cada quadro em relação ao anterior é $V/(f_q L)$. Esse grande número de observações redundantes de um mesmo ponto é o que a estratégia de memória geográfica explora. A Figura~\ref{fig_geometria} mostra essas grandezas para os voos da base MBG-V2.
@@ -162,7 +169,35 @@ A área nova que entra no campo de visão por unidade de tempo é $Vw$, e a fra�
 \end{figure}
 
 
-Um objeto de dimensão característica $s$ ocupa $s/GSD$ pixels na imagem. A altitude define, portanto, um compromisso: subir aumenta $w$ e reduz a energia por área na Equação~\eqref{eq_e_area}, mas diminui o tamanho dos objetos em pixels e, com ele, a probabilidade de detecção.
+\subsection{Compromisso entre altitude, energia e detecção}
+\label{sec_compromisso_altitude}
+
+A Equação~\eqref{eq_pegada} permite escrever a energia por área da Equação~\eqref{eq_e_area} em função da altura de voo:
+\begin{equation}
+  e = \frac{P_{el,\mathrm{tot}}(V)}{V\,w}
+    = \frac{f_c}{N_x\,p}\,\frac{P_{el,\mathrm{tot}}(V)}{V\,h}.
+  \label{eq_e_h}
+\end{equation}
+Para uma velocidade e uma potência fixas, a energia por área é inversamente proporcional à altura: dobrar $h$ dobra a largura da faixa e reduz $e$ à metade.
+
+A mesma geometria, porém, afeta o tamanho dos objetos na imagem. Um objeto de dimensão característica $s$ no solo ocupa na imagem
+\begin{equation}
+  s_{px} = \frac{s}{GSD} = \frac{s\,f_c}{p\,h}
+  \label{eq_spx}
+\end{equation}
+pixels de lado, e sua área na imagem é proporcional a $s_{px}^{2}$. Dobrar a altura reduz o lado do objeto em pixels à metade e sua área na imagem a um quarto. Nas condições da Figura~\ref{fig_geometria}, por exemplo, um objeto de 0,4~m ocupa cerca de 29 pixels de lado a 40~m de altura e cerca de 14 pixels a 80~m. Com menos pixels, a rede dispõe de menos detalhe para reconhecer o objeto, e a probabilidade de detecção diminui.
+
+Eliminando $h$ entre as Equações~\eqref{eq_e_h} e \eqref{eq_spx}, obtém-se uma relação direta entre a energia por área e o tamanho do objeto na imagem:
+\begin{equation}
+  e = \frac{P_{el,\mathrm{tot}}(V)}{V\,N_x}\,\frac{s_{px}}{s}.
+  \label{eq_e_spx}
+\end{equation}
+A Equação~\eqref{eq_e_spx} mostra que, para uma dada velocidade, economizar energia por área significa necessariamente apresentar os objetos ao detector com menos pixels; a distância focal e o tamanho do pixel do sensor desaparecem da relação, restando apenas o número de pixels transversais $N_x$. Se o detector precisa de pelo menos $s_{px,\min}$ pixels para atingir a revocação exigida em objetos de tamanho $s$, a Equação~\eqref{eq_e_spx} fornece o menor valor possível da energia por área naquela velocidade, atingido na altura máxima
+\begin{equation}
+  h_{\max} = \frac{s\,f_c}{p\,s_{px,\min}}.
+  \label{eq_hmax}
+\end{equation}
+O valor de $s_{px,\min}$ não é conhecido \textit{a priori}: ele depende do detector e da classe do objeto e precisa ser medido. Por isso, a revocação em função da altura é uma das curvas centrais deste trabalho.
 
 \subsection{Borrão de movimento}
 
@@ -171,7 +206,7 @@ Durante o tempo de exposição $t_e$ de cada quadro, a aeronave se desloca $V t_
   b = \frac{V\,t_e}{GSD}\ \text{pixels}.
   \label{eq_borrao}
 \end{equation}
-O borrão cresce com a velocidade e diminui com a altitude, porque o $GSD$ aumenta. Velocidades altas, que seriam favoráveis à energia por área, podem assim degradar a detecção de objetos pequenos.
+Substituindo a Equação~\eqref{eq_gsd}, $b = V t_e f_c/(p\,h)$: o borrão cresce com a velocidade e diminui com a altura, porque o $GSD$ aumenta. Velocidades altas, que seriam favoráveis à energia por área, podem assim degradar a detecção de objetos pequenos.
 
 \subsection{Georreferenciamento das detecções}
 \label{sec_georref}
