@@ -8,7 +8,7 @@ Este capítulo reúne os modelos usados para avaliar a energia por quilômetro q
 \section{Potência de um rotor pela teoria da quantidade de movimento}
 \label{sec_momento}
 
-A teoria da quantidade de movimento modela o rotor como um disco atuador ideal, de área $A$, que acelera o ar de forma uniforme e sem perdas por atrito ou rotação da esteira \cite{glauert1948,leishman2006}. Em pairado, o ar entra no disco com velocidade induzida $v_h$ e deixa a esteira, muito abaixo do disco, com velocidade $2v_h$. Aplicando a conservação da massa, da quantidade de movimento e da energia a um volume de controle que envolve o rotor e a esteira, obtêm-se a tração $T$ e a velocidade induzida em pairado:
+A teoria da quantidade de movimento modela o rotor como um disco atuador ideal, de área $A$, que acelera o ar de forma uniforme e sem perdas por atrito ou rotação da esteira \cite{glauert1948}, \cite[p.~59--63]{leishman2006}. O volume de controle está representado na Figura~\ref{fig_disco}. Em pairado, o ar entra no disco com velocidade induzida $v_h$ e deixa a esteira, muito abaixo do disco, com velocidade $2v_h$. Aplicando a conservação da massa, da quantidade de movimento e da energia a um volume de controle que envolve o rotor e a esteira, obtêm-se a tração $T$ e a velocidade induzida em pairado \cite[p.~62--63]{leishman2006}:
 \begin{equation}
   T = 2\rho A v_h^{2}
   \qquad\Longrightarrow\qquad
@@ -26,7 +26,15 @@ Um rotor real consome mais do que esse valor, por causa da não uniformidade da 
   FM = \frac{P_{h,\mathrm{ideal}}}{P_{h}},
   \label{eq_fm}
 \end{equation}
-em que $P_h$ é a potência efetivamente absorvida pelo rotor.
+em que $P_h$ é a potência efetivamente absorvida pelo rotor \cite[p.~70]{leishman2006}.
+\begin{figure}[htb]
+  \centering
+  \caption{Volume de controle da teoria da quantidade de movimento para um rotor em pairado}
+  \label{fig_disco}
+  \includegraphics[width=0.5\textwidth]{figuras/fig_disco_atuador.pdf}
+  \fonte{Elaborado pelo autor, com base em \citeonline[p.~59--63]{leishman2006}. As setas indicam a velocidade induzida no disco, $v_h$, e na esteira, $2v_h$.}
+\end{figure}
+
 
 Para o problema deste trabalho, a consequência mais importante da Equação~\eqref{eq_ph} vem do pairado, em que a tração equilibra o peso, $T = mg$. Nesse caso, a potência cresce com a massa elevada a $3/2$. Para uma pequena variação de massa $\Delta m$,
 \begin{equation}
@@ -38,14 +46,14 @@ Assim, um acréscimo de 10\% na massa do veículo, causado por exemplo pelo comp
 \section{Voo à frente e curva de potência requerida}
 \label{sec_voo_frente}
 
-Em voo à frente com velocidade $V$, o disco do rotor recebe, além da velocidade induzida $v_i$, uma componente de escoamento livre. Uma hipótese proposta por Glauert e apresentada em detalhe por \citeonline{leishman2006} é que a tração continue dada pela vazão mássica através do disco multiplicada pelo dobro da velocidade induzida, o que leva à expressão implícita
+Em voo à frente com velocidade $V$, o disco do rotor recebe, além da velocidade induzida $v_i$, uma componente de escoamento livre. Uma hipótese proposta por Glauert e apresentada em detalhe por \citeonline[p.~93--96]{leishman2006} é que a tração continue dada pela vazão mássica através do disco multiplicada pelo dobro da velocidade induzida, o que leva à expressão implícita
 \begin{equation}
   v_i = \frac{v_h^{2}}{\sqrt{(V\cos\alpha_d)^{2} + (V\sin\alpha_d + v_i)^{2}}},
   \label{eq_glauert}
 \end{equation}
-em que $\alpha_d$ é o ângulo de ataque do disco, negativo quando o disco é inclinado para a frente. Para velocidades bem maiores que $v_h$, a Equação~\eqref{eq_glauert} tende a $v_i \approx v_h^{2}/V$. Ou seja, a potência induzida cai com a velocidade, porque o rotor passa a processar uma massa de ar maior por unidade de tempo.
+em que $\alpha_d$ é o ângulo de ataque do disco, positivo quando o disco é inclinado para a frente, conforme a convenção de \citeonline[p.~99]{leishman2006}. Com essa convenção, a componente $V\sin\alpha_d$ soma-se à velocidade induzida, pois o escoamento livre atravessa o disco de cima para baixo. Para velocidades bem maiores que $v_h$, a Equação~\eqref{eq_glauert} tende a $v_i \approx v_h^{2}/V$. Ou seja, a potência induzida cai com a velocidade, porque o rotor passa a processar uma massa de ar maior por unidade de tempo.
 
-A potência total requerida em voo nivelado é usualmente decomposta em três parcelas \cite{leishman2006}:
+A potência total requerida em voo nivelado é usualmente decomposta em três parcelas \cite[p.~217--227]{leishman2006}:
 \begin{equation}
   P(V) = \underbrace{\kappa\, T\, v_i(V)}_{\text{induzida}}
        + \underbrace{\frac{\sigma C_{d0}}{8}\,\rho A (\Omega R)^{3}\left(1 + K\mu^{2}\right)}_{\text{perfil}}
@@ -54,17 +62,25 @@ A potência total requerida em voo nivelado é usualmente decomposta em três pa
 \end{equation}
 Os termos da Equação~\eqref{eq_pv} são os seguintes:
 \begin{itemize}
-    \item $\kappa > 1$ é um fator empírico de correção das perdas induzidas;
+    \item $\kappa > 1$ é um fator empírico de correção das perdas induzidas, para o qual um valor médio entre 1,15 e 1,25 costuma bastar em estimativas preliminares \cite[p.~219]{leishman2006};
     \item $\sigma$ é a solidez do rotor;
     \item $C_{d0}$ é o coeficiente de arrasto de perfil médio das seções da pá;
     \item $\Omega R$ é a velocidade de ponta da pá;
     \item $\mu = V\cos\alpha_d/(\Omega R)$ é a razão de avanço;
-    \item $K$ é uma constante empírica que representa o aumento do arrasto de perfil em voo à frente;
-    \item $f_e$ é a área equivalente de placa plana da fuselagem, ou seja, o produto de seu coeficiente de arrasto pela área de referência.
+    \item $K$ é uma constante empírica que representa o aumento do arrasto de perfil em voo à frente, com valores médios de 4,65 ou 4,7 \cite[p.~219]{leishman2006};
+    \item $f_e$ é a área equivalente de placa plana, ou seja, o produto do coeficiente de arrasto pela área de referência, que agrega o arrasto da fuselagem, do cubo e do trem de pouso \cite[p.~225]{leishman2006}.
 \end{itemize}
 Em um multirrotor com $N$ rotores, as duas primeiras parcelas são somadas sobre os rotores, e a parcela parasita é a da aeronave como um todo.
 
-A soma de uma parcela decrescente, a induzida, com uma crescente, a parasita, dá à curva $P(V)$ o formato característico de ``balde'' das aeronaves de asas rotativas. A potência é alta em pairado, passa por um mínimo em velocidade intermediária e volta a crescer em alta velocidade \cite{leishman2006}. Esse é o mesmo tipo de curva de potência requerida estudado no desempenho de aeronaves de asa fixa \cite{ojha1995,saarlas2006,roskam2000}, e dele derivam as velocidades características da Seção~\ref{sec_desempenho}.
+A soma de uma parcela decrescente, a induzida, com uma crescente, a parasita, dá à curva $P(V)$ o formato característico de ``balde'' das aeronaves de asas rotativas. A potência é alta em pairado, passa por um mínimo em velocidade intermediária e volta a crescer em alta velocidade \cite[p.~227]{leishman2006}. A Figura~\ref{fig_curva_potencia} ilustra esse comportamento. Esse é o mesmo tipo de curva de potência requerida estudado no desempenho de aeronaves de asa fixa \cite{saarlas2006}, e dele derivam as velocidades características da Seção~\ref{sec_desempenho}.
+\begin{figure}[htb]
+  \centering
+  \caption{Parcelas da potência mecânica requerida por um quadrirrotor em voo nivelado}
+  \label{fig_curva_potencia}
+  \includegraphics[width=0.85\textwidth]{figuras/fig_curva_potencia.pdf}
+  \fonte{Elaborado pelo autor, a partir da Equação~\eqref{eq_pv} com $\kappa = 1{,}15$ e $K = 4{,}65$ \cite[p.~219]{leishman2006}. Os demais parâmetros são ilustrativos: massa de 1,4~kg, quatro rotores de 0,12~m de raio, $\sigma = 0{,}10$, $C_{d0} = 0{,}02$, $\Omega R = 110$~m/s e $f_e = 0{,}02$~m$^2$. A reta tracejada parte da origem e tangencia a curva total em $V_{Rmax}$.}
+\end{figure}
+
 
 \subsection{Equilíbrio em cruzeiro e estimativa do arrasto}
 
@@ -104,7 +120,7 @@ Para uma aeronave elétrica com energia útil de bateria $E_b$, a autonomia e o 
   R = V\,t_{\mathrm{aut}} = \frac{E_b\,V}{P_{el}(V)}.
   \label{eq_aut}
 \end{equation}
-A autonomia máxima ocorre na velocidade de potência mínima, $V_{Pmin}$. O alcance máximo ocorre na velocidade que minimiza a razão $P_{el}/V$, que é a energia gasta por metro percorrido. Essa velocidade, $V_{Rmax}$, é encontrada graficamente como o ponto de tangência entre a curva $P_{el}(V)$ e uma reta que passa pela origem, exatamente como na análise clássica de desempenho de aeronaves \cite{ojha1995,saarlas2006,roskam2000}:
+A autonomia máxima ocorre na velocidade de potência mínima, $V_{Pmin}$. O alcance máximo ocorre na velocidade que minimiza a razão $P_{el}/V$, que é a energia gasta por metro percorrido. Essa velocidade, $V_{Rmax}$, é encontrada graficamente como o ponto de tangência entre a curva $P_{el}(V)$ e uma reta que passa pela origem, exatamente como na análise clássica de desempenho de aeronaves \cite[p.~106]{saarlas2006}:
 \begin{equation}
   \frac{\mathrm{d}P_{el}}{\mathrm{d}V}\bigg|_{V_{Rmax}} = \frac{P_{el}(V_{Rmax})}{V_{Rmax}}.
   \label{eq_vrmax}
@@ -122,12 +138,12 @@ em que $P_{el,\mathrm{tot}}$ inclui a propulsão, os aviônicos e o computador d
 
 \subsection{Resolução no solo, pegada e cobertura}
 
-Para uma câmera do tipo \textit{pinhole} apontada para o nadir, sobre terreno plano, cada pixel corresponde no solo a um quadrado de lado
+Em uma fotografia vertical sobre terreno plano, a escala da imagem é a razão entre a distância focal e a altura de voo, $f_c/h$, que é igual à razão entre uma distância medida na imagem e a distância correspondente no solo \cite[p.~75]{paine2012}. Aplicando essa escala a um único pixel, cada pixel de uma câmera digital apontada para o nadir corresponde no solo a um quadrado de lado
 \begin{equation}
   GSD = \frac{h\,p}{f_c},
   \label{eq_gsd}
 \end{equation}
-em que $h$ é a altura de voo sobre o terreno, $p$ é o tamanho físico do pixel no sensor e $f_c$ é a distância focal \cite{wolf2014}. Para uma imagem com $N_x \times N_y$ pixels, sendo $N_x$ na direção transversal ao voo, a pegada no solo tem largura $w = N_x\,GSD$ e comprimento $L = N_y\,GSD$. Ambos crescem linearmente com a altitude.
+em que $h$ é a altura de voo sobre o terreno, $p$ é o tamanho físico do pixel no sensor e $f_c$ é a distância focal. Para uma imagem com $N_x \times N_y$ pixels, sendo $N_x$ na direção transversal ao voo, a pegada no solo tem largura $w = N_x\,GSD$ e comprimento $L = N_y\,GSD$. Ambos crescem linearmente com a altitude.
 
 Quando a aeronave voa com velocidade $V$ e grava vídeo com taxa de quadros $f_q$, cada ponto do solo permanece no campo de visão durante
 \begin{equation}
@@ -136,7 +152,15 @@ Quando a aeronave voa com velocidade $V$ e grava vídeo com taxa de quadros $f_q
   n_{v} = \frac{f_q\,L}{V}\ \text{quadros}.
   \label{eq_visibilidade}
 \end{equation}
-A área nova que entra no campo de visão por unidade de tempo é $Vw$, e a fração nova de cada quadro em relação ao anterior é $V/(f_q L)$. Esse grande número de observações redundantes de um mesmo ponto é o que a estratégia de memória geográfica explora.
+A área nova que entra no campo de visão por unidade de tempo é $Vw$, e a fração nova de cada quadro em relação ao anterior é $V/(f_q L)$. Esse grande número de observações redundantes de um mesmo ponto é o que a estratégia de memória geográfica explora. A Figura~\ref{fig_geometria} mostra essas grandezas para os voos da base MBG-V2.
+\begin{figure}[htb]
+  \centering
+  \caption{Geometria do imageamento nadiral nas condições dos voos da base MBG-V2}
+  \label{fig_geometria}
+  \includegraphics[width=0.95\textwidth]{figuras/fig_geometria_imageamento.pdf}
+  \fonte{Elaborado pelo autor, com $h = 40$~m, $GSD = 1{,}4$~cm/pixel, imagem de $3840 \times 2160$ pixels e $V = 4$~m/s. A faixa destacada é a área nova que entra no campo de visão a cada segundo; a grade indica recortes de 640 pixels.}
+\end{figure}
+
 
 Um objeto de dimensão característica $s$ ocupa $s/GSD$ pixels na imagem. A altitude define, portanto, um compromisso: subir aumenta $w$ e reduz a energia por área na Equação~\eqref{eq_e_area}, mas diminui o tamanho dos objetos em pixels e, com ele, a probabilidade de detecção.
 
@@ -160,7 +184,7 @@ Para transformar uma detecção na imagem em uma posição no solo, são necess�
   \begin{bmatrix} -(v - c_y) \\ u - c_x \end{bmatrix}.
   \label{eq_georref}
 \end{equation}
-Na Equação~\eqref{eq_georref}, o eixo vertical da imagem, crescente para baixo, aponta no sentido oposto ao rumo, e o eixo horizontal aponta para a direita da aeronave. Os deslocamentos são então somados à posição da aeronave, convertida de latitude $\phi$ e longitude $\lambda$ para coordenadas locais por meio dos raios de curvatura do elipsoide WGS-84 \cite{kayton1997}:
+Na Equação~\eqref{eq_georref}, o eixo vertical da imagem, crescente para baixo, aponta no sentido oposto ao rumo, e o eixo horizontal aponta para a direita da aeronave. Os deslocamentos são então somados à posição da aeronave, convertida de latitude $\phi$ e longitude $\lambda$ para coordenadas locais por meio dos raios de curvatura meridiano, $R_M$, e do primeiro vertical, $R_N$, do elipsoide WGS-84 \cite[p.~23--25]{kayton1997}:
 \begin{equation}
   \Delta n = R_M\,\Delta\phi, \qquad \Delta e = R_N\cos\phi\,\Delta\lambda,
   \qquad
@@ -168,7 +192,7 @@ Na Equação~\eqref{eq_georref}, o eixo vertical da imagem, crescente para baixo
   R_M = \frac{a\,(1-\epsilon^{2})}{(1 - \epsilon^{2}\sin^{2}\phi)^{3/2}},
   \label{eq_raios}
 \end{equation}
-em que $a$ é o semieixo maior e $\epsilon$ é a excentricidade do elipsoide. Para áreas da ordem de um bairro, com poucos quilômetros de extensão, o erro dessa aproximação local é pequeno diante da incerteza do posicionamento por satélite.
+em que $a$ é o semieixo maior e $\epsilon$ é a excentricidade do elipsoide. A rigor, os raios devem ser somados à altitude da aeronave \cite[p.~25]{kayton1997}, mas a 40~m de altura essa correção é desprezível diante de raios da ordem de 6\,400~km. Para áreas da ordem de um bairro, com poucos quilômetros de extensão, o erro dessa aproximação local é pequeno diante da incerteza do posicionamento por satélite.
 
 \section{Detecção de objetos com redes neurais}
 \label{sec_deteccao}
@@ -217,7 +241,7 @@ Em um sistema de tempo real, cada tarefa precisa terminar dentro de um prazo \ci
   U = \sum_j \frac{C_j}{T_j},
   \label{eq_utilizacao}
 \end{equation}
-deve ficar abaixo de 1 para que o sistema seja viável \cite{laplante2004}. No contexto deste trabalho, isso define uma taxa máxima de passadas da rede, $r_{\max}$, para cada combinação de computador de bordo, modo de potência e tamanho de modelo.
+mede a fração do tempo em que o processador está ocupado \cite[p.~10--11]{laplante2004}. A condição $U \leq 1$ é necessária para que todos os prazos sejam cumpridos. Com escalonamento por prazo mais próximo (EDF), ela também é suficiente; com prioridades fixas atribuídas pela taxa (RM), a garantia vale para $U \leq n(2^{1/n} - 1)$, limite que tende a $\ln 2 \approx 0{,}69$ para muitas tarefas \cite[p.~95--97]{laplante2004}. No contexto deste trabalho, isso define uma taxa máxima de passadas da rede, $r_{\max}$, para cada combinação de computador de bordo, modo de potência e tamanho de modelo.
 
 \subsection{Energia da computação}
 
@@ -234,7 +258,15 @@ A taxa de inferências $r$ depende da estratégia de processamento. Com as defin
     \item \textbf{pular quadros}: $r = n_t f_q / k$, processando um quadro a cada $k$;
     \item \textbf{memória geográfica}: $r \approx n_v^{\ast}\,V w / A_t$, em que $A_t = (s_t\,GSD)^{2}$ é a área de solo coberta por um recorte e $n_v^{\ast} \leq n_v$ é o número desejado de observações de cada ponto.
 \end{itemize}
-Nos dois primeiros casos, a taxa de inferências independe da velocidade de voo. Na memória geográfica, ela é proporcional à taxa de cobertura de área. Esse contraste tem uma consequência direta sobre a energia de computação por unidade de área, $P_c/(Vw)$. Com quadro inteiro, essa energia diminui com a velocidade, porque o mesmo consumo é diluído em mais área. Com memória geográfica, a parcela proporcional às inferências fica constante, igual a $n_v^{\ast} E_{\mathrm{inf}}/A_t$, e só a parcela fixa $P_{c0}$ diminui com a velocidade.
+Nos dois primeiros casos, a taxa de inferências independe da velocidade de voo. Na memória geográfica, ela é proporcional à taxa de cobertura de área. Esse contraste tem uma consequência direta sobre a energia de computação por unidade de área, $P_c/(Vw)$. Com quadro inteiro, essa energia diminui com a velocidade, porque o mesmo consumo é diluído em mais área. Com memória geográfica, a parcela proporcional às inferências fica constante, igual a $n_v^{\ast} E_{\mathrm{inf}}/A_t$, e só a parcela fixa $P_{c0}$ diminui com a velocidade. A Figura~\ref{fig_passadas} mostra a diferença em número de passadas da rede por quilômetro quadrado.
+\begin{figure}[htb]
+  \centering
+  \caption{Número de passadas da rede neural por quilômetro quadrado inspecionado em função da velocidade de voo}
+  \label{fig_passadas}
+  \includegraphics[width=0.85\textwidth]{figuras/fig_passadas_por_area.pdf}
+  \fonte{Elaborado pelo autor, a partir das Equações~\eqref{eq_visibilidade} e \eqref{eq_recortes}, com $n_t = 24$ recortes por quadro, $f_q = 30$ quadros/s, $w = 53{,}8$~m e $A_t = 80{,}3$~m$^2$.}
+\end{figure}
+
 
 \section{Formulação do problema de co-projeto}
 \label{sec_coprojeto}
