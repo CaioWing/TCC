@@ -36,12 +36,28 @@ em que $P_h$ é a potência efetivamente absorvida pelo rotor \cite[p.~70]{leish
 \end{figure}
 
 
-Para o problema deste trabalho, a consequência mais importante da Equação~\eqref{eq_ph} vem do pairado, em que a tração equilibra o peso, $T = mg$. Nesse caso, a potência cresce com a massa elevada a $3/2$. Para uma pequena variação de massa $\Delta m$,
+Para o problema deste trabalho, a consequência mais importante da Equação~\eqref{eq_ph} vem do pairado, em que a tração equilibra o peso, $T = mg$. Nesse caso, a Equação~\eqref{eq_ph} fica $P_{h,\mathrm{ideal}} = C\,m^{3/2}$, com $C = g^{3/2}/\sqrt{2\rho A}$ constante para um mesmo veículo voando na mesma altitude, isto é, com $g$, $\rho$ e $A$ fixos. Considere que a massa passe de $m$ para $m + \Delta m$ e que, com isso, a potência ideal passe de $P_{h,\mathrm{ideal}}$ para $P'_{h,\mathrm{ideal}} = C\,(m + \Delta m)^{3/2}$. A razão entre as duas potências não depende de $C$:
+\begin{equation*}
+  \frac{P'_{h,\mathrm{ideal}}}{P_{h,\mathrm{ideal}}}
+  = \frac{C\,(m + \Delta m)^{3/2}}{C\,m^{3/2}}
+  = \left(1 + \frac{\Delta m}{m}\right)^{3/2}.
+\end{equation*}
+Expandindo o lado direito em série de Taylor em torno de $\Delta m/m = 0$, com $f(x) = (1+x)^{3/2}$, $f(0) = 1$ e $f'(0) = \tfrac{3}{2}$, e truncando no termo de primeira ordem, o que é válido para $\Delta m \ll m$, obtém-se
+\begin{equation*}
+  \frac{P'_{h,\mathrm{ideal}}}{P_{h,\mathrm{ideal}}} \approx 1 + \frac{3}{2}\,\frac{\Delta m}{m}.
+\end{equation*}
+Essa expressão dá a razão entre as potências, e não a sua variação. Definindo a variação de potência como $\Delta P_{h,\mathrm{ideal}} = P'_{h,\mathrm{ideal}} - P_{h,\mathrm{ideal}}$ e subtraindo 1 dos dois lados, o lado esquerdo torna-se
+\begin{equation*}
+  \frac{P'_{h,\mathrm{ideal}}}{P_{h,\mathrm{ideal}}} - 1
+  = \frac{P'_{h,\mathrm{ideal}} - P_{h,\mathrm{ideal}}}{P_{h,\mathrm{ideal}}}
+  = \frac{\Delta P_{h,\mathrm{ideal}}}{P_{h,\mathrm{ideal}}},
+\end{equation*}
+e chega-se à variação relativa da potência ideal de pairado:
 \begin{equation}
-  \frac{\Delta P_h}{P_h} \approx \frac{3}{2}\,\frac{\Delta m}{m}.
+  \frac{\Delta P_{h,\mathrm{ideal}}}{P_{h,\mathrm{ideal}}} \approx \frac{3}{2}\,\frac{\Delta m}{m}.
   \label{eq_dm}
 \end{equation}
-Assim, um acréscimo de 10\% na massa do veículo, causado por exemplo pelo computador de bordo, seu dissipador e cabeamento, aumenta em cerca de 15\% a potência de pairado. Esse efeito se soma ao consumo elétrico do próprio computador.
+Assim, um acréscimo de 10\% na massa do veículo, causado por exemplo pelo computador de bordo, seu dissipador e cabeamento, aumenta em cerca de 15\% a parcela induzida da potência de pairado. A potência total cresce menos, porque a potência de perfil, apresentada na Seção~\ref{sec_voo_frente}, depende pouco da tração. Com os parâmetros ilustrativos da Figura~\ref{fig_curva_potencia}, o mesmo acréscimo de massa eleva a potência total de pairado em cerca de 8\%. Esse efeito se soma ao consumo elétrico do próprio computador.
 
 \section{Voo à frente e curva de potência requerida}
 \label{sec_voo_frente}
@@ -51,7 +67,7 @@ Em voo à frente com velocidade $V$, o disco do rotor recebe, além da velocidad
   v_i = \frac{v_h^{2}}{\sqrt{(V\cos\alpha_d)^{2} + (V\sin\alpha_d + v_i)^{2}}},
   \label{eq_glauert}
 \end{equation}
-em que $\alpha_d$ é o ângulo de ataque do disco, positivo quando o disco é inclinado para a frente, conforme a convenção de \citeonline[p.~99]{leishman2006}. Com essa convenção, a componente $V\sin\alpha_d$ soma-se à velocidade induzida, pois o escoamento livre atravessa o disco de cima para baixo. Para velocidades bem maiores que $v_h$, a Equação~\eqref{eq_glauert} tende a $v_i \approx v_h^{2}/V$. Ou seja, a potência induzida cai com a velocidade, porque o rotor passa a processar uma massa de ar maior por unidade de tempo.
+em que $\alpha_d$ é o ângulo de ataque do disco, positivo quando o disco é inclinado para a frente, conforme a convenção de \citeonline[p.~93]{leishman2006}. Com essa convenção, a componente $V\sin\alpha_d$ soma-se à velocidade induzida, pois o escoamento livre atravessa o disco de cima para baixo. Para velocidades bem maiores que $v_h$, a Equação~\eqref{eq_glauert} tende a $v_i \approx v_h^{2}/V$. Ou seja, a potência induzida cai com a velocidade, porque o rotor passa a processar uma massa de ar maior por unidade de tempo.
 
 A potência total requerida em voo nivelado é usualmente decomposta em três parcelas \cite[p.~217--227]{leishman2006}:
 \begin{equation}
@@ -96,7 +112,7 @@ em que $\theta$ é o ângulo de arfagem e $D$ é o arrasto da aeronave. Dividind
   f_e = \frac{2 m g \tan\theta}{\rho V^{2}}.
   \label{eq_fe}
 \end{equation}
-A Equação~\eqref{eq_fe} permite estimar a área equivalente de placa plana a partir do ângulo de arfagem registrado na telemetria, desde que a massa seja conhecida. Na presença de vento, $V$ deve ser a velocidade em relação ao ar, e não em relação ao solo. Em uma trajetória de ida e volta, o vento contribui com sinais opostos nas duas pernas, enquanto o arrasto não muda de sinal, o que permite separar os dois efeitos.
+Em princípio, a Equação~\eqref{eq_fe} permite estimar a área equivalente de placa plana a partir do ângulo de arfagem registrado na telemetria, desde que a massa seja conhecida. As Equações~\eqref{eq_equilibrio} e~\eqref{eq_fe}, porém, são uma idealização, com três limitações. Primeiro, toda a força horizontal é atribuída ao arrasto parasita, proporcional a $V^2$, quando os rotores em voo à frente também produzem uma força no plano do disco, contrária ao movimento, que depende da velocidade em relação ao ar. Segundo, o ângulo registrado pode conter um desvio constante, associado à posição do centro de gravidade e à montagem dos sensores. Terceiro, na presença de vento, $V$ deve ser a velocidade em relação ao ar, enquanto a telemetria fornece a velocidade em relação ao solo. Em uma trajetória de ida e volta, o vento contribui com sinais opostos nas duas pernas, mas separá-lo do arrasto exige supor a forma da lei de arrasto. Por isso, a estimativa de $f_e$ pela arfagem só é confiável quando o vento é medido de forma independente. Uma verificação preliminar com a telemetria do MBG-V2 confirmou essa limitação: com o arrasto quadrático, quatro dos cinco voos analisados exigiriam ventos de 12 a 17~m/s, valores implausíveis para as missões registradas.
 
 \subsection{Da potência mecânica à potência elétrica}
 
@@ -131,14 +147,14 @@ Em uma missão de inspeção, o objetivo não é percorrer uma distância, mas c
   e = \frac{P_{el,\mathrm{tot}}(V)}{V\,w},
   \label{eq_e_area}
 \end{equation}
-em que $P_{el,\mathrm{tot}}$ inclui a propulsão, os aviônicos e o computador de bordo. Para uma largura de faixa fixa, minimizar $e$ equivale a voar na velocidade de alcance máximo da curva de potência total. A largura $w$, por sua vez, cresce com a altitude, como mostra a Seção~\ref{sec_imageamento}. Dessa forma, a Equação~\eqref{eq_e_area} une, em uma só métrica, a mecânica de voo, a geometria do imageamento e o consumo da computação. O planejamento de cobertura com consciência energética segue a mesma ideia, ao minimizar a energia de voo sob restrições de cobertura e de resolução \cite{difranco2016coverage}. Neste trabalho, a formulação é estendida para incluir também o custo da percepção.
+em que $P_{el,\mathrm{tot}}$ inclui a propulsão, os aviônicos e o computador de bordo. Na presença de vento, as duas velocidades da Equação~\eqref{eq_e_area} têm papéis distintos: a potência depende da velocidade em relação ao ar, enquanto a taxa de cobertura $Vw$ depende da velocidade em relação ao solo, que é a usada no denominador. Para uma largura de faixa fixa, minimizar $e$ equivale a voar na velocidade de alcance máximo da curva de potência total. A largura $w$, por sua vez, cresce com a altitude, como mostra a Seção~\ref{sec_imageamento}. Dessa forma, a Equação~\eqref{eq_e_area} une, em uma só métrica, a mecânica de voo, a geometria do imageamento e o consumo da computação. O planejamento de cobertura com consciência energética segue a mesma ideia, ao minimizar a energia de voo sob restrições de cobertura e de resolução \cite{difranco2016coverage}. Neste trabalho, a formulação é estendida para incluir também o custo da percepção.
 
 \section{Geometria do imageamento aéreo}
 \label{sec_imageamento}
 
 \subsection{Resolução no solo, pegada e cobertura}
 
-Em uma fotografia vertical sobre terreno plano, a escala da imagem é a razão entre a distância focal e a altura de voo, $f_c/h$, que é igual à razão entre uma distância medida na imagem e a distância correspondente no solo \cite[p.~75]{paine2012}. Aplicando essa escala a um único pixel, cada pixel de uma câmera digital apontada para o nadir corresponde no solo a um quadrado de lado
+Em uma fotografia vertical sobre terreno plano, a escala da imagem é a razão entre a distância focal e a altura de voo, $f_c/h$, que é igual à razão entre uma distância medida na imagem e a distância correspondente no solo \cite[p.~75]{paine2012}. Em câmeras digitais, a grandeza usada para descrever a resolução é a distância de amostragem no solo (GSD), definida como o comprimento no solo correspondente ao lado de um pixel da imagem, ou seja, a distância entre os centros de pixels vizinhos medida no solo \cite{cabreira2019survey}. Aplicando a escala a um único pixel, cada pixel de uma câmera digital apontada para o nadir corresponde no solo a um quadrado de lado
 \begin{equation}
   GSD = \frac{h\,p}{f_c},
   \label{eq_gsd}
@@ -192,12 +208,12 @@ Eliminando $h$ entre as Equações~\eqref{eq_e_h} e \eqref{eq_spx}, obtém-se um
   e = \frac{P_{el,\mathrm{tot}}(V)}{V\,N_x}\,\frac{s_{px}}{s}.
   \label{eq_e_spx}
 \end{equation}
-A Equação~\eqref{eq_e_spx} mostra que, para uma dada velocidade, economizar energia por área significa necessariamente apresentar os objetos ao detector com menos pixels; a distância focal e o tamanho do pixel do sensor desaparecem da relação, restando apenas o número de pixels transversais $N_x$. Se o detector precisa de pelo menos $s_{px,\min}$ pixels para atingir a revocação exigida em objetos de tamanho $s$, a Equação~\eqref{eq_e_spx} fornece o menor valor possível da energia por área naquela velocidade, atingido na altura máxima
+A Equação~\eqref{eq_e_spx} mostra que, para uma dada velocidade, economizar energia por área significa necessariamente apresentar os objetos ao detector com menos pixels; a distância focal e o tamanho do pixel do sensor desaparecem da relação, restando apenas o número de pixels transversais $N_x$. Se o detector precisa de pelo menos $s_{px,\min}$ pixels para atingir a taxa de detecção exigida em objetos de tamanho $s$, a Equação~\eqref{eq_e_spx} fornece o menor valor possível da energia por área naquela velocidade, atingido na altura máxima
 \begin{equation}
   h_{\max} = \frac{s\,f_c}{p\,s_{px,\min}}.
   \label{eq_hmax}
 \end{equation}
-O valor de $s_{px,\min}$ não é conhecido \textit{a priori}: ele depende do detector e da classe do objeto e precisa ser medido. Por isso, a revocação em função da altura é uma das curvas centrais deste trabalho.
+O valor de $s_{px,\min}$ não é conhecido \textit{a priori}: ele depende do detector e da classe do objeto e precisa ser medido. Por isso, a taxa de detecção em função da altura é uma das curvas centrais deste trabalho.
 
 \subsection{Borrão de movimento}
 
@@ -213,7 +229,7 @@ Substituindo a Equação~\eqref{eq_gsd}, $b = V t_e f_c/(p\,h)$: o borrão cresc
 
 Para transformar uma detecção na imagem em uma posição no solo, são necessários a posição da aeronave e a orientação da câmera em cada quadro. Com a câmera estabilizada no nadir por um \textit{gimbal}, um pixel $(u, v)$ afastado do ponto principal $(c_x, c_y)$ corresponde, no referencial da câmera, a um deslocamento no solo de $GSD\,(u - c_x)$ e $GSD\,(v - c_y)$. Esse deslocamento é levado ao referencial local norte-leste por uma rotação de ângulo igual ao rumo da câmera, $\psi$, seguindo as convenções de referenciais e de sequências de rotação da dinâmica de voo \cite{etkin1996}:
 \begin{equation}
-  \begin{bmatrix} \Delta n \\ \Delta e \end{bmatrix}
+  \begin{bmatrix} \Delta N \\ \Delta E \end{bmatrix}
   = GSD
   \begin{bmatrix} \cos\psi & -\sin\psi \\ \sin\psi & \cos\psi \end{bmatrix}
   \begin{bmatrix} -(v - c_y) \\ u - c_x \end{bmatrix}.
@@ -221,7 +237,7 @@ Para transformar uma detecção na imagem em uma posição no solo, são necess�
 \end{equation}
 Na Equação~\eqref{eq_georref}, o eixo vertical da imagem, crescente para baixo, aponta no sentido oposto ao rumo, e o eixo horizontal aponta para a direita da aeronave. Os deslocamentos são então somados à posição da aeronave, convertida de latitude $\phi$ e longitude $\lambda$ para coordenadas locais por meio dos raios de curvatura meridiano, $R_M$, e do primeiro vertical, $R_N$, do elipsoide WGS-84 \cite[p.~23--25]{kayton1997}:
 \begin{equation}
-  \Delta n = R_M\,\Delta\phi, \qquad \Delta e = R_N\cos\phi\,\Delta\lambda,
+  \Delta N = R_M\,\Delta\phi, \qquad \Delta E = R_N\cos\phi\,\Delta\lambda,
   \qquad
   R_N = \frac{a}{\sqrt{1 - \epsilon^{2}\sin^{2}\phi}}, \qquad
   R_M = \frac{a\,(1-\epsilon^{2})}{(1 - \epsilon^{2}\sin^{2}\phi)^{3/2}},
@@ -241,7 +257,7 @@ Um quadro 4K não é processado de uma só vez na resolução nativa. Para não 
   n_t = \left\lceil \frac{N_x}{s_t} \right\rceil \left\lceil \frac{N_y}{s_t} \right\rceil.
   \label{eq_recortes}
 \end{equation}
-Para $N_x \times N_y = 3840 \times 2160$ e $s_t = 640$, sem sobreposição entre recortes, são $6 \times 4 = 24$ passadas por quadro.
+Para $N_x \times N_y = 3840 \times 2160$ e $s_t = 640$, são $6 \times 4 = 24$ passadas por quadro. Como 2160 não é múltiplo de 640, a última fileira de recortes é completada por preenchimento ou por sobreposição com a fileira anterior.
 
 \subsection{Métricas de detecção}
 
@@ -250,16 +266,16 @@ Uma caixa prevista $B_p$ é considerada correta quando sua sobreposição com a 
   IoU = \frac{|B_p \cap B_g|}{|B_p \cup B_g|},
   \label{eq_iou}
 \end{equation}
-supera um limiar, tipicamente 0,5 \cite{everingham2010voc}. A partir das contagens de verdadeiros positivos ($VP$), falsos positivos ($FP$) e falsos negativos ($FN$), definem-se a precisão e a revocação:
+supera um limiar, tipicamente 0,5 \cite{everingham2010voc}. A partir das contagens de verdadeiros positivos ($VP$), falsos positivos ($FP$) e falsos negativos ($FN$), definem-se a precisão e a taxa de detecção (\textit{recall}), isto é, a fração dos objetos reais que foram detectados:
 \begin{equation}
   \mathcal{P} = \frac{VP}{VP + FP}, \qquad \mathcal{R} = \frac{VP}{VP + FN}.
   \label{eq_pr}
 \end{equation}
-A precisão média (AP) é a área sob a curva precisão--revocação obtida variando o limiar de confiança, e a mAP é a média da AP entre as classes \cite{everingham2010voc}.
+A precisão média (AP) é a área sob a curva de precisão em função da taxa de detecção obtida variando o limiar de confiança, e a mAP é a média da AP entre as classes \cite{everingham2010voc}.
 
 \subsection{Dos quadros aos focos únicos}
 
-Métricas por quadro, como a mAP, contam o mesmo objeto tantas vezes quantas ele aparece no vídeo. Para a vigilância, o que importa é quantos criadouros distintos foram encontrados. Por isso, as detecções são associadas ao longo do tempo e do espaço para formar \textit{focos únicos}. A associação temporal pode ser feita por rastreadores que combinam um filtro de Kalman, para predizer a posição de cada objeto no quadro seguinte, com o algoritmo húngaro, para associar predições e novas detecções \cite{bewley2016sort}. A associação espacial agrupa as posições georreferenciadas (Seção~\ref{sec_georref}) de uma mesma classe que estejam a menos de uma distância limite. A revocação de focos únicos é definida como
+Métricas por quadro, como a mAP, contam o mesmo objeto tantas vezes quantas ele aparece no vídeo. Para a vigilância, o que importa é quantos criadouros distintos foram encontrados. Por isso, as detecções são associadas ao longo do tempo e do espaço para formar \textit{focos únicos}. A associação temporal pode ser feita por rastreadores que combinam um filtro de Kalman, para predizer a posição de cada objeto no quadro seguinte, com o algoritmo húngaro, para associar predições e novas detecções \cite{bewley2016sort}. A associação espacial agrupa as posições georreferenciadas (Seção~\ref{sec_georref}) de uma mesma classe que estejam a menos de uma distância limite. A taxa de detecção de focos únicos é definida como
 \begin{equation}
   \mathcal{R}_f = \frac{\#\{\text{focos reais com ao menos um foco previsto da mesma classe a menos de } d_{\max}\}}{\#\{\text{focos reais}\}},
   \label{eq_recall_focos}
@@ -271,12 +287,12 @@ em que os focos reais são os objetos anotados, identificados por um número ún
 
 \subsection{Restrição de tempo real}
 
-Em um sistema de tempo real, cada tarefa precisa terminar dentro de um prazo \cite{laplante2004}. Se a percepção processa todos os quadros, o tempo de computação por quadro $C$ deve respeitar $C \leq 1/f_q$. De forma mais geral, para um conjunto de tarefas periódicas com tempos de computação $C_j$ e períodos $T_j$, a utilização do processador,
+Em um sistema de tempo real, cada tarefa precisa terminar dentro de um prazo \cite{laplante2004}. Se a percepção processa todos os quadros, o tempo de computação por quadro $C$ deve respeitar $C \leq 1/f_q$. De forma mais geral, para um conjunto de tarefas periódicas com tempos de computação $C_j$ e períodos $\tau_j$, a utilização do processador,
 \begin{equation}
-  U = \sum_j \frac{C_j}{T_j},
+  U_p = \sum_j \frac{C_j}{\tau_j},
   \label{eq_utilizacao}
 \end{equation}
-mede a fração do tempo em que o processador está ocupado \cite[p.~10--11]{laplante2004}. A condição $U \leq 1$ é necessária para que todos os prazos sejam cumpridos. Com escalonamento por prazo mais próximo (EDF), ela também é suficiente; com prioridades fixas atribuídas pela taxa (RM), a garantia vale para $U \leq n(2^{1/n} - 1)$, limite que tende a $\ln 2 \approx 0{,}69$ para muitas tarefas \cite[p.~95--97]{laplante2004}. No contexto deste trabalho, isso define uma taxa máxima de passadas da rede, $r_{\max}$, para cada combinação de computador de bordo, modo de potência e tamanho de modelo.
+mede a fração do tempo em que o processador está ocupado \cite[p.~10--11]{laplante2004}. A condição $U_p \leq 1$ é necessária para que todos os prazos sejam cumpridos. Com escalonamento por prazo mais próximo (EDF), ela também é suficiente; com prioridades fixas atribuídas pela taxa (RM), a garantia vale para $U_p \leq n(2^{1/n} - 1)$, em que $n$ é o número de tarefas, limite que tende a $\ln 2 \approx 0{,}69$ para muitas tarefas \cite[p.~95--97]{laplante2004}. No contexto deste trabalho, isso define uma taxa máxima de passadas da rede, $r_{\max}$, para cada combinação de computador de bordo, modo de potência e tamanho de modelo.
 
 \subsection{Energia da computação}
 
@@ -321,6 +337,6 @@ em que $m_0$ é a massa da aeronave sem o computador e $m_H$ é a massa acrescen
   \quad r(\pi, h, V) \leq r_{\max}(H),
   \label{eq_otimizacao}
 \end{equation}
-em que $\mathcal{R}_{\min}$ é a revocação de focos únicos exigida pela vigilância.
+em que $\mathcal{R}_{\min}$ é a taxa de detecção de focos únicos exigida pela vigilância.
 
 A Equação~\eqref{eq_coprojeto} deixa visíveis os compromissos discutidos ao longo deste capítulo. A altitude aumenta $w$, mas reduz o tamanho dos objetos em pixels e, com ele, $\mathcal{R}_f$. A velocidade desloca o ponto de operação na curva de potência e aumenta o borrão. A estratégia de inferência altera $r$. O hardware altera $P_{c0}$, $E_{\mathrm{inf}}$ e $r_{\max}$, e também a massa, que entra na potência de propulsão pela Equação~\eqref{eq_dm}. Os capítulos seguintes descrevem como cada termo é medido ou estimado a partir dos dados da base MBG-V2 e do computador embarcado de referência.

@@ -1,0 +1,16 @@
+﻿This is BibTeX, Version 0.99e (MiKTeX 25.12)
+The top-level auxiliary file: USPSC-TCC-modelo-EESC.aux
+I couldn't open style file USPSC-classe/abntex2-alf-USPSC.bst
+---line 33 of file USPSC-TCC-modelo-EESC.aux
+ : \bibstyle{USPSC-classe/abntex2-alf-USPSC
+ :                                         }
+I'm skipping whatever remains of this command
+I found no style file---while reading file USPSC-TCC-modelo-EESC.aux
+(There were 2 error messages)
+bibtex : bibtex: major issue: So far, you have not checked for MiKTeX updates.
+No linha:3 caractere:56
++ ... build; $env:BIBINPUTS="..;../USPSC-bib"; bibtex $m *> bib.txt; makein ...
++                                              ~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (bibtex: major i...MiKTeX updates.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 

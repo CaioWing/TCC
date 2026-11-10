@@ -1,0 +1,21 @@
+﻿latexmk : 
+No linha:1 caractere:376
++ ... $env:PATH"; latexmk -pdf -auxdir=build -outdir=build -interaction=non ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Sorry, but latexmk.exe did not succeed for the following reason:
+
+  MiKTeX could not find the script engine 'perl' which is required to execute 'latexmk'.
+
+Remedy:
+
+  Make sure 'perl' is installed on your system.
+
+The log file hopefully contains the information to get MiKTeX going again:
+
+  C:\Users\casti\AppData\Local\MiKTeX\miktex\log\latexmk.log
+
+For more information, visit: https://miktex.org/kb/fix-script-engine-not-found
+latexmk: major issue: So far, you have not checked for MiKTeX updates.

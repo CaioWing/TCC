@@ -1,49 +1,90 @@
 % USPSC-Simbolos.tex
+% Letras latinas em ordem alfabética, seguidas das letras gregas.
 \begin{simbolos}
-  \item[$A$]                Área do disco do rotor
-  \item[$A_t$]              Área de solo coberta por um recorte de imagem
-  \item[$b$]                Borrão de movimento, em pixels
-  \item[$C_{d0}$]           Coeficiente de arrasto de perfil médio das pás
-  \item[$D$]                Arrasto da aeronave
-  \item[$e$]                Energia por unidade de área inspecionada
-  \item[$E_b$]              Energia útil da bateria
-  \item[$E_{\mathrm{inf}}$] Energia adicional por passada da rede neural
-  \item[$f_c$]              Distância focal da câmera
-  \item[$f_e$]              Área equivalente de placa plana
-  \item[$f_q$]              Taxa de quadros do vídeo
-  \item[$FM$]               Figura de mérito do rotor
-  \item[$g$]                Aceleração da gravidade
-  \item[$GSD$]              Resolução espacial no solo
-  \item[$h$]                Altura de voo sobre o terreno
-  \item[$m$]                Massa da aeronave
-  \item[$n_t$]              Número de recortes por quadro
-  \item[$n_v$]              Número de quadros em que um ponto do solo é visto
-  \item[$P$]                Potência mecânica requerida
-  \item[$P_c$]              Potência do computador de bordo
-  \item[$P_{el}$]           Potência elétrica retirada da bateria
-  \item[$P_h$]              Potência de pairado
-  \item[$r$]                Taxa de passadas da rede neural
-  \item[$\mathcal{R}_f$]    Revocação de focos únicos
-  \item[$T$]                Tração do rotor
-  \item[$t_e$]              Tempo de exposição
-  \item[$v_h$]              Velocidade induzida em pairado
-  \item[$v_i$]              Velocidade induzida
-  \item[$V$]                Velocidade de voo
-  \item[$w$]                Largura da faixa imageada
-  \item[$L$]                Comprimento da pegada no solo, na direção do voo
-  \item[$N_x, N_y$]         Número de pixels da imagem, transversal e longitudinal ao voo
-  \item[$p$]                Tamanho do pixel no sensor
-  \item[$s$]                Dimensão característica de um objeto no solo
-  \item[$s_{px}$]           Dimensão de um objeto na imagem, em pixels
-  \item[$h_{\max}$]         Altura máxima que preserva a detecção
-  \item[$\alpha_d$]         Ângulo de ataque do disco do rotor
-  \item[$\beta_x, \beta_y$] Ângulos de campo de visão da câmera
-  \item[$\eta_m$]           Eficiência combinada de motores e controladores
-  \item[$\theta$]           Ângulo de arfagem
-  \item[$\kappa$]           Fator de correção da potência induzida
-  \item[$\mu$]              Razão de avanço
-  \item[$\rho$]             Densidade do ar
-  \item[$\sigma$]           Solidez do rotor
-  \item[$\psi$]             Rumo da câmera
-  \item[$\Omega R$]         Velocidade de ponta da pá
+  \item[$A$]                       Área do disco do rotor
+  \item[$A_t$]                     Área de solo coberta por um recorte de imagem
+  \item[$a$]                       Semieixo maior do elipsoide WGS-84
+  \item[$b$]                       Borrão de movimento, em pixels
+  \item[$C$]                       Tempo de computação por quadro
+  \item[$C_{d0}$]                  Coeficiente de arrasto de perfil médio das pás
+  \item[$C_j$]                     Tempo de computação da tarefa $j$
+  \item[$c_x, c_y$]                Coordenadas do ponto principal da imagem, em pixels
+  \item[$D$]                       Arrasto da aeronave
+  \item[$d_{\max}$]                Distância limite para associar um foco previsto a um foco real
+  \item[$E$]                       Energia elétrica consumida em um trecho de voo
+  \item[$E_b$]                     Energia útil da bateria
+  \item[$E_{\mathrm{inf}}$]        Energia adicional por passada da rede neural
+  \item[$e$]                       Energia por unidade de área inspecionada
+  \item[$FM$]                      Figura de mérito do rotor
+  \item[$f_c$]                     Distância focal da câmera
+  \item[$f_e$]                     Área equivalente de placa plana
+  \item[$f_q$]                     Taxa de quadros do vídeo
+  \item[$GSD$]                     Resolução espacial no solo
+  \item[$g$]                       Aceleração da gravidade
+  \item[$H$]                       Hardware embarcado
+  \item[$h$]                       Altura de voo sobre o terreno
+  \item[$h_{\max}$]                Altura máxima que preserva a detecção
+  \item[$I$]                       Corrente da bateria
+  \item[$K$]                       Constante de aumento da potência de perfil em voo à frente
+  \item[$k$]                       Passo da estratégia de pular quadros
+  \item[$L$]                       Comprimento da pegada no solo, na direção do voo
+  \item[$m$]                       Massa da aeronave
+  \item[$m_0$]                     Massa da aeronave sem o computador de bordo
+  \item[$m_H$]                     Massa acrescentada pelo hardware embarcado
+  \item[$N$]                       Número de rotores
+  \item[$N_x, N_y$]                Número de pixels da imagem, transversal e longitudinal ao voo
+  \item[$n$]                       Número de tarefas periódicas
+  \item[$n_t$]                     Número de recortes por quadro
+  \item[$n_v$]                     Número de quadros em que um ponto do solo é visto
+  \item[$n_v^{\ast}$]              Número desejado de observações de cada ponto do solo
+  \item[$P$]                       Potência mecânica requerida
+  \item[$P_{av}$]                  Potência dos aviônicos e demais cargas fixas
+  \item[$P_c$]                     Potência do computador de bordo
+  \item[$P_{c0}$]                  Parcela fixa da potência do computador de bordo
+  \item[$P_{el}$]                  Potência elétrica retirada da bateria
+  \item[$P_{el,\mathrm{tot}}$]     Potência elétrica total, incluindo o computador de bordo
+  \item[$P_h$]                     Potência de pairado
+  \item[$P_{h,\mathrm{ideal}}$]    Potência ideal de pairado
+  \item[$\mathcal{P}$]             Precisão da detecção
+  \item[$p$]                       Tamanho do pixel no sensor
+  \item[$R$]                       Alcance
+  \item[$R_M, R_N$]                Raios de curvatura meridiano e do primeiro vertical
+  \item[$\mathcal{R}$]             Taxa de detecção por quadro
+  \item[$\mathcal{R}_f$]           Taxa de detecção de focos únicos
+  \item[$\mathcal{R}_{\min}$]      Taxa de detecção de focos únicos exigida
+  \item[$r$]                       Taxa de passadas da rede neural
+  \item[$r_{\max}$]                Taxa máxima de passadas da rede neural em tempo real
+  \item[$s$]                       Dimensão característica de um objeto no solo
+  \item[$s_{px}$]                  Dimensão de um objeto na imagem, em pixels
+  \item[$s_{px,\min}$]             Dimensão mínima de um objeto na imagem para a taxa de detecção exigida
+  \item[$s_t$]                     Lado de um recorte de imagem, em pixels
+  \item[$T$]                       Tração do rotor
+  \item[$t_{\mathrm{aut}}$]        Autonomia
+  \item[$t_e$]                     Tempo de exposição
+  \item[$t_v$]                     Tempo em que um ponto do solo permanece no campo de visão
+  \item[$U$]                       Tensão da bateria
+  \item[$U_p$]                     Utilização do processador
+  \item[$u, v$]                    Coordenadas de um pixel na imagem
+  \item[$V$]                       Velocidade de voo
+  \item[$V_{Pmin}$]                Velocidade de potência mínima
+  \item[$V_{Rmax}$]                Velocidade de máximo alcance
+  \item[$v_h$]                     Velocidade induzida em pairado
+  \item[$v_i$]                     Velocidade induzida
+  \item[$w$]                       Largura da faixa imageada
+  \item[$\alpha_d$]                Ângulo de ataque do disco do rotor
+  \item[$\beta_x, \beta_y$]        Ângulos de campo de visão da câmera
+  \item[$\Delta N, \Delta E$]      Deslocamentos nas direções norte e leste
+  \item[$\epsilon$]                Excentricidade do elipsoide WGS-84
+  \item[$\eta_m$]                  Eficiência combinada de motores e controladores
+  \item[$\theta$]                  Ângulo de arfagem
+  \item[$\kappa$]                  Fator de correção da potência induzida
+  \item[$\lambda$]                 Longitude
+  \item[$\mu$]                     Razão de avanço
+  \item[$\pi$]                     Estratégia de inferência
+  \item[$\rho$]                    Densidade do ar
+  \item[$\sigma$]                  Solidez do rotor
+  \item[$\tau_j$]                  Período da tarefa $j$
+  \item[$\phi$]                    Latitude
+  \item[$\psi$]                    Rumo da câmera
+  \item[$\Omega R$]                Velocidade de ponta da pá
 \end{simbolos}
