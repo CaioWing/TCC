@@ -1,0 +1,212 @@
+%% USPSC-Cap3-MateriaisMetodos.tex
+
+\chapter[Materiais e métodos]{Materiais e métodos}
+\label{cap_metodos}
+
+Este capítulo descreve os dados e os procedimentos usados no trabalho. A Seção~\ref{sec_base} apresenta a base MBG-V2: sua origem, as condições em que os voos foram feitos, a estrutura dos arquivos, as estatísticas das anotações e da telemetria, as verificações de integridade e as limitações da base. Todos os números desta seção foram obtidos pelo autor a partir dos 26 voos completos da base.
+% As seções seguintes (detector, associação de focos por telemetria, estratégias de inferência e protocolo de medição de energia) serão acrescentadas aqui.
+
+\section{Base de dados MBG-V2}
+\label{sec_base}
+
+\subsection{Origem e aquisição}
+\label{sec_base_origem}
+
+A base \textit{Mosquito Breeding Grounds V2} (MBG-V2) foi publicada pelo Laboratório de Sinais, Multimídia e Telecomunicações da COPPE/UFRJ \cite{smt2024mbgv2} e sucede a base MBG, do mesmo grupo \cite{passos2022mbg}. A MBG foi a base do desafio \textit{Automatic Detection of Mosquito Breeding Grounds}, promovido na conferência ICIP de 2023, que recebeu resultados de participantes do Brasil, do Catar e da Espanha \cite{passos2023icip}. O trabalho vencedor combinou um detector YOLOv7 com uma etapa de rastreamento para associar as detecções de um mesmo objeto ao longo do vídeo \cite{laranjeira2023yolov7}.
+
+A MBG-V2 reúne 26 voos sobre 13 regiões urbanas do município do Rio de Janeiro, identificadas pelas letras A a M, com dois voos por região. A base é distribuída em 26 arquivos compactados, um por voo, que somam 211,6~GiB, e inclui um polígono que delimita cada região. A soma das áreas desses polígonos é de 1,37~km$^2$. Os voos pertencem a duas campanhas. A região A foi imageada em junho de 2019, data registrada no voo 02, já que o registro do voo 01 não traz data. As regiões B a M foram imageadas entre outubro de 2020 (região B) e março de 2021. A Figura~\ref{fig_regioes}a mostra a localização das regiões: as regiões B a M ficam na porção oeste do município, a no máximo 13,7~km umas das outras, e a região A fica a 42,5~km da mais próxima delas.
+% Pendência: o sítio da base não indica uma licença de uso explícita. Confirmar com os autores que o uso acadêmico está liberado e registrar aqui.
+
+\begin{figure}[htb]
+  \centering
+  \caption{Localização das 13 regiões da base MBG-V2 no município do Rio de Janeiro e faixas imageadas pelos dois voos da região M}
+  \label{fig_regioes}
+  \includegraphics[width=\textwidth]{figuras/fig_mbgv2_regioes.pdf}
+  \fonte{Elaborado pelo autor a partir dos polígonos e da telemetria da base MBG-V2 \cite{smt2024mbgv2} e da malha municipal do IBGE \cite{ibge2026malha}. (a) Cada ponto é o centro do polígono de uma região, em coordenadas locais norte-leste centradas no município. (b) As áreas coloridas são as faixas imageadas por cada voo, calculadas com o $GSD$ ajustado na Seção~\ref{sec_base_condicoes}; as linhas cheias são os trajetos da aeronave, e a linha tracejada é o polígono da região.}
+\end{figure}
+
+\subsection{Condições de voo e câmera}
+\label{sec_base_condicoes}
+
+Em todos os voos, a câmera é mantida pelo \textit{gimbal} apontada para o nadir, com ângulo de arfagem de $-89{,}9^\circ$, e a altitude registrada fica entre 39,8 e 40,1~m (percentis 5 e 95 de todas as amostras). As duas campanhas, porém, diferem em quase todos os outros parâmetros, como resume a Tabela~\ref{tab_campanhas}. Na região A, o vídeo tem 4096 pixels de largura e 23,976 quadros por segundo, e a aeronave voa a cerca de 7,9~m/s. Nas regiões B a M, o vídeo tem 3840 pixels de largura e 29,97 quadros por segundo, e a velocidade cai para cerca de 4,1~m/s.
+
+\begin{table}[htb]
+  \centering
+  \caption{Condições de voo e de gravação nas duas campanhas da base MBG-V2}
+  \label{tab_campanhas}
+  \begin{tabular}{lcc}
+    \hline
+    & Região A (voos 01 e 02) & Regiões B a M (voos 03 a 26) \\
+    \hline
+    Período & jun. 2019 & out. 2020 a mar. 2021 \\
+    Resolução do vídeo (pixels) & $4096 \times 2160$ & $3840 \times 2160$ \\
+    Taxa de quadros, $f_q$ (quadros/s) & 23,976 & 29,97 \\
+    Codificação do vídeo & MJPG & MJPG (19 voos) ou H.264 (5 voos) \\
+    Velocidade mediana, $V$ (m/s) & 7,88--7,93 & 4,06--4,16 \\
+    Altitude registrada (m) & 40 & 40 \\
+    Registro de telemetria & uma linha por quadro & cerca de 10 ou 20 linhas/s \\
+    $GSD$ ajustado (cm/pixel) & 1,21--1,23 & 1,20--1,78 \\
+    Largura da pegada, $w$ (m) & 49,6--50,4 & 46,1--68,4 \\
+    Comprimento da pegada, $L$ (m) & 26,1--26,6 & 25,9--38,4 \\
+    Quadros por ponto do solo, $n_v$ & 79--81 & 190--283 \\
+    \hline
+  \end{tabular}
+  \fonte{Elaborado pelo autor a partir dos vídeos e da telemetria da base MBG-V2 \cite{smt2024mbgv2}. Os intervalos indicam o menor e o maior valor entre os voos da campanha; $w$, $L$ e $n_v$ seguem as Equações~\eqref{eq_pegada} e \eqref{eq_visibilidade}.}
+\end{table}
+
+A base não informa o modelo da aeronave nem os parâmetros da câmera, de modo que o $GSD$ não pode ser calculado pela Equação~\eqref{eq_gsd}. Ele foi então estimado a partir dos próprios dados, aproveitando o fato de que os objetos anotados estão parados no solo.
+
+Considere um objeto na posição $\mathbf{x}_{\mathrm{obj}}$ e a aeronave, num certo quadro, na posição $\mathbf{x}_{\mathrm{aer}}$, ambas no plano horizontal. Na imagem, a caixa do objeto fica afastada do ponto principal de $(\mathbf{x}_{\mathrm{obj}} - \mathbf{x}_{\mathrm{aer}})/GSD_{\mathrm{real}}$ pixels, descontada a rotação pela guinada, que é conhecida; $GSD_{\mathrm{real}}$ é o valor verdadeiro, desconhecido. A Equação~\eqref{eq_georref} multiplica esse afastamento pelo $GSD$ adotado e soma o resultado à posição da aeronave, de modo que a posição projetada é
+\begin{equation*}
+  \mathbf{x}_{\mathrm{proj}} = \mathbf{x}_{\mathrm{aer}} + \frac{GSD}{GSD_{\mathrm{real}}}\,\bigl(\mathbf{x}_{\mathrm{obj}} - \mathbf{x}_{\mathrm{aer}}\bigr).
+\end{equation*}
+Subtraindo $\mathbf{x}_{\mathrm{obj}}$ dos dois lados e agrupando os termos em $\mathbf{x}_{\mathrm{aer}} - \mathbf{x}_{\mathrm{obj}}$, obtém-se o erro da posição projetada:
+\begin{equation*}
+  \mathbf{x}_{\mathrm{proj}} - \mathbf{x}_{\mathrm{obj}} = \left(1 - \frac{GSD}{GSD_{\mathrm{real}}}\right)\bigl(\mathbf{x}_{\mathrm{aer}} - \mathbf{x}_{\mathrm{obj}}\bigr).
+\end{equation*}
+Essa expressão mostra três casos:
+\begin{itemize}
+  \item se $GSD = GSD_{\mathrm{real}}$, o fator entre parênteses se anula, e todas as caixas do objeto são projetadas no mesmo ponto, a sua posição verdadeira, qualquer que seja a posição da aeronave;
+  \item se $GSD < GSD_{\mathrm{real}}$, o ponto projetado fica entre o objeto e a aeronave e acompanha uma fração do deslocamento dela; no extremo $GSD = 0$, ele coincide com a posição da aeronave;
+  \item se $GSD > GSD_{\mathrm{real}}$, o ponto projetado fica do outro lado do objeto e se move no sentido oposto ao da aeronave.
+\end{itemize}
+Enquanto o objeto atravessa o campo de visão, a aeronave percorre aproximadamente o comprimento da pegada, $L$. As projeções de uma mesma trilha formam então um segmento de comprimento $\lvert 1 - GSD/GSD_{\mathrm{real}}\rvert\,L$; um erro de 10\% no $GSD$, por exemplo, espalha as caixas de um objeto por cerca de 3 a 4~m. O $GSD$ verdadeiro é, portanto, o valor que deixa as projeções de cada objeto o mais concentradas possível. A Figura~\ref{fig_estimativa_gsd} ilustra essa ideia.
+\begin{figure}[htb]
+  \centering
+  \caption{Efeito do $GSD$ adotado na projeção de um objeto parado}
+  \label{fig_estimativa_gsd}
+  \includegraphics[width=\textwidth]{figuras/fig_estimativa_gsd.pdf}
+  \fonte{Elaborado pelo autor. Esquema com valores ilustrativos. (a) Três quadros consecutivos de um voo: como o drone avança, uma caixa d'água parada entra na imagem pela frente, passa pelo centro (+) e sai por trás; a seta indica o deslocamento, em pixels, até a altura do centro. (b) Posição da caixa calculada em cada quadro pela Equação~\eqref{eq_georref}, isto é, a posição do drone naquele quadro (quadrado) somada ao deslocamento em pixels multiplicado pelo $GSD$ adotado (seta); o círculo tracejado é a posição real. Com o $GSD$ correto, as três marcas coincidem; com um $GSD$ 30\% menor ou maior que o real, elas se espalham ao longo da direção do voo. O ajuste da Equação~\eqref{eq_gsd_ajuste} procura o $GSD$ que deixa as marcas de cada objeto o mais juntas possível.}
+\end{figure}
+
+O procedimento, aplicado a cada voo, tem quatro passos:
+\begin{enumerate}
+  \item para um valor candidato de $GSD$, projetar no solo, pela Equação~\eqref{eq_georref}, cada caixa $k$ de cada trilha $j$, obtendo a posição $\mathbf{x}_{jk}(GSD)$, em coordenadas norte-leste;
+  \item calcular o ponto central de cada trilha, $\tilde{\mathbf{x}}_j(GSD)$, como a mediana, coordenada a coordenada, das suas projeções;
+  \item medir a dispersão de cada trilha como a mediana das distâncias $\lVert \mathbf{x}_{jk} - \tilde{\mathbf{x}}_j \rVert$ e resumir o voo pela mediana dessas dispersões entre as trilhas;
+  \item repetir os passos anteriores para outros valores de $GSD$ e escolher o que dá a menor dispersão do voo.
+\end{enumerate}
+Em uma única expressão,
+\begin{equation}
+  \widehat{GSD} = \arg\min_{GSD}\
+  \underbrace{\operatorname*{med}_{j}\Biggl[\ \underbrace{\operatorname*{med}_{k}\ \bigl\lVert \mathbf{x}_{jk}(GSD) - \tilde{\mathbf{x}}_j(GSD) \bigr\rVert}_{\text{dispersão da trilha } j}\ \Biggr]}_{\text{dispersão do voo}},
+  \label{eq_gsd_ajuste}
+\end{equation}
+em que a mediana interna, sobre as caixas $k$, dá a dispersão de cada trilha, e a externa, sobre as trilhas $j$, resume o voo, como nos passos 3 e 4. O operador $\arg\min$ devolve o valor do $GSD$ que minimiza a dispersão do voo, e não o valor mínimo da dispersão. Usam-se medianas, e não médias, para que caixas mal posicionadas ou objetos que se movem, como sacos plásticos levados pelo vento, não dominem o resultado. Na prática, as caixas foram amostradas a cada 5 quadros, apenas trilhas com pelo menos 5 amostras foram usadas, e o mínimo foi procurado numa grade de 0,80 a 2,20~cm/pixel com passo de 0,05~cm/pixel, refinada depois com passo de 0,01~cm/pixel.
+
+O $GSD$ ajustado vai de 1,20 a 1,78~cm/pixel entre os voos, com mediana de 1,42~cm/pixel e intervalo interquartil de 1,33 a 1,50~cm/pixel, valor coerente com o de 1,4~cm/pixel usado na Figura~\ref{fig_geometria}. Com esse ajuste, a dispersão mediana das trilhas fica entre 0,24 e 0,85~m, conforme o voo. Com $GSD = 0$, isto é, usando apenas a posição da aeronave, ela fica entre 6,2 e 9,1~m. Esse valor é da ordem de $L/4$, de 6,5 a 9,6~m pela Tabela~\ref{tab_campanhas}, que é a distância mediana ao centro para pontos espalhados uniformemente ao longo de um segmento de comprimento $L$, como prevê o caso $GSD = 0$ acima. Como a altitude da telemetria é medida em relação ao ponto de decolagem, a variação do $GSD$ entre voos feitos à mesma altitude nominal é compatível com diferenças entre a cota do ponto de decolagem e a do terreno imageado; essa explicação, contudo, não foi verificada.
+
+A geometria explica duas diferenças importantes entre as campanhas. Pela Equação~\eqref{eq_visibilidade}, cada ponto do solo permanece no campo de visão por $t_v = L/V$, que vale 3,3--3,4~s na região A e 6,4--9,4~s nas demais. A duração mediana das trilhas anotadas, de 3,4~s na região A e de 7,2~s nas regiões B a M, concorda com essa previsão. Pela mesma equação, a fração nova de cada quadro, $V/(f_q L)$, é de 1,24--1,27\% na região A e de 0,35--0,53\% nas demais. Na região A, portanto, cada ponto aparece em cerca de 80 quadros, e não em 190 a 280, o que reduz a redundância explorada pela memória geográfica.
+
+\subsection{Estrutura dos dados}
+\label{sec_base_estrutura}
+
+Cada voo da base é composto por quatro elementos, gravados sobre o mesmo relógio:
+\begin{itemize}
+  \item o vídeo, em arquivo AVI, codificado em MJPG (21 voos, de 3,6--11,2~GiB cada) ou em H.264 (voos 17 e 23 a 26, de 1,1--1,9~GiB cada);
+  \item as anotações, em um arquivo XML no formato da ferramenta CVAT, em modo de interpolação: cada objeto é uma trilha, com identificador e classe, que contém uma caixa delimitadora em cada quadro em que o objeto está visível, além de atributos que indicam os quadros-chave, a oclusão e a saída do objeto do campo de visão;
+  \item o registro de telemetria do controlador de voo, em arquivo CSV com 92 colunas (93 na região A, que tem uma coluna adicional com o tempo do vídeo), que inclui posição, velocidades, atitude, ângulos do \textit{gimbal} e os dados da bateria: tensão, corrente, carga restante, porcentagem restante e tensão de cada célula;
+  \item quadros do vídeo em PNG, a uma taxa de um quadro por segundo (um a cada 24 quadros na região A e um a cada 30 nas demais).
+\end{itemize}
+
+Neste trabalho, chama-se \textit{trilha} o conjunto de caixas com o mesmo identificador, que corresponde a um objeto físico acompanhado enquanto permanece no campo de visão. Uma trilha não é uma caixa: uma trilha típica tem 210 caixas (mediana), uma por quadro. Dois cuidados são necessários na leitura das anotações. Primeiro, o campo \texttt{size} dos metadados do arquivo XML não é o número de objetos, mas a duração do vídeo em segundos; o número de objetos deve ser contado pelos identificadores de trilha distintos. Segundo, o número de quadros do vídeo é dado por \texttt{stop\_frame} + 1.
+
+A sincronização entre o vídeo e a telemetria foi verificada com o mesmo critério da Equação~\eqref{eq_gsd_ajuste}: o registro de telemetria foi deslocado em relação ao vídeo, em passos de 0,1~s entre $-1$ e $+1$~s, e mediu-se a dispersão resultante. Em 20 dos 26 voos, o deslocamento que minimiza a dispersão está entre $-0{,}2$ e $+0{,}2$~s, e nos demais o ganho obtido com o deslocamento é de no máximo 3,5\%. Por isso, o vídeo e a telemetria são tratados como sincronizados, sem correção de defasagem.
+
+\subsection{Estatísticas das anotações}
+\label{sec_base_anotacoes}
+
+A base soma 193.901 quadros, ou 1,83~h de vídeo, com 1.649.228 caixas delimitadoras agrupadas em 8.441 trilhas de 12 classes. A Tabela~\ref{tab_classes} resume as classes, a Figura~\ref{fig_exemplos_classes} mostra exemplos de cada uma, e a Figura~\ref{fig_anotacoes} mostra como os objetos se distribuem entre os voos.
+
+\begin{table}[htb]
+  \centering
+  \caption{Classes da base MBG-V2: número de trilhas, presença nos voos e nas regiões e tamanho dos objetos}
+  \label{tab_classes}
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{lrrrrrrr}
+    \hline
+    Classe (rótulo na base) & Trilhas & \% & Voos & Regiões & Lado (pixels) & Lado (cm) & $<$ 32 pixels (\%) \\
+    \hline
+    caixa d'água (\texttt{watertank}) & 4.283 & 50,7 & 26 & 13 & 114 & 157 (135--173) & 0 \\
+    vaso de planta (\texttt{potted\_plant}) & 1.203 & 14,3 & 26 & 13 & 40 & 56 (41--80) & 32 \\
+    bueiro (\texttt{storm\_drain}) & 948 & 11,2 & 26 & 13 & 43 & 61 (53--70) & 6 \\
+    piscina (\texttt{pool}) & 763 & 9,0 & 26 & 13 & 189 & 268 (206--362) & 1 \\
+    pneu (\texttt{tire}) & 509 & 6,0 & 26 & 13 & 40 & 58 (52--64) & 13 \\
+    balde (\texttt{bucket}) & 455 & 5,4 & 25 & 13 & 27 & 38 (33--50) & 67 \\
+    saco plástico (\texttt{plastic\_bag}) & 90 & 1,1 & 21 & 13 & 49 & 70 (59--86) & 6 \\
+    garrafa (\texttt{bottle}) & 69 & 0,8 & 8 & 7 & 17 & 26 (22--33) & 93 \\
+    lixeira pequena (\texttt{small\_trash\_bin}) & 40 & 0,5 & 11 & 8 & 42 & 60 (46--68) & 12 \\
+    poça (\texttt{puddle}) & 39 & 0,5 & 8 & 6 & 181 & 232 (175--372) & 0 \\
+    lixeira grande (\texttt{large\_trash\_bin}) & 36 & 0,4 & 14 & 10 & 50 & 68 (62--82) & 6 \\
+    caçamba (\texttt{dumpster}) & 6 & 0,1 & 4 & 4 & 388 & 626 (513--676) & 0 \\
+    \hline
+  \end{tabular}}
+  \fonte{Elaborado pelo autor a partir das anotações da base MBG-V2 \cite{smt2024mbgv2}. O lado de cada trilha é a mediana de $\sqrt{\text{largura} \times \text{altura}}$ de suas caixas; em centímetros, é convertido com o $GSD$ ajustado do voo. As colunas de lado mostram a mediana entre as trilhas e, entre parênteses, os percentis 25 e 75.}
+\end{table}
+
+\begin{figure}[htb]
+  \centering
+  \caption{Exemplos das 12 classes da base MBG-V2}
+  \label{fig_exemplos_classes}
+  \includegraphics[width=\textwidth]{figuras/fig_mbgv2_exemplos_classes.pdf}
+  \fonte{Elaborado pelo autor a partir dos quadros e das anotações da base MBG-V2 \cite{smt2024mbgv2}. Para cada classe, foram escolhidos quatro objetos de regiões diferentes, com tamanhos próximos dos percentis 20, 40, 60 e 80 da classe. Cada recorte é centrado na caixa anotada e tem lado igual a cerca de 2,2 vezes o maior lado da caixa, de modo que os recortes não estão na mesma escala. Abaixo de cada recorte, a região e o lado do objeto no solo.}
+\end{figure}
+
+A distribuição é desequilibrada. A classe caixa d'água responde por metade das trilhas, e as seis classes mais frequentes somam 96,7\% delas e aparecem em pelo menos 25 dos 26 voos e em todas as 13 regiões. As outras seis classes somam apenas 280 trilhas (3,3\%); garrafa e poça, por exemplo, aparecem em só 8 voos. Para essas classes, não há exemplos suficientes para uma avaliação separada por região.
+
+O tamanho dos objetos no solo é coerente com o que cada classe representa: os pneus têm lado mediano de 58~cm, os baldes de 38~cm e as caixas d'água de 157~cm. Os objetos de menos de 32 pixels de lado são 10,7\% das trilhas, mas concentram-se em poucas classes: 93\% das garrafas, 67\% dos baldes e 32\% dos vasos de planta. Com o $GSD$ mediano, 32 pixels correspondem a cerca de 45~cm no solo. Pela Equação~\eqref{eq_spx}, esses objetos são os primeiros a ficar abaixo do limite de detecção quando a altitude aumenta, e por isso são eles que limitam a altura máxima da Equação~\eqref{eq_hmax}.
+
+\begin{figure}[htb]
+  \centering
+  \caption{Densidade, composição e tamanho dos objetos anotados na base MBG-V2}
+  \label{fig_anotacoes}
+  \includegraphics[width=\textwidth]{figuras/fig_mbgv2_anotacoes.pdf}
+  \fonte{Elaborado pelo autor a partir das anotações e da telemetria da base MBG-V2 \cite{smt2024mbgv2}. (a) Trilhas por hectare de área imageada em cada voo; os voos marcados com asterisco são da campanha de 2019. (b) Número de trilhas por classe e número de voos em que a classe aparece; as miniaturas são exemplos reais de cada classe. (c) Lado dos objetos no solo; as caixas indicam os percentis 25 e 75, e as hastes se estendem até 1,5 vez o intervalo interquartil. A linha pontilhada corresponde a 32 pixels com o $GSD$ mediano de 1,42~cm/pixel.}
+\end{figure}
+
+Para comparar voos de durações diferentes, a densidade de objetos foi calculada como o número de trilhas por hectare de área imageada. A área imageada de cada voo, de 2,8--11,6~ha, é a união das pegadas da câmera ao longo do voo, calculada numa grade de 1~m com o $GSD$ ajustado e a guinada da câmera em cada instante. Somadas por região, essas áreas totalizam 1,42~km$^2$, e a razão entre a área imageada e a área do polígono de cada região fica entre 0,88--1,20, o que é coerente com o $GSD$ ajustado. A densidade varia de 19,4--94,8 trilhas por hectare entre os voos, com mediana de 60,1; o voo menos denso é o 13 e o mais denso é o 21. Em todos os voos há objetos na maior parte do vídeo: a fração de quadros com pelo menos um objeto tem mediana de 98,6\% e mínimo de 66,4\%.
+
+A mesma grade permite verificar se um objeto pode ser contado duas vezes. Dentro de um voo, as passadas vizinhas quase não se sobrepõem: a área imageada é, em mediana, apenas 4\% menor que o produto da distância percorrida pela largura da pegada, com máximo de 27\% no voo 14. Os dois voos de cada região cobrem metades complementares, com sobreposição de 0,7--10,7\% da área imageada (Figura~\ref{fig_regioes}b). Assim, cada objeto aparece, na quase totalidade dos casos, em uma única passada de um único voo, e o número de trilhas pode ser tomado como o número de objetos distintos.
+
+\subsection{Telemetria e energia dos voos}
+\label{sec_base_energia}
+
+A potência elétrica fornecida pela bateria foi calculada em cada amostra da telemetria como o produto da tensão pela corrente, $P_{el} = U\,I$, e a energia de cada voo foi obtida integrando essa potência no tempo pela regra dos trapézios, $E = \int P_{el}\,\mathrm{d}t$. A energia por área foi então calculada como
+\begin{equation}
+  e_{\mathrm{voo}} = \frac{E}{A_{\mathrm{img}}},
+  \label{eq_e_voo}
+\end{equation}
+em que $A_{\mathrm{img}}$ é a área imageada definida na Seção~\ref{sec_base_anotacoes}. A Equação~\eqref{eq_e_voo} é a versão medida da Equação~\eqref{eq_e_area}: em vez de supor faixas sem sobreposição, ela usa a área efetivamente imageada, que já desconta as curvas e as sobreposições entre passadas.
+
+Nas regiões B a M, a potência mediana de cada voo varia de 173--190~W, com mediana de 182~W. A energia por voo vai de 25,6--68,0~kJ, e cada voo consome de 9--24 pontos percentuais da carga da bateria. Os 26 voos somam 330~Wh para percorrer 28,9~km. A energia por área nas regiões B a M tem mediana de 239~Wh/km$^2$, com variação de 204--271~Wh/km$^2$ entre os voos.
+
+Os dois voos da região A, feitos a cerca de 7,9~m/s, consomem potência ligeiramente menor, de 170 e 172~W, e energia por área de 157 e 137~Wh/km$^2$, cerca de 39\% abaixo da mediana das demais regiões. Esse resultado é compatível com a curva de potência da Figura~\ref{fig_curva_potencia}, em que a potência diminui entre o pairado e a velocidade de mínima potência: dobrar a velocidade quase não altera a potência e, pela Equação~\eqref{eq_e_area}, reduz a energia por área. A comparação, porém, deve ser lida com cautela. Os voos da região A são de outra campanha, com outra configuração de vídeo, e não é possível confirmar que foram feitos com a mesma aeronave: os campos de número de série vêm vazios em todos os registros, e o único indício disponível é que todos os voos usam baterias de quatro células, cujo contador de ciclos passa de 11 em 2019 para 17 a 21 em 2020 e 2021.
+
+Nas regiões B a M, todos os voos ocupam praticamente um único ponto de operação, a 40~m e cerca de 4,1~m/s. Por isso, a telemetria permite ancorar o modelo de potência da Seção~\ref{sec_voo_frente} nesse ponto, mas não calibrar a curva $P_{el}(V)$ inteira.
+
+\subsection{Verificação de integridade e tratamento dos dados}
+\label{sec_base_integridade}
+
+Antes do uso, os 26 voos foram verificados quanto aos seguintes pontos:
+\begin{itemize}
+  \item o número de quadros declarado no cabeçalho de cada vídeo é igual ao número de quadros do arquivo de anotações, e o último quadro de cada vídeo é decodificado sem erro;
+  \item os quadros em PNG são idênticos, pixel a pixel, aos quadros correspondentes do vídeo;
+  \item a duração do registro de telemetria difere da duração do vídeo em no máximo 0,8~s, com exceção do voo 22, discutida abaixo;
+  \item os identificadores de trilha não se fragmentam enquanto o objeto permanece visível, o que se confirma pela baixa dispersão das trilhas projetadas no solo (Seção~\ref{sec_base_condicoes});
+  \item a área imageada calculada a partir da telemetria é compatível com o polígono de cada região (Seção~\ref{sec_base_anotacoes}).
+\end{itemize}
+
+Foram encontrados três problemas, tratados como segue.
+\begin{itemize}
+  \item Em 5 voos (06, 07, 08, 14 e 22), o registro de telemetria tem interrupções breves, de cerca de 3~s, seguidas de algumas linhas em que os campos da bateria valem zero. Essas 99 linhas foram descartadas, e os valores nesses intervalos foram interpolados a partir das amostras vizinhas. Além disso, em 10 voos há linhas com carimbo de tempo repetido, a maioria nos voos 23 e 24, cujo registro é gravado em rajadas; dessas 713 linhas, manteve-se apenas a primeira de cada instante. As duas correções somam 812 linhas, 0,8\% do total.
+  \item Nos voos 14 e 22, essas linhas aparecem no fim do registro e, no voo 14, estendem-se por 44~s além do fim do vídeo. No voo 22, a telemetria válida termina 9,8~s antes do fim do vídeo; esses quadros finais são excluídos das análises que dependem do georreferenciamento.
+  \item A região A difere das demais em velocidade, taxa de quadros, resolução e data (Tabela~\ref{tab_campanhas}). Por isso, ela é tratada como um conjunto à parte: não é misturada às demais regiões no treino do detector e serve para avaliar o efeito de uma velocidade de voo maior.
+\end{itemize}
+As seis classes com menos de 100 trilhas são mantidas nas estatísticas da base, mas não são avaliadas separadamente por região.
+
+\subsection{Representatividade e limitações}
+\label{sec_base_limitacoes}
+
+A base tem limitações que restringem a generalização dos resultados. Todos os voos foram feitos em uma única cidade, a uma única altitude nominal de 40~m e, ao que tudo indica, com um único modelo de aeronave e de câmera, e as anotações foram produzidas por um único grupo. A distribuição das classes é muito desequilibrada, com metade das trilhas em uma só classe e seis classes com poucos exemplos. Além disso, as 13 regiões cobrem, juntas, apenas 1,42~km$^2$, e as duas campanhas diferem em vários parâmetros ao mesmo tempo, o que impede separar o efeito de cada um.
+
+Essas limitações orientam o protocolo do trabalho. Como a diversidade entre regiões é pequena, a avaliação é feita deixando uma região de fora a cada rodada, para medir quanto o desempenho cai em uma região não vista no treino. Como a altitude é única, o efeito da altitude é estudado reduzindo a resolução das imagens, o que equivale a voar mais alto (Equação~\eqref{eq_spx}), e comparado com os voos a 10 e 25~m da base MBG \cite{passos2022mbg}.

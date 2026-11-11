@@ -69,7 +69,7 @@ Em voo à frente com velocidade $V$, o disco do rotor recebe, além da velocidad
 \end{equation}
 em que $\alpha_d$ é o ângulo de ataque do disco, positivo quando o disco é inclinado para a frente, conforme a convenção de \citeonline[p.~93]{leishman2006}. Com essa convenção, a componente $V\sin\alpha_d$ soma-se à velocidade induzida, pois o escoamento livre atravessa o disco de cima para baixo. Para velocidades bem maiores que $v_h$, a Equação~\eqref{eq_glauert} tende a $v_i \approx v_h^{2}/V$. Ou seja, a potência induzida cai com a velocidade, porque o rotor passa a processar uma massa de ar maior por unidade de tempo.
 
-A potência total requerida em voo nivelado é usualmente decomposta em três parcelas \cite[p.~217--227]{leishman2006}:
+\citeonline[p.~217]{leishman2006} decompõe a potência total requerida no rotor em voo à frente em quatro parcelas: induzida, de perfil, parasita e de subida. A potência de subida é a taxa de aumento da energia potencial, $m g V_c$, em que $V_c$ é a velocidade vertical \cite[p.~218, 226]{leishman2006}, e se anula em voo nivelado. Restam três parcelas, cujas formas explícitas correspondem às Equações~(5.23), (5.29) e (5.47) daquela obra \cite[p.~218--225]{leishman2006}. A parcela de perfil aparece lá na forma adimensional, isto é, dividida por $\rho A(\Omega R)^{3}$, pois o coeficiente de potência do rotor é definido como $C_P = P/[\rho A(\Omega R)^{3}]$ \cite[p.~67]{leishman2006}; aqui ela foi multiplicada de volta por esse fator para ser expressa em watts. Essa é a convenção norte-americana, adotada em todo o livro; parte da literatura europeia usa $\tfrac{1}{2}\rho A(\Omega R)^{3}$ no denominador, o que dobra os valores dos coeficientes \cite[p.~67]{leishman2006}. Em voo nivelado, portanto,
 \begin{equation}
   P(V) = \underbrace{\kappa\, T\, v_i(V)}_{\text{induzida}}
        + \underbrace{\frac{\sigma C_{d0}}{8}\,\rho A (\Omega R)^{3}\left(1 + K\mu^{2}\right)}_{\text{perfil}}
@@ -84,9 +84,9 @@ Os termos da Equação~\eqref{eq_pv} são os seguintes:
     \item $\Omega R$ é a velocidade de ponta da pá;
     \item $\mu = V\cos\alpha_d/(\Omega R)$ é a razão de avanço;
     \item $K$ é uma constante empírica que representa o aumento do arrasto de perfil em voo à frente, com valores médios de 4,65 ou 4,7 \cite[p.~219]{leishman2006};
-    \item $f_e$ é a área equivalente de placa plana, ou seja, o produto do coeficiente de arrasto pela área de referência, que agrega o arrasto da fuselagem, do cubo e do trem de pouso \cite[p.~225]{leishman2006}.
+    \item $f_e$ é a área equivalente de placa plana, ou seja, o produto do coeficiente de arrasto pela área de referência, que agrega o arrasto da fuselagem, do cubo e do trem de pouso, chamada $f$ por \citeonline[p.~225]{leishman2006}; substituída na Equação~(5.47) daquela obra, ela leva à parcela parasita $\tfrac{1}{2}\rho V^{2} f_e \cdot V$.
 \end{itemize}
-Em um multirrotor com $N$ rotores, as duas primeiras parcelas são somadas sobre os rotores, e a parcela parasita é a da aeronave como um todo.
+Em um multirrotor com $N$ rotores, as duas primeiras parcelas são somadas sobre os rotores, e a parcela parasita é a da aeronave como um todo. No helicóptero convencional soma-se ainda a potência do rotor de cauda, que equilibra o torque do rotor principal \cite[p.~226--227]{leishman2006}. No multirrotor esse torque é equilibrado pelos próprios rotores, que giram em sentidos opostos, e essa parcela não existe.
 
 A soma de uma parcela decrescente, a induzida, com uma crescente, a parasita, dá à curva $P(V)$ o formato característico de ``balde'' das aeronaves de asas rotativas. A potência é alta em pairado, passa por um mínimo em velocidade intermediária e volta a crescer em alta velocidade \cite[p.~227]{leishman2006}. A Figura~\ref{fig_curva_potencia} ilustra esse comportamento. Esse é o mesmo tipo de curva de potência requerida estudado no desempenho de aeronaves de asa fixa \cite{saarlas2006}, e dele derivam as velocidades características da Seção~\ref{sec_desempenho}.
 \begin{figure}[htb]
@@ -100,12 +100,21 @@ A soma de uma parcela decrescente, a induzida, com uma crescente, a parasita, d�
 
 \subsection{Equilíbrio em cruzeiro e estimativa do arrasto}
 
-Um multirrotor produz força propulsiva inclinando o vetor de tração. Em voo nivelado, retilíneo e com velocidade constante, o equilíbrio de forças no referencial da trajetória \cite{etkin1996} fornece
+Um multirrotor produz força propulsiva inclinando o vetor de tração. O ponto de partida é a equação de força de um corpo rígido, escrita nos eixos do corpo, que resulta das Equações~(4.5,4), (4.5,6) e (4.5,7) de \citeonline[p.~101]{etkin1996}:
+\begin{equation*}
+  \mathbf{F}_B + m\,\mathbf{L}_{BE}\begin{bmatrix} 0 \\ 0 \\ g \end{bmatrix}
+  = m\left(\dot{\mathbf{V}}_B + \boldsymbol{\omega}_B \times \mathbf{V}_B\right),
+\end{equation*}
+em que $\mathbf{F}$ é a resultante das forças aerodinâmicas e propulsivas, o segundo termo é o peso, $\mathbf{V}$ é a velocidade do centro de massa em relação à Terra e $\boldsymbol{\omega}$ é a velocidade angular da aeronave. O subscrito $B$ indica componentes nos eixos do corpo, e $\mathbf{L}_{BE} = \mathbf{L}_{EB}^{T}$ transforma componentes dos eixos da Terra para os do corpo \cite[p.~99, 313]{etkin1996}. Em voo nivelado, retilíneo e com velocidade constante, sem vento, a velocidade não varia e a aeronave não gira, de modo que o lado direito se anula. Esse é o regime permanente que \citeonline[Eq.~(4.9,6), p.~109]{etkin1996} usa como condição de referência. Multiplicando a equação à esquerda por $\mathbf{L}_{EB}$, e como $\mathbf{L}_{EB}\mathbf{L}_{BE}$ é a matriz identidade, as forças passam aos eixos da Terra, indicados pelo subscrito $E$:
+\begin{equation*}
+  \mathbf{F}_E + \begin{bmatrix} 0 \\ 0 \\ m g \end{bmatrix} = \mathbf{0}.
+\end{equation*}
+No multirrotor, $\mathbf{F}$ tem duas parcelas: a tração $T$, perpendicular ao plano dos rotores, isto é, no sentido $-z$ do corpo, e o arrasto $D$, que na ausência de vento é horizontal e oposto ao movimento. Tome-se o eixo $x$ da Terra na direção do voo e a aeronave inclinada para a frente de um ângulo $\theta$, o que corresponde a um ângulo de arfagem de Euler igual a $-\theta$ na convenção de \citeonline[p.~98]{etkin1996}, em que a arfagem é positiva com o nariz para cima. A tração tem então componentes $T\sin\theta$ para a frente e $T\cos\theta$ para cima, e $\mathbf{F}_E = [\,T\sin\theta - D,\ 0,\ -T\cos\theta\,]^{T}$. As componentes vertical e horizontal da equação anterior fornecem
 \begin{equation}
   T\cos\theta = mg, \qquad T\sin\theta = D = \tfrac{1}{2}\rho V^{2} f_e,
   \label{eq_equilibrio}
 \end{equation}
-em que $\theta$ é o ângulo de arfagem e $D$ é o arrasto da aeronave. Dividindo uma equação pela outra,
+em que $\theta$ é o ângulo de arfagem, medido como inclinação para a frente, e $D$ é o arrasto da aeronave. Dividindo uma equação pela outra,
 \begin{equation}
   \tan\theta = \frac{\rho V^{2} f_e}{2 m g}
   \qquad\Longrightarrow\qquad
@@ -121,7 +130,7 @@ Os motores, os controladores eletrônicos de velocidade e a bateria acrescentam 
   P_{el} = \frac{P(V)}{\eta_{m}} + P_{av},
   \label{eq_pel}
 \end{equation}
-em que $\eta_m$ é a eficiência combinada de motores e controladores e $P_{av}$ é a potência dos aviônicos e demais cargas fixas, como controlador de voo, rádio e gimbal. Modelos empíricos de consumo construídos a partir de medições em voo seguem essa estrutura e tratam explicitamente o efeito da velocidade e da carga paga sobre a energia consumida por multirrotores \cite{abeywickrama2018energy}. Quando a telemetria registra a tensão $U(t)$ e a corrente $I(t)$ da bateria, a potência elétrica total é medida diretamente, e a energia de um trecho de voo é dada por
+em que $\eta_m$ é a eficiência combinada de motores e controladores e $P_{av}$ é a potência dos aviônicos e demais cargas fixas, como controlador de voo, rádio e \textit{gimbal}. Modelos empíricos de consumo construídos a partir de medições em voo seguem essa estrutura e tratam explicitamente o efeito da velocidade e da carga paga sobre a energia consumida por multirrotores \cite{abeywickrama2018energy}. Quando a telemetria registra a tensão $U(t)$ e a corrente $I(t)$ da bateria, a potência elétrica total é medida diretamente, e a energia de um trecho de voo é dada por
 \begin{equation}
   E = \int_{t_0}^{t_1} U(t)\,I(t)\,\mathrm{d}t.
   \label{eq_energia}
@@ -227,7 +236,25 @@ Substituindo a Equação~\eqref{eq_gsd}, $b = V t_e f_c/(p\,h)$: o borrão cresc
 \subsection{Georreferenciamento das detecções}
 \label{sec_georref}
 
-Para transformar uma detecção na imagem em uma posição no solo, são necessários a posição da aeronave e a orientação da câmera em cada quadro. Com a câmera estabilizada no nadir por um \textit{gimbal}, um pixel $(u, v)$ afastado do ponto principal $(c_x, c_y)$ corresponde, no referencial da câmera, a um deslocamento no solo de $GSD\,(u - c_x)$ e $GSD\,(v - c_y)$. Esse deslocamento é levado ao referencial local norte-leste por uma rotação de ângulo igual ao rumo da câmera, $\psi$, seguindo as convenções de referenciais e de sequências de rotação da dinâmica de voo \cite{etkin1996}:
+Para transformar uma detecção na imagem em uma posição no solo, são necessários a posição da aeronave e a orientação da câmera em cada quadro. Com a câmera estabilizada no nadir por um \textit{gimbal}, um pixel $(u, v)$ afastado do ponto principal $(c_x, c_y)$ corresponde, no referencial da câmera, a um deslocamento no solo de $GSD\,(u - c_x)$ e $GSD\,(v - c_y)$. Esse deslocamento é levado ao referencial local norte-leste por uma rotação de ângulo igual à guinada da câmera, $\psi$, isto é, o ângulo, medido no plano horizontal, entre o norte e o eixo frontal da câmera, positivo do norte para o leste. Adotam-se as convenções de referenciais de \citeonline[p.~15--16]{etkin1996}: um referencial fixo na Terra, considerada plana, com o eixo $z$ vertical para baixo e o eixo $x$ horizontal apontado para uma direção conveniente, aqui o norte, de modo que o eixo $y$ aponta para o leste; e um referencial solidário à câmera, com $x$ para a frente, $y$ para a direita e $z$ para baixo, como os eixos do corpo \cite[p.~101--102]{etkin1996}. A orientação de um referencial em relação ao outro é dada pelos ângulos de Euler, aplicados na ordem guinada, arfagem e rolamento \cite[p.~98]{etkin1996}, e a matriz que leva as componentes de um vetor dos eixos do corpo para os eixos da Terra é \cite[Eq.~(4.4,3), p.~99]{etkin1996}
+\begin{equation*}
+  \mathbf{L}_{EB} =
+  \begin{bmatrix}
+    c_{\theta_c} c_{\psi} & s_{\phi_c} s_{\theta_c} c_{\psi} - c_{\phi_c} s_{\psi} & c_{\phi_c} s_{\theta_c} c_{\psi} + s_{\phi_c} s_{\psi} \\
+    c_{\theta_c} s_{\psi} & s_{\phi_c} s_{\theta_c} s_{\psi} + c_{\phi_c} c_{\psi} & c_{\phi_c} s_{\theta_c} s_{\psi} - s_{\phi_c} c_{\psi} \\
+    -s_{\theta_c} & s_{\phi_c} c_{\theta_c} & c_{\phi_c} c_{\theta_c}
+  \end{bmatrix},
+\end{equation*}
+em que $\psi$, $\theta_c$ e $\phi_c$ são os ângulos de guinada, arfagem e rolamento da câmera, e $c_{(\cdot)}$ e $s_{(\cdot)}$ abreviam o cosseno e o seno. Como o \textit{gimbal} mantém a câmera no nadir, $\theta_c = \phi_c = 0$. Com $\cos 0 = 1$ e $\sin 0 = 0$, a matriz se reduz a uma rotação de ângulo $\psi$ em torno da vertical,
+\begin{equation*}
+  \mathbf{L}_{EB}(\psi, 0, 0) =
+  \begin{bmatrix}
+    \cos\psi & -\sin\psi & 0 \\
+    \sin\psi & \cos\psi & 0 \\
+    0 & 0 & 1
+  \end{bmatrix},
+\end{equation*}
+que não altera a componente vertical. Com a câmera inclinada, seria preciso usar a matriz completa e, além disso, intersectar com o solo a direção de visada de cada pixel. Aplicando o bloco horizontal dessa matriz ao deslocamento no referencial da câmera, obtém-se
 \begin{equation}
   \begin{bmatrix} \Delta N \\ \Delta E \end{bmatrix}
   = GSD
@@ -235,7 +262,7 @@ Para transformar uma detecção na imagem em uma posição no solo, são necess�
   \begin{bmatrix} -(v - c_y) \\ u - c_x \end{bmatrix}.
   \label{eq_georref}
 \end{equation}
-Na Equação~\eqref{eq_georref}, o eixo vertical da imagem, crescente para baixo, aponta no sentido oposto ao rumo, e o eixo horizontal aponta para a direita da aeronave. Os deslocamentos são então somados à posição da aeronave, convertida de latitude $\phi$ e longitude $\lambda$ para coordenadas locais por meio dos raios de curvatura meridiano, $R_M$, e do primeiro vertical, $R_N$, do elipsoide WGS-84 \cite[p.~23--25]{kayton1997}:
+Na Equação~\eqref{eq_georref}, o eixo vertical da imagem, crescente para baixo, aponta para trás, no sentido oposto ao eixo $x$ da câmera, e o eixo horizontal aponta para a direita da aeronave. Os deslocamentos são então somados à posição da aeronave, convertida de latitude $\phi$ e longitude $\lambda$ para coordenadas locais por meio dos raios de curvatura meridiano, $R_M$, e do primeiro vertical, $R_N$, do elipsoide WGS-84 \cite[p.~23--25]{kayton1997}:
 \begin{equation}
   \Delta N = R_M\,\Delta\phi, \qquad \Delta E = R_N\cos\phi\,\Delta\lambda,
   \qquad
