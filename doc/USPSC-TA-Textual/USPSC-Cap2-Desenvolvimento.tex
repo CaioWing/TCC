@@ -36,7 +36,7 @@ em que $P_h$ é a potência efetivamente absorvida pelo rotor \cite[p.~70]{leish
 \end{figure}
 
 
-Para o problema deste trabalho, a consequência mais importante da Equação~\eqref{eq_ph} vem do pairado, em que a tração equilibra o peso, $T = mg$. Nesse caso, a Equação~\eqref{eq_ph} fica $P_{h,\mathrm{ideal}} = C\,m^{3/2}$, com $C = g^{3/2}/\sqrt{2\rho A}$ constante para um mesmo veículo voando na mesma altitude, isto é, com $g$, $\rho$ e $A$ fixos. Considere que a massa passe de $m$ para $m + \Delta m$ e que, com isso, a potência ideal passe de $P_{h,\mathrm{ideal}}$ para $P'_{h,\mathrm{ideal}} = C\,(m + \Delta m)^{3/2}$. A razão entre as duas potências não depende de $C$:
+Para o problema deste trabalho, a consequência mais importante da Equação~\eqref{eq_ph} decorre da condição de pairado, em que a tração equilibra o peso, $T = mg$. Nesse caso, a Equação~\eqref{eq_ph} fica $P_{h,\mathrm{ideal}} = C\,m^{3/2}$, com $C = g^{3/2}/\sqrt{2\rho A}$ constante para um mesmo veículo voando na mesma altitude, isto é, com $g$, $\rho$ e $A$ fixos. Considere que a massa passe de $m$ para $m + \Delta m$ e que, com isso, a potência ideal passe de $P_{h,\mathrm{ideal}}$ para $P'_{h,\mathrm{ideal}} = C\,(m + \Delta m)^{3/2}$. A razão entre as duas potências não depende de $C$:
 \begin{equation*}
   \frac{P'_{h,\mathrm{ideal}}}{P_{h,\mathrm{ideal}}}
   = \frac{C\,(m + \Delta m)^{3/2}}{C\,m^{3/2}}
@@ -217,7 +217,7 @@ Eliminando $h$ entre as Equações~\eqref{eq_e_h} e \eqref{eq_spx}, obtém-se um
   e = \frac{P_{el,\mathrm{tot}}(V)}{V\,N_x}\,\frac{s_{px}}{s}.
   \label{eq_e_spx}
 \end{equation}
-A Equação~\eqref{eq_e_spx} mostra que, para uma dada velocidade, economizar energia por área significa necessariamente apresentar os objetos ao detector com menos pixels; a distância focal e o tamanho do pixel do sensor desaparecem da relação, restando apenas o número de pixels transversais $N_x$. Se o detector precisa de pelo menos $s_{px,\min}$ pixels para atingir a taxa de detecção exigida em objetos de tamanho $s$, a Equação~\eqref{eq_e_spx} fornece o menor valor possível da energia por área naquela velocidade, atingido na altura máxima
+A Equação~\eqref{eq_e_spx} mostra que, mantidas a velocidade, a potência total, a câmera e a dimensão do objeto, reduzir a energia por área pelo aumento da altura significa apresentar os objetos ao detector com menos pixels; a distância focal e o tamanho do pixel do sensor desaparecem da relação, restando apenas o número de pixels transversais $N_x$. Se o detector precisa de pelo menos $s_{px,\min}$ pixels para atingir a taxa de detecção exigida em objetos de tamanho $s$, a Equação~\eqref{eq_e_spx} fornece o menor valor possível da energia por área naquela velocidade, atingido na altura máxima
 \begin{equation}
   h_{\max} = \frac{s\,f_c}{p\,s_{px,\min}}.
   \label{eq_hmax}
@@ -264,10 +264,11 @@ que não altera a componente vertical. Com a câmera inclinada, seria preciso us
 \end{equation}
 Na Equação~\eqref{eq_georref}, o eixo vertical da imagem, crescente para baixo, aponta para trás, no sentido oposto ao eixo $x$ da câmera, e o eixo horizontal aponta para a direita da aeronave. Os deslocamentos são então somados à posição da aeronave, convertida de latitude $\phi$ e longitude $\lambda$ para coordenadas locais por meio dos raios de curvatura meridiano, $R_M$, e do primeiro vertical, $R_N$, do elipsoide WGS-84 \cite[p.~23--25]{kayton1997}:
 \begin{equation}
-  \Delta N = R_M\,\Delta\phi, \qquad \Delta E = R_N\cos\phi\,\Delta\lambda,
-  \qquad
-  R_N = \frac{a}{\sqrt{1 - \epsilon^{2}\sin^{2}\phi}}, \qquad
-  R_M = \frac{a\,(1-\epsilon^{2})}{(1 - \epsilon^{2}\sin^{2}\phi)^{3/2}},
+  \begin{gathered}
+    \Delta N = R_M\,\Delta\phi, \qquad \Delta E = R_N\cos\phi\,\Delta\lambda, \\
+    R_N = \frac{a}{\sqrt{1 - \epsilon^{2}\sin^{2}\phi}}, \qquad
+    R_M = \frac{a\,(1-\epsilon^{2})}{(1 - \epsilon^{2}\sin^{2}\phi)^{3/2}},
+  \end{gathered}
   \label{eq_raios}
 \end{equation}
 em que $a$ é o semieixo maior e $\epsilon$ é a excentricidade do elipsoide. A rigor, os raios devem ser somados à altitude da aeronave \cite[p.~25]{kayton1997}, mas a 40~m de altura essa correção é desprezível diante de raios da ordem de 6\,400~km. Para áreas da ordem de um bairro, com poucos quilômetros de extensão, o erro dessa aproximação local é pequeno diante da incerteza do posicionamento por satélite.
@@ -288,12 +289,12 @@ Para $N_x \times N_y = 3840 \times 2160$ e $s_t = 640$, são $6 \times 4 = 24$ p
 
 \subsection{Métricas de detecção}
 
-Uma caixa prevista $B_p$ é considerada correta quando sua sobreposição com a caixa anotada $B_g$, medida pela razão entre interseção e união,
+A sobreposição entre uma caixa prevista $B_p$ e uma caixa anotada $B_g$ é medida pela razão entre interseção e união,
 \begin{equation}
   IoU = \frac{|B_p \cap B_g|}{|B_p \cup B_g|},
   \label{eq_iou}
 \end{equation}
-supera um limiar, tipicamente 0,5 \cite{everingham2010voc}. A partir das contagens de verdadeiros positivos ($VP$), falsos positivos ($FP$) e falsos negativos ($FN$), definem-se a precisão e a taxa de detecção (\textit{recall}), isto é, a fração dos objetos reais que foram detectados:
+Para considerar a detecção correta, exige-se a classe correta e uma associação única a uma caixa anotada com $IoU$ acima do limiar adotado, tipicamente 0,5 \cite{everingham2010voc}. A partir das contagens de verdadeiros positivos ($VP$), falsos positivos ($FP$) e falsos negativos ($FN$), definem-se a precisão, isto é, a fração das detecções que estão corretas, e a taxa de detecção (\textit{recall}), isto é, a fração dos objetos anotados que foram detectados:
 \begin{equation}
   \mathcal{P} = \frac{VP}{VP + FP}, \qquad \mathcal{R} = \frac{VP}{VP + FN}.
   \label{eq_pr}
@@ -307,7 +308,7 @@ Métricas por quadro, como a mAP, contam o mesmo objeto tantas vezes quantas ele
   \mathcal{R}_f = \frac{\#\{\text{focos reais com ao menos um foco previsto da mesma classe a menos de } d_{\max}\}}{\#\{\text{focos reais}\}},
   \label{eq_recall_focos}
 \end{equation}
-em que os focos reais são os objetos anotados, identificados por um número único ao longo do vídeo.
+em que os focos reais são os objetos anotados, identificados por um número único ao longo do vídeo. Essa referência se limita aos objetos visíveis e anotados, sem confirmar a presença de larvas nem incluir recipientes ocultos. A definição acima verifica a proximidade entre previsões e anotações, mas não impõe associação um a um: uma previsão pode atender ao critério de mais de um objeto próximo. O protocolo de avaliação deverá resolver essa ambiguidade e acompanhar a taxa de detecção com uma medida de falsos positivos.
 
 \section{Computação embarcada}
 \label{sec_embarcada}
@@ -364,6 +365,6 @@ em que $m_0$ é a massa da aeronave sem o computador e $m_H$ é a massa acrescen
   \quad r(\pi, h, V) \leq r_{\max}(H),
   \label{eq_otimizacao}
 \end{equation}
-em que $\mathcal{R}_{\min}$ é a taxa de detecção de focos únicos exigida pela vigilância.
+em que $\mathcal{R}_{\min}$ é a meta de taxa de detecção de focos únicos adotada no estudo, a ser fixada antes dos experimentos.
 
 A Equação~\eqref{eq_coprojeto} deixa visíveis os compromissos discutidos ao longo deste capítulo. A altitude aumenta $w$, mas reduz o tamanho dos objetos em pixels e, com ele, $\mathcal{R}_f$. A velocidade desloca o ponto de operação na curva de potência e aumenta o borrão. A estratégia de inferência altera $r$. O hardware altera $P_{c0}$, $E_{\mathrm{inf}}$ e $r_{\max}$, e também a massa, que entra na potência de propulsão pela Equação~\eqref{eq_dm}. Os capítulos seguintes descrevem como cada termo é medido ou estimado a partir dos dados da base MBG-V2 e do computador embarcado de referência.
