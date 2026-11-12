@@ -2,13 +2,14 @@
 % Letras latinas em ordem alfabética, seguidas das letras gregas.
 \begin{simbolos}
   \item[$A$]                       Área do disco do rotor
+  \item[$A_{\Sigma}$]              Área total dos discos dos rotores
   \item[$A_t$]                     Área de solo coberta por um recorte de imagem
   \item[$a$]                       Semieixo maior do elipsoide WGS-84
   \item[$b$]                       Borrão de movimento, em pixels
   \item[$C$]                       Tempo de computação por quadro
-  \item[$C_P$]                     Coeficiente de potência do rotor, $P/[\rho A(\Omega R)^{3}]$
+  \item[$C_P$]                     Coeficiente de potência do rotor, $P_r/[\rho A(\Omega R)^{3}]$
   \item[$C_{d0}$]                  Coeficiente de arrasto de perfil médio das pás
-  \item[$C_j$]                     Tempo de computação da tarefa $j$
+  \item[$C_j$]                     Pior tempo de execução considerado para a tarefa $j$
   \item[$c_x, c_y$]                Coordenadas do ponto principal da imagem, em pixels
   \item[$D$]                       Arrasto da aeronave
   \item[$d_{\max}$]                Distância limite para associar um foco previsto a um foco real
@@ -21,9 +22,11 @@
   \item[$f_c$]                     Distância focal da câmera
   \item[$f_e$]                     Área equivalente de placa plana
   \item[$f_q$]                     Taxa de quadros do vídeo
+  \item[$\mathcal{G}$]             Conjunto de focos reais anotados
   \item[$GSD$]                     Resolução espacial no solo
   \item[$g$]                       Aceleração da gravidade
-  \item[$H$]                       Hardware embarcado
+  \item[$H$]                       Hardware embarcado e modo de potência
+  \item[$H_e$]                     Altura elipsoidal de referência
   \item[$h$]                       Altura de voo sobre o terreno
   \item[$h_{\max}$]                Altura máxima que preserva a detecção
   \item[$I$]                       Corrente da bateria
@@ -31,6 +34,7 @@
   \item[$k$]                       Passo da estratégia de pular quadros
   \item[$L$]                       Comprimento da pegada no solo, na direção do voo
   \item[$\mathbf{L}_{EB}, \mathbf{L}_{BE}$] Matrizes de transformação dos eixos do corpo para os da Terra e vice-versa
+  \item[$\mathcal{M}$]             Conjunto de pares válidos na avaliação de focos
   \item[$m$]                       Massa da aeronave
   \item[$m_0$]                     Massa da aeronave sem o computador de bordo
   \item[$m_H$]                     Massa acrescentada pelo hardware embarcado
@@ -46,11 +50,12 @@
   \item[$P_{c0}$]                  Parcela fixa da potência do computador de bordo
   \item[$P_{el}$]                  Potência elétrica retirada da bateria
   \item[$P_{el,\mathrm{tot}}$]     Potência elétrica total, incluindo o computador de bordo
+  \item[$P_r$]                     Potência de um rotor
   \item[$P_h$]                     Potência de pairado
   \item[$P_{h,\mathrm{ideal}}$]    Potência ideal de pairado
   \item[$\mathcal{P}$]             Precisão da detecção
   \item[$p$]                       Tamanho do pixel no sensor
-  \item[$R$]                       Alcance
+  \item[$R$]                       Alcance; em $\Omega R$, raio do rotor
   \item[$R_M, R_N$]                Raios de curvatura meridiano e do primeiro vertical
   \item[$\mathcal{R}$]             Taxa de detecção por quadro
   \item[$\mathcal{R}_f$]           Taxa de detecção de focos únicos
@@ -61,7 +66,8 @@
   \item[$s_{px}$]                  Dimensão de um objeto na imagem, em pixels
   \item[$s_{px,\min}$]             Dimensão mínima de um objeto na imagem para a taxa de detecção exigida
   \item[$s_t$]                     Lado de um recorte de imagem, em pixels
-  \item[$T$]                       Tração do rotor
+  \item[$T$]                       Tração total da aeronave
+  \item[$T_r$]                     Tração de um rotor
   \item[$t_{\mathrm{aut}}$]        Autonomia
   \item[$t_e$]                     Tempo de exposição
   \item[$t_v$]                     Tempo em que um ponto do solo permanece no campo de visão
