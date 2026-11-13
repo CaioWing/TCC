@@ -3,7 +3,7 @@
 \chapter[Fundamentação teórica]{Fundamentação teórica}
 \label{cap_fundamentacao}
 
-Este capítulo reúne os modelos usados para avaliar a energia por quilômetro quadrado inspecionado. Ele parte da física de voo do multirrotor e passa pela geometria do imageamento aéreo, pela detecção de objetos e pela computação embarcada. Ao final, os modelos são combinados em uma formulação única do problema de co-projeto. Sempre que possível, a modelagem segue a bibliografia das disciplinas do curso de Engenharia Aeronáutica da EESC: Projeto e Desempenho de Hélices \cite{usp2026saa0189}, Desempenho de Aeronaves \cite{usp2026saa0183}, Dinâmica de Voo \cite{usp2026saa0184}, Princípios de Aviônica e Navegação \cite{usp2026saa0167}, Sistemas Embarcados para Veículos Aéreos \cite{usp2026saa0356} e Redes Neurais e Aprendizagem de Máquina \cite{usp2026saa0358}. O currículo não tem disciplina dedicada a asas rotativas. Por isso, para os efeitos específicos de rotores, a referência é o texto de \citeonline{leishman2006}, que estende ao rotor a mesma teoria da quantidade de movimento usada no estudo de hélices.
+Este capítulo reúne os modelos usados para avaliar a energia por quilômetro quadrado inspecionado. Ele parte da física de voo do multirrotor e passa pela geometria do imageamento aéreo, pela detecção de objetos e pela computação embarcada. Ao final, os modelos são combinados em uma formulação única do problema de co-projeto.\footnote{Sempre que possível, a modelagem segue a bibliografia das disciplinas do curso de Engenharia Aeronáutica da EESC: Projeto e Desempenho de Hélices \cite{usp2026saa0189}, Desempenho de Aeronaves \cite{usp2026saa0183}, Dinâmica de Voo \cite{usp2026saa0184}, Princípios de Aviônica e Navegação \cite{usp2026saa0167}, Sistemas Embarcados para Veículos Aéreos \cite{usp2026saa0356} e Redes Neurais e Aprendizagem de Máquina \cite{usp2026saa0358}.} Para os efeitos específicos dos rotores, adota-se \citeonline{leishman2006}, que estende ao rotor a teoria da quantidade de movimento usada em hélices.
 
 \section{Potência de um rotor pela teoria da quantidade de movimento}
 \label{sec_momento}
@@ -58,7 +58,7 @@ Para $\Delta m\ll m$, a expansão de Taylor de $(1+x)^{3/2}$ em torno de $x=0$ f
 \end{equation}
 Assim, um acréscimo de 10\% na massa aumenta a potência ideal de pairado em aproximadamente 15\% pela linearização, ou 15,37\% pela expressão exata. A mesma variação relativa vale para a parcela induzida corrigida se seu fator de correção permanecer constante.
 
-A potência mecânica total também inclui o arrasto de perfil das pás, apresentado a seguir. Mantendo a rotação e os parâmetros de perfil fixos, os parâmetros ilustrativos da Figura~\ref{fig_curva_potencia}, com $\rho=1{,}225$~kg/m$^3$ e $g=9{,}81$~m/s$^2$, dão um aumento de cerca de 8,36\% na potência total de pairado para o mesmo acréscimo de massa. Essa é uma estimativa sob as hipóteses indicadas; em um veículo real, a rotação e as eficiências podem mudar com a carga.
+A variação da potência mecânica total também depende do arrasto de perfil das pás, apresentado na próxima seção, e das mudanças de rotação e eficiência com a carga.
 
 \section{Voo à frente e curva de potência requerida}
 \label{sec_voo_frente}
@@ -100,6 +100,8 @@ Os termos dentro dos colchetes são calculados para um rotor e multiplicados por
 A parcela induzida inicialmente decrescente e a parcela parasita crescente produzem o formato característico de ``balde'' da curva de potência: consumo alto em pairado, mínimo em velocidade intermediária e novo aumento em velocidades maiores \cite[p.~227]{leishman2006}. A Figura~\ref{fig_curva_potencia} ilustra esse comportamento. As velocidades de interesse para autonomia e alcance são discutidas na Seção~\ref{sec_desempenho}, a partir da análise de desempenho \cite{saarlas2006}.
 
 No helicóptero convencional, acrescenta-se a potência do rotor de cauda para equilibrar o torque do rotor principal \cite[p.~226--227]{leishman2006}. No multirrotor, esse equilíbrio depende da compensação dos torques dos rotores que giram em sentidos opostos. Não há rotor de cauda, mas os ajustes de potência para controle continuam presentes. A partir daqui, $P(V)$ designa sempre a potência mecânica total da aeronave.
+
+Com os parâmetros ilustrativos da Figura~\ref{fig_curva_potencia}, $\rho=1{,}225$~kg/m$^3$ e $g=9{,}81$~m/s$^2$, o acréscimo de 10\% na massa discutido na Seção~\ref{sec_momento} aumenta a potência mecânica total de pairado em cerca de 8,36\%. Essa estimativa mantém a rotação e os parâmetros de perfil fixos; em um veículo real, a rotação e as eficiências podem mudar com a carga.
 
 \begin{figure}[htb]
   \centering
@@ -185,7 +187,7 @@ A potência é expressa em watts; integrá-la em um intervalo medido em segundos
 
 \subsection{Autonomia e alcance}
 
-Para uma aeronave elétrica com energia útil de bateria $E_b$, tomada como fixa no modelo, a autonomia e o alcance em voo estacionário, sem vento e com velocidade constante são
+Para uma aeronave elétrica com energia útil de bateria $E_b$, tomada como fixa no modelo, a autonomia e o alcance em voo retilíneo e nivelado, em regime permanente e sem vento, são
 \begin{equation}
   t_{\mathrm{aut}} = \frac{E_b}{P_{el}(V)}, \qquad
   R = V\,t_{\mathrm{aut}} = \frac{E_b\,V}{P_{el}(V)}.
@@ -207,13 +209,13 @@ Em uma missão de inspeção, a distância percorrida precisa ser relacionada à
   e = \frac{P_{el,\mathrm{tot}}(V)}{V\,w},
   \label{eq_e_area}
 \end{equation}
-em que $P_{el,\mathrm{tot}}$ inclui a propulsão, os aviônicos e o computador de bordo. O denominador $Vw$ é a área nova imageada por segundo: dividir potência por essa taxa fornece energia por área. Sua interpretação como área inspecionada pressupõe que o processamento dessa faixa satisfaça o critério de qualidade adotado.
+em que $P_{el,\mathrm{tot}}$ inclui a propulsão, os aviônicos e o computador de bordo. A interpretação da área imageada como área inspecionada pressupõe que seu processamento satisfaça o critério de qualidade adotado.
 
 Nas comparações experimentais, será usada a mesma área imageada de referência para todas as estratégias, com registro separado da área coberta pelos recortes efetivamente processados. Regiões sem processamento permanecem no denominador comum, e seus objetos anotados permanecem na avaliação de recall. Isso evita que uma estratégia pareça econômica apenas por deixar de analisar parte da região. A área imageada, a processada e aquela em que se demonstra desempenho suficiente são grandezas distintas.
 
 Na presença de vento, as duas velocidades da Equação~\eqref{eq_e_area} têm papéis distintos: a potência depende da velocidade em relação ao ar, enquanto a taxa de cobertura $Vw$ depende da velocidade em relação ao solo, que é a usada no denominador.
 
-Para uma largura de faixa fixa, minimizar $e$ equivale a voar na velocidade de alcance máximo da curva de potência total. A largura $w$, por sua vez, cresce com a altitude, como mostra a Seção~\ref{sec_imageamento}. Dessa forma, a Equação~\eqref{eq_e_area} une, em uma só métrica, a mecânica de voo, a geometria do imageamento e o consumo da computação. O planejamento de cobertura com consciência energética segue a mesma ideia, ao minimizar a energia de voo sob restrições de cobertura e de resolução \cite{difranco2016coverage}. Neste trabalho, a razão entre potência e taxa de cobertura é uma extensão do balanço de energia por distância para incluir a largura imageada e o custo da percepção.
+Para uma largura de faixa fixa, minimizar $e$ equivale a voar na velocidade de alcance máximo da curva de potência total. Como $w$ cresce com a altitude (Seção~\ref{sec_imageamento}), a métrica também incorpora a geometria do imageamento. O planejamento de cobertura com consciência energética adota uma abordagem relacionada, ao minimizar a energia de voo sob restrições de cobertura e de resolução \cite{difranco2016coverage}. Aqui, o balanço inclui também o custo da percepção.
 
 Com potência em watts, velocidade em m/s e largura em metros, $e$ é obtida em J/m$^2$; a conversão para Wh/km$^2$ multiplica esse valor por $10^6/3600$.
 
@@ -224,7 +226,7 @@ Com potência em watts, velocidade em m/s e largura em metros, $e$ é obtida em 
 
 \subsubsection{Escala e pegada da imagem}
 
-Em uma fotografia vertical sobre terreno plano, a escala da imagem é a razão entre a distância focal e a altura de voo, $f_c/h$, que é igual à razão entre uma distância medida na imagem e a distância correspondente no solo \cite[p.~75]{paine2012}. Em câmeras digitais, a grandeza usada para descrever a resolução é a distância de amostragem no solo (GSD), definida como o comprimento no solo correspondente ao lado de um pixel da imagem, ou seja, a distância entre os centros de pixels vizinhos medida no solo \cite{cabreira2019survey}. Aplicando a escala a um único pixel, cada pixel de uma câmera digital apontada verticalmente para baixo corresponde no solo a um quadrado de lado
+Em uma fotografia vertical sobre terreno plano, a escala da imagem é a razão entre uma distância na imagem e sua correspondente no solo, igual a $f_c/h$ \cite[p.~75]{paine2012}. Em imagens digitais, a distância de amostragem no solo (GSD) é a distância entre os centros de pixels vizinhos projetados no terreno \cite{cabreira2019survey}. Aplicando a escala ao pixel do sensor, obtém-se
 \begin{equation}
   GSD = \frac{h\,p}{f_c},
   \label{eq_gsd}
@@ -251,7 +253,7 @@ Quanto maior a pegada na direção do voo e menor a velocidade, mais tempo um po
 \end{equation}
 O valor de $n_v$ é uma estimativa contínua: a contagem inteira depende dos instantes de captura.
 
-Sem revisitas, a área nova que entra continuamente no campo de visão por unidade de tempo é $Vw$, e a fração nova de cada quadro em relação ao anterior é $\min\{1,V/(f_q L)\}$. A forma $V/(f_q L)$ vale quando $V/f_q\leq L$; acima desse limite, surgem lacunas entre as imagens. Esse grande número de observações redundantes de um mesmo ponto é o que a estratégia de memória geográfica explora. A Figura~\ref{fig_geometria} mostra essas grandezas para os voos da base MBG-V2.
+Sem revisitas, a área nova que entra continuamente no campo de visão por unidade de tempo é $Vw$, e a fração nova de cada quadro em relação ao anterior é $\min\{1,V/(f_q L)\}$. A forma $V/(f_q L)$ vale quando $V/f_q\leq L$; acima desse limite, surgem lacunas entre as imagens. Quando $n_v$ é elevado, um mesmo ponto aparece em muitos quadros; a memória geográfica explora essa redundância para selecionar as regiões a processar. A Figura~\ref{fig_geometria} mostra essas grandezas para os voos da base MBG-V2.
 \begin{figure}[htb]
   \centering
   \caption{Geometria do imageamento com visada vertical nas condições dos voos da base MBG-V2}
@@ -284,12 +286,12 @@ Eliminando $h$ entre as Equações~\eqref{eq_e_h} e \eqref{eq_spx}, obtém-se um
   e = \frac{P_{el,\mathrm{tot}}(V)}{V\,N_x}\,\frac{s_{px}}{s}.
   \label{eq_e_spx}
 \end{equation}
-A Equação~\eqref{eq_e_spx} mostra que, mantidas a velocidade, a potência total, a câmera e a dimensão do objeto, reduzir a energia por área pelo aumento da altura significa apresentar os objetos ao detector com menos pixels; a distância focal e o tamanho do pixel do sensor desaparecem da relação, restando apenas o número de pixels transversais $N_x$. Se o detector precisa de pelo menos $s_{px,\min}$ pixels para atingir a taxa de detecção exigida em objetos de tamanho $s$, a Equação~\eqref{eq_e_spx} fornece, nesse modelo simplificado e mantendo as demais restrições satisfeitas, o menor valor de energia por área naquela velocidade, atingido na altura máxima
+Mantidas a velocidade, a potência total, a câmera e a dimensão do objeto, a Equação~\eqref{eq_e_spx} relaciona a redução da energia por área à redução do tamanho do objeto em pixels pelo aumento da altura. A distância focal e o tamanho do pixel cancelam-se nessa relação; permanece o número de pixels transversais $N_x$. Se o detector exigir pelo menos $s_{px,\min}$ pixels de lado para atingir a taxa de detecção desejada em objetos de tamanho $s$, a maior altura admissível será
 \begin{equation}
   h_{\max} = \frac{s\,f_c}{p\,s_{px,\min}}.
   \label{eq_hmax}
 \end{equation}
-O valor de $s_{px,\min}$ não é conhecido \textit{a priori}: ele depende do detector, da classe do objeto e das condições de aquisição e precisa ser medido. Não se trata de um limiar universal nem de uma garantia baseada apenas no tamanho em pixels. Por isso, a taxa de detecção em função da altura é uma das curvas centrais deste trabalho.
+Nesse modelo simplificado, essa altura minimiza a energia por área na velocidade considerada, desde que as demais restrições sejam satisfeitas. O valor de $s_{px,\min}$ não é conhecido \textit{a priori}: ele depende do detector, da classe do objeto e das condições de aquisição e precisa ser medido. Não se trata de um limiar universal nem de uma garantia baseada apenas no tamanho em pixels. Por isso, a taxa de detecção em função da altura é uma das curvas centrais deste trabalho.
 
 \subsection{Borrão de movimento}
 
@@ -449,9 +451,7 @@ mede a fração do tempo em que o processador está ocupado \cite[p.~10--11]{lap
 
 Para tarefas periódicas independentes, preemptivas, executadas em um único processador, com prazo relativo igual ao período e sem custos adicionais não modelados, $U_p\leq1$ é condição necessária e suficiente sob escalonamento por prazo mais próximo (EDF). Nessa análise, $C_j$ representa o pior tempo de execução considerado. Com prioridades fixas atribuídas pela taxa (RM), $U_p\leq n(2^{1/n}-1)$ é um limite suficiente, mas não necessário; ele tende a $\ln2\approx0{,}69$ para muitas tarefas \cite[p.~95--97]{laplante2004}.
 
-Esses teoremas não determinam diretamente a capacidade de uma plataforma heterogênea com CPU e GPU. Neste trabalho, $r_{\max}$ será medido para cada computador, modo de potência e configuração do detector, verificando os prazos do processamento completo, inclusive transferência de dados e pré e pós-processamento.
-
-A condição $r\leq r_{\max}$ será usada como limite de capacidade, mas a taxa média não comprova o cumprimento dos prazos. A medição deverá incluir decodificação, seleção dos recortes e associação geográfica, registrar latências e filas e definir o descarte de quadros em sobrecarga. A avaliação de recall usará a sequência efetivamente processada sob essa regra.
+Esses teoremas não determinam diretamente a capacidade de uma plataforma heterogênea com CPU e GPU. Neste trabalho, $r_{\max}$ será medido para cada computador, modo de potência e configuração do detector, considerando o processamento completo: decodificação, transferência de dados, seleção dos recortes, inferência, pré e pós-processamento e associação geográfica. A condição $r\leq r_{\max}$ será usada como limite de capacidade, mas a taxa média não comprova o cumprimento dos prazos. Por isso, serão registradas latências e filas, e será definida uma regra de descarte em sobrecarga. O recall será avaliado na sequência efetivamente processada sob essa regra.
 
 \subsection{Energia da computação}
 
@@ -462,20 +462,22 @@ A potência média do computador de bordo pode ser modelada como uma parcela fix
   P_c = P_{c0} + r\,E_{\mathrm{inf}},
   \label{eq_pc}
 \end{equation}
-em que $r$ é o número de passadas da rede por segundo e $E_{\mathrm{inf}}$ é a energia adicional média atribuída a cada passada, obtida da potência do conjunto computacional e descontando a parcela fixa. A fronteira de medição deverá incluir os componentes instalados necessários ao processamento, inclusive refrigeração. O modo de potência configurado no módulo não será usado como substituto do consumo medido. Como a seleção e a associação podem variar entre estratégias, o ajuste afim será verificado para cada uma, e a energia total medida será usada nas comparações.
+em que $r$ é o número de passadas da rede por segundo e $E_{\mathrm{inf}}$ é a energia adicional média atribuída a cada passada, obtida da potência do conjunto computacional após descontar a parcela fixa.
 
-Módulos embarcados como o NVIDIA Jetson Orin Nano oferecem modos de potência que limitam frequências e consumo, de 7~W a 25~W \cite{nvidia2024orinnano,nvidia2025jetpack62}. Com isso, $P_{c0}$, $E_{\mathrm{inf}}$ e $r_{\max}$ dependem do modo escolhido. A Equação~\eqref{eq_pc} é uma aproximação afim que deverá ser verificada no intervalo de carga usado, mantendo fixa a configuração do detector; aquecimento, concorrência e variações de frequência podem alterar a energia por inferência.
+A versão de 8~GB do NVIDIA Jetson Orin Nano opera originalmente nos modos de 7 e 15~W; com a configuração introduzida no JetPack 6.2, os modos disponíveis passam a ser 15~W, 25~W e o modo sem limite MAXN SUPER \cite{nvidia2024orinnano,nvidia2025jetpack62}. Os parâmetros $P_{c0}$, $E_{\mathrm{inf}}$ e $r_{\max}$ dependem do modo escolhido.
+
+O ajuste afim da Equação~\eqref{eq_pc} será verificado para cada estratégia e modo de potência no intervalo de carga usado, mantendo fixa a configuração do detector. Aquecimento, concorrência, variações de frequência e custos de seleção e associação podem alterar a energia atribuída à inferência. As comparações usarão a energia total medida dos componentes instalados necessários ao processamento, incluindo refrigeração; o modo de potência configurado no módulo não substituirá o consumo medido.
 
 \subsubsection{Taxa de inferências de cada estratégia}
 
 A taxa de inferências $r$ depende da estratégia de processamento. As quatro estratégias consideradas são distinguidas da seguinte forma:
 \begin{itemize}
     \item \textbf{quadro inteiro}: uma inferência por quadro, redimensionado para a entrada do detector, com $r=f_q$;
-    \item \textbf{pular quadros}: uma inferência para cada $k$ quadros redimensionados, com $r=f_q/k$;
+    \item \textbf{amostragem temporal de quadros inteiros}: uma inferência para cada $k$ quadros redimensionados, com $r=f_q/k$;
     \item \textbf{recortes fixos}: todos os $n_t$ recortes de cada quadro, com $r=n_t f_q$;
     \item \textbf{memória geográfica}: $r\approx n_v^{\ast}Vw/A_t$, em que $A_t=(s_t\,GSD)^2$ é a área ideal de solo coberta por um recorte e $n_v^{\ast}\leq n_v$ é o número desejado de observações de cada ponto.
 \end{itemize}
-O salto de quadros também pode ser aplicado à grade de recortes, caso em que $r=n_t f_q/k$. Essa variante deve ser identificada separadamente nas comparações. A estimativa da memória geográfica pressupõe recortes úteis sem desperdício de área; sobreposição, preenchimento nas bordas e custo de seleção alteram a taxa real, que será medida. O limite $n_v^{\ast}\leq n_v$ expressa a disponibilidade de observações, sem garantir a detecção.
+A amostragem temporal também pode ser aplicada à grade de recortes, caso em que $r=n_t f_q/k$. Essa variante deve ser identificada separadamente nas comparações. A estimativa da memória geográfica pressupõe recortes úteis sem desperdício de área; sobreposição, preenchimento nas bordas e custo de seleção alteram a taxa real, que será medida. O limite $n_v^{\ast}\leq n_v$ expressa a disponibilidade de observações, sem garantir a detecção.
 
 Para testar a contribuição da informação geográfica, a referência principal será a amostragem temporal da mesma grade de recortes, mantendo detector, resolução e orçamento de passadas por área. Sua cadência será ajustada à velocidade e à pegada, com parâmetros escolhidos na validação. Como referência ideal, $n_v^{\ast}$ observações durante $L/V$ segundos correspondem a um intervalo de aproximadamente $L/(Vn_v^{\ast})$ entre quadros processados. Com $L=30{,}2$~m, $V=4$~m/s e $n_v^{\ast}=5$, são cerca de 1,51~s, ou 45 quadros a 30~quadros/s. Essa estimativa não garante cinco observações úteis de cada objeto; bordas, oclusões e variações do movimento serão consideradas pela contagem efetiva.
 
@@ -498,7 +500,7 @@ A Figura~\ref{fig_passadas} ilustra as taxas de passadas, calculadas como $10^6 
 \section{Formulação do problema de co-projeto}
 \label{sec_coprojeto}
 
-Os trabalhos de arquitetura de computação para veículos aéreos mostraram que o desempenho do computador de bordo limita a velocidade segura do veículo e, com isso, o tempo e a energia da missão \cite{boroujerdian2018mavbench,krishnan2020sky}. Os trabalhos de planejamento de cobertura, por sua vez, otimizam a energia de voo sob restrições de resolução \cite{difranco2016coverage}. Este trabalho combina as duas perspectivas. Reunindo as Equações~\eqref{eq_pv}, \eqref{eq_pel}, \eqref{eq_e_area}, \eqref{eq_gsd} e \eqref{eq_pc}, a energia por área inspecionada é escrita como função da altitude $h$, da velocidade $V$, da estratégia de inferência $\pi$ e do hardware embarcado $H$:
+A formulação integra o efeito da computação sobre a missão \cite{boroujerdian2018mavbench,krishnan2020sky} ao planejamento de cobertura com consciência energética \cite{difranco2016coverage}. Reunindo as Equações~\eqref{eq_pv}, \eqref{eq_pel}, \eqref{eq_e_area}, \eqref{eq_gsd} e \eqref{eq_pc}, a energia por área inspecionada é escrita como função da altitude $h$, da velocidade $V$, da estratégia de inferência $\pi$ e do hardware embarcado $H$:
 \begin{equation}
   e(h, V, \pi, H) =
   \frac{ \dfrac{P\!\left(V;\, m_0 + m_H\right)}{\eta_m} + P_{av} + P_{c0}(H) + r(\pi, h, V)\,E_{\mathrm{inf}}(H) }
@@ -521,4 +523,4 @@ em que $\mathcal{R}_{\min}$ é a meta de taxa de detecção de focos únicos ado
 
 O ótimo dessa formulação é condicionado aos parâmetros adotados e à representação da detecção em cada cenário. A análise será repetida para conjuntos plausíveis de parâmetros de propulsão, massa e eficiência, com origem e intervalos documentados. Serão distinguidos os resultados medidos nas condições da base e os estimados por extrapolação. A recomendação poderá ser uma faixa de operação ou um conjunto de alternativas dependente do cenário; a coincidência do modelo com um ponto da telemetria não será tomada como validação de toda a curva.
 
-A Equação~\eqref{eq_coprojeto} deixa visíveis os compromissos discutidos ao longo deste capítulo. A altitude aumenta $w$, mas reduz o tamanho dos objetos em pixels, o que pode reduzir $\mathcal{R}_f$. A velocidade desloca o ponto de operação na curva de potência e aumenta o borrão. A estratégia de inferência altera $r$. O hardware altera $P_{c0}$, $E_{\mathrm{inf}}$ e $r_{\max}$, e também a massa, que entra na potência de propulsão pela Equação~\eqref{eq_dm}. Os capítulos seguintes descrevem como cada termo é medido ou estimado a partir dos dados da base MBG-V2 e do computador embarcado de referência.
+Na Equação~\eqref{eq_coprojeto}, a altitude aumenta $w$, mas reduz o tamanho dos objetos em pixels e pode reduzir $\mathcal{R}_f$. A velocidade altera a potência de voo e o borrão; a estratégia de inferência altera $r$. O hardware determina $P_{c0}$, $E_{\mathrm{inf}}$, $r_{\max}$ e a massa acrescentada, cujo efeito na propulsão é discutido na Seção~\ref{sec_momento}. Os capítulos seguintes descrevem como esses termos são medidos ou estimados a partir da base MBG-V2 e do computador embarcado de referência.
