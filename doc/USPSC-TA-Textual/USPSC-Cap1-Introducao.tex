@@ -20,19 +20,19 @@ Este trabalho trata a inspeção aérea de criadouros como um problema de co-pro
 \begin{itemize}
     \item a \textbf{altitude de voo}, que define a resolução espacial no solo (GSD, do inglês \textit{Ground Sample Distance}) e a largura da faixa imageada;
     \item a \textbf{velocidade de cruzeiro}, que define a taxa de cobertura de área e a potência de propulsão, e que, a partir de certo ponto, degrada a imagem por borrão de movimento;
-    \item a \textbf{estratégia de inferência}: processar todos os quadros inteiros, amostrar quadros no tempo, processar recortes fixos ou processar apenas a região do solo ainda não observada, estratégia aqui chamada de \textit{memória geográfica};
+    \item a \textbf{estratégia de inferência}: processar todos os quadros inteiros, dividi-los em recortes fixos, selecionar quadros em intervalos de tempo ou processar apenas a região do solo ainda não observada, estratégia aqui chamada de \textit{memória geográfica}. A seleção temporal pode ser aplicada tanto aos quadros inteiros quanto à grade de recortes;
     \item o \textbf{hardware embarcado} e seu modo de potência, tendo como referência o módulo NVIDIA Jetson Orin Nano de 8~GB \cite{nvidia2024orinnano,nvidia2025jetpack62}.
 \end{itemize}
 
-A amostragem temporal será aplicada tanto a quadros inteiros quanto à grade de recortes; esta última será a referência para o teste de H1.
-
 Neste trabalho, os termos \textit{criadouro} e \textit{foco} designam objetos potencialmente favoráveis à reprodução do mosquito, identificados nas imagens. A detecção desses objetos não confirma a presença de água ou de larvas.
 
-Adota-se como cenário operacional a produção de indicações de recipientes durante a aquisição, sem depender de transmitir o vídeo para processamento em solo. Essa exigência de disponibilidade antes do pouso motiva a computação embarcada; seu custo será situado em relação à alternativa de gravar o vídeo e processá-lo posteriormente. A reprodução em bancada avaliará a capacidade de sustentar esse processamento. A transmissão de alertas e o redirecionamento autônomo da aeronave ficam fora do escopo.
+O cenário de aplicação considerado exige identificar potenciais criadouros durante o voo, com processamento a bordo e sem transmitir o vídeo ao solo. Essa exigência motiva o uso da computação embarcada, cujo custo energético será discutido em relação à alternativa de armazenar o vídeo para análise após o pouso. O estudo se limita à detecção dos recipientes: a transmissão de alertas e o redirecionamento autônomo da aeronave ficam fora do escopo.
 
-O estudo delimita-se a multirrotores elétricos que filmam em 4K com visada vertical, isto é, com a câmera apontada verticalmente para baixo, na direção do nadir. Os dados vêm da base MBG-V2, que cobre 13 regiões urbanas do Rio de Janeiro filmadas a 40~m de altitude \cite{smt2024mbgv2}. A análise prevista consiste na reprodução \textit{offline} dos voos gravados, associando os quadros à posição, à atitude e ao estado da bateria pela referência temporal fornecida com os dados. Essa associação é adotada como hipótese, com as limitações descritas na Seção~\ref{sec_base_estrutura}.
+O estudo delimita-se a multirrotores elétricos que filmam em 4K com visada vertical, isto é, com a câmera apontada verticalmente para baixo, na direção do nadir. Os dados vêm da base MBG-V2, que cobre 13 regiões urbanas do Rio de Janeiro \cite{smt2024mbgv2}. Todos os voos foram feitos à altitude nominal de 40~m: a maioria a cerca de 4,1~m/s e dois a cerca de 7,9~m/s, em outra campanha.
 
-A energia elétrica fornecida pela bateria é estimada a partir da telemetria e inclui a propulsão e as demais cargas da aeronave. Essa estimativa fornece uma referência para o modelo físico do multirrotor nas condições observadas; sua extensão a outras velocidades e massas depende dos parâmetros e das hipóteses do modelo. A energia da computação será medida no computador embarcado de referência. Todos os voos da base foram feitos à mesma altitude nominal, a maioria a cerca de 4,1~m/s e dois a cerca de 7,9~m/s, em outra campanha.
+A avaliação será feita em bancada, reproduzindo os vídeos gravados no computador de referência para verificar se ele sustenta a taxa de processamento exigida por cada estratégia de inferência. Os quadros serão associados à posição, à atitude e ao estado da bateria pela referência temporal fornecida com os dados. Essa associação é adotada como hipótese, com as limitações descritas na Seção~\ref{sec_base_estrutura}.
+
+Os registros de tensão e corrente da bateria permitem estimar a energia total fornecida à propulsão e aos demais sistemas da aeronave. Esse consumo será usado como referência para o modelo de voo nas condições da base. Como os dados se concentram em uma altitude e poucas velocidades, as estimativas para outras condições de voo ou massas embarcadas dependerão das hipóteses e dos parâmetros do modelo. O consumo do computador de referência será medido separadamente durante a reprodução dos vídeos e incorporado à análise energética da missão.
 
 Transformações espaciais e temporais dos vídeos permitirão avaliar a sensibilidade da detecção à escala, à perda de detalhe, ao borrão e à disponibilidade de observações. Essas transformações não reproduzem integralmente uma missão em outra altitude ou velocidade. Os voos em diferentes altitudes da primeira versão da base serão uma referência complementar \cite{passos2022mbg}, conforme as limitações da Seção~\ref{sec_base_limitacoes}. Ficam fora do escopo a confirmação da presença de larvas, que depende de inspeção em solo, e a execução de voos próprios, que é apontada como extensão do trabalho.
 
@@ -54,14 +54,18 @@ Diante desse cenário, a questão que orienta este trabalho é: \textit{quais co
 
 \section{Hipóteses}
 
-A geometria do imageamento indica que a memória geográfica pode reduzir o número de inferências em relação ao processamento de todos os quadros, enquanto a teoria de desempenho prevê uma velocidade de mínima energia por distância percorrida. As hipóteses deste trabalho tratam de aspectos que essas previsões não determinam: o efeito das escolhas de projeto sobre a taxa de detecção de focos únicos e a posição das restrições em relação ao ótimo energético.
+As hipóteses a seguir tratam de como as escolhas de processamento e de voo afetam a detecção de criadouros e o consumo de energia.
 
 \begin{enumerate}
-    \item[H1.] A memória geográfica mantém, dentro de uma tolerância fixada antes dos experimentos, a taxa de detecção de focos únicos obtida ao processar a grade de recortes de todos os quadros. Sob o mesmo número de passadas da rede por área imageada, sua taxa de detecção é igual ou superior à da amostragem temporal dessa grade, cuja cadência é ajustada à velocidade e à pegada da câmera. As comparações mantêm o detector e a resolução dos recortes.
-    \item[H2a.] Para o hardware de referência, o acréscimo de potência elétrica de propulsão causado pela massa embarcada, comparado no mesmo ponto de voo, é igual ou superior à potência elétrica consumida pelo próprio computador. A conclusão será condicionada aos parâmetros do modelo de propulsão.
-    \item[H2b.] Para um hardware fixo, a redução de energia por quilômetro quadrado obtida ao ajustar altitude e velocidade, respeitando a taxa mínima de detecção, supera a redução obtida ao trocar a estratégia de inferência. A comparação será feita dentro dos cenários representados pelo modelo de voo e pela avaliação de detecção, separadamente da H2a.
-    \item[H3.] Para altura, estratégia e hardware fixos, a velocidade ótima viável é inferior à que minimizaria a energia elétrica total por área sem as restrições de detecção e processamento. A hipótese é que a restrição de recall ou a de taxa máxima de inferências limite a velocidade antes desse mínimo energético. A análise deverá identificar qual restrição está ativa; o limite computacional não implica, por si só, violação do recall.
+    \item[H1.] \textbf{Seleção das imagens.} Ao selecionar recortes com base nas regiões do solo já observadas, a memória geográfica mantém uma taxa de detecção próxima à obtida processando todos os recortes de todos os quadros. Com o mesmo número de inferências por área, ela detecta tantos ou mais criadouros distintos que a seleção de quadros em intervalos de tempo.
+    \item[H2a.] \textbf{Efeito do peso do computador.} Transportar o computador aumenta a potência elétrica exigida pela propulsão em valor igual ou maior que a potência consumida pelo próprio computador. A comparação considera o equipamento de referência e as mesmas condições de voo.
+    \item[H2b.] \textbf{Escolha das condições de voo.} Com o mesmo computador, ajustar a altitude e a velocidade economiza mais energia por quilômetro quadrado que mudar a estratégia de processamento das imagens. Em ambos os casos, deve ser atendida a taxa mínima de detecção.
+    \item[H3.] \textbf{Velocidade de menor consumo.} A velocidade que minimiza a energia por área, atendendo à taxa mínima de detecção e respeitando a capacidade de processamento do computador, é menor que a velocidade mais econômica quando essas duas exigências são ignoradas. A comparação mantém fixos a altitude, a estratégia de inferência e o computador.
 \end{enumerate}
+
+Na avaliação de H1, todas as estratégias usam o mesmo detector e a mesma resolução dos recortes. Os quadros selecionados por intervalo de tempo são processados pela mesma grade de recortes, com intervalo ajustado à velocidade de voo e à área do solo vista pela câmera. A tolerância usada para considerar as taxas de detecção próximas será fixada antes dos experimentos.
+
+H2a e H2b serão avaliadas separadamente. Suas conclusões serão limitadas aos cenários representados pelo modelo de voo e pela avaliação de detecção; em particular, o efeito do peso em H2a depende dos parâmetros de propulsão adotados. Para H3, a análise identificará se o limite vem da detecção ou da capacidade de processamento: atingir o limite do computador não implica, por si só, ficar abaixo da taxa mínima de detecção.
 
 \section{Objetivos}
 
@@ -76,8 +80,6 @@ Os objetivos específicos são:
     \item avaliar a sensibilidade da detecção às transformações de imagem e de sequência associadas a cenários de altitude e velocidade, explicitando os aspectos da missão que os dados não reproduzem;
     \item construir mapas de operação altitude $\times$ velocidade para conjuntos plausíveis de parâmetros, reunindo energia por quilômetro quadrado e a fronteira da taxa de detecção mínima, e identificar faixas recomendáveis ou a dependência da recomendação em relação ao cenário.
 \end{itemize}
-
-Os modos de potência de uma mesma placa serão comparados mantendo sua massa. O benefício de um equipamento mais leve será tratado como cenário, salvo se outro conjunto instalado for medido.
 
 \section{Organização do trabalho}
 
