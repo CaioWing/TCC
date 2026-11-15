@@ -143,8 +143,6 @@ A arfagem medida em voo não depende apenas do arrasto parasita. Há três limit
 \end{itemize}
 Voar em trajetórias de ida e volta não resolve sozinho a última limitação. O vento contribui com sinais opostos nas duas pernas, mas separá-lo do arrasto exige assumir a forma da lei de arrasto. Uma estimativa independente do vento é necessária para avaliar a inferência de $f_e$ pela arfagem, junto às demais limitações do modelo.
 
-A inclinação permite estimar a força horizontal necessária ao equilíbrio, mas sua atribuição ao arrasto depende das hipóteses do modelo. Como a telemetria fornece a velocidade em relação ao solo, a estimativa do arrasto também exige considerar o vento, que não pode ser determinado por essa relação isoladamente.
-
 \subsubsection{Relação com a equação de movimento}
 
 As relações de equilíbrio anteriores são um caso particular da equação de força de um corpo rígido. Escrita nos eixos do corpo, ela resulta das Equações~(4.5,4), (4.5,6) e (4.5,7) de \citeonline[p.~101]{etkin1996}:
@@ -204,7 +202,7 @@ O alcance máximo ocorre na velocidade que minimiza a razão $P_{el}/V$, que é 
 
 \subsection{Energia por área inspecionada}
 
-Em uma missão de inspeção, a distância percorrida precisa ser relacionada à largura da faixa imageada para determinar a área coberta. Em um trecho retilíneo de velocidade constante, se a câmera imageia uma faixa de largura $w$, alinhada à trajetória, sem lacunas entre quadros nem sobreposição com áreas já inspecionadas, a taxa de cobertura de área nova é $Vw$. A energia por unidade de área inspecionada é então
+Em uma missão de inspeção, a distância percorrida precisa ser relacionada à largura da faixa imageada para determinar a área coberta. Em um trecho retilíneo de velocidade constante, se a câmera imageia uma faixa de largura $w$, alinhada à trajetória, sem lacunas entre quadros nem sobreposição com áreas já inspecionadas, a taxa de cobertura de área nova é $Vw$. A energia por unidade de área imageada é então
 \begin{equation}
   e = \frac{P_{el,\mathrm{tot}}(V)}{V\,w},
   \label{eq_e_area}
@@ -226,14 +224,14 @@ Com potência em watts, velocidade em m/s e largura em metros, $e$ é obtida em 
 
 \subsubsection{Escala e cobertura da imagem}
 
-Em uma fotografia vertical sobre terreno plano, a escala da imagem é a razão entre uma distância na imagem e sua correspondente no solo, igual a $f_c/h$ \cite[p.~75]{paine2012}. Essa escala também permite converter o espaçamento entre os centros de dois pixels vizinhos no sensor em uma distância no terreno. A distância resultante no solo é denominada distância de amostragem no solo (GSD) \cite{cabreira2019survey}. Para um espaçamento $p$ no sensor, a relação de escala fornece $p/GSD=f_c/h$, de onde se obtém
+Em uma fotografia vertical sobre terreno plano, o modelo de projeção central representa os raios que ligam os pontos do terreno às suas imagens como passando por um único centro de projeção. Com o terreno perpendicular ao eixo óptico da câmera, a semelhança de triângulos fornece a escala $f_c/h$, isto é, a razão entre uma distância na imagem e sua correspondente no solo \cite[p.~75]{paine2012}. Aplicada ao espaçamento $p$ entre os centros de pixels vizinhos no sensor, essa escala fornece a distância de amostragem no solo (GSD) \cite{cabreira2019survey}. Da relação $p/GSD=f_c/h$, obtém-se
 \begin{equation}
   GSD = \frac{h\,p}{f_c},
   \label{eq_gsd}
 \end{equation}
 em que $h$ é a altura de voo sobre o terreno, $p$ é o tamanho físico do pixel no sensor e $f_c$ é a distância focal.
 
-A expressão usa o modelo de projeção central, no qual os raios que ligam os pontos do terreno às suas imagens passam por um único ponto ideal, chamado centro de projeção. Com o terreno plano e perpendicular ao eixo óptico da câmera, esse modelo permite relacionar as distâncias no sensor e no solo por semelhança de triângulos. Pressupõem-se ainda pixels quadrados e imagem sem distorção óptica relevante. O $GSD$ descreve a amostragem, não garante a resolução efetiva da óptica nem a detecção de um objeto.
+Pressupõem-se pixels quadrados e imagem sem distorção óptica relevante. O $GSD$ descreve a amostragem, não garante a resolução efetiva da óptica nem a detecção de um objeto.
 
 A área de cobertura da imagem é a região do terreno registrada em um único quadro, aqui denominada região imageada. Para uma imagem com $N_x \times N_y$ pixels, sendo $N_x$ na direção transversal ao voo, essa região tem largura e comprimento
 \begin{equation}
@@ -264,7 +262,7 @@ Quanto maior o comprimento da região imageada na direção do voo e menor a vel
 \end{equation}
 O valor de $n_v$ é uma estimativa contínua: a contagem inteira depende dos instantes de captura.
 
-Nessas condições e sem revisitas, a área nova que entra continuamente no campo de visão por unidade de tempo é $Vw$. Para quantificar quanto cada quadro acrescenta ao anterior, considera-se a fração de sua área que corresponde a terreno ainda não imageado. Entre duas capturas consecutivas, decorre um intervalo $1/f_q$, durante o qual a aeronave avança $\Delta x=V/f_q$. Se $\Delta x\leq L$, a faixa nova tem área $w\,\Delta x$, enquanto a área total registrada em um quadro é $wL$. Portanto,
+Nessas condições e sem revisitas, a faixa varrida continuamente pelo campo de visão cresce à taxa $Vw$. Para que essa taxa também represente terreno registrado, as capturas não podem deixar lacunas. Para quantificar quanto cada quadro acrescenta ao anterior, considera-se a fração de sua área que corresponde a terreno ainda não imageado. Entre duas capturas consecutivas, decorre um intervalo $1/f_q$, durante o qual a aeronave avança $\Delta x=V/f_q$. Se $\Delta x\leq L$, a faixa nova tem área $w\,\Delta x$, enquanto a área total registrada em um quadro é $wL$. Portanto,
 \begin{equation*}
   \text{fração de área nova}
   = \frac{w\,\Delta x}{wL}
@@ -354,8 +352,6 @@ Para construir essa transformação, retomam-se os deslocamentos $x_c$ e $y_c$, 
   \qquad
   y_c = GSD\,(u-c_x).
 \end{equation*}
-O sinal negativo em $x_c$ faz com que um ponto acima do ponto principal, com $v<c_y$, tenha deslocamento positivo para a frente.
-
 A direção frontal da câmera faz um ângulo $\psi$ com o norte. Assim, o deslocamento $x_c$ contribui com $x_c\cos\psi$ na direção norte e $x_c\sin\psi$ na direção leste. Na mesma convenção angular, a direção da direita forma com o norte o ângulo $\psi+90^\circ$. Como $\cos(\psi+90^\circ)=-\sin\psi$ e $\sin(\psi+90^\circ)=\cos\psi$, o deslocamento $y_c$ contribui com $-y_c\sin\psi$ para norte e $y_c\cos\psi$ para leste. Somando as duas contribuições, obtêm-se
 \begin{equation*}
   \begin{aligned}
@@ -406,7 +402,9 @@ Por fim, desprezando a separação entre a câmera e a antena de posicionamento,
   \qquad
   E_{\mathrm{obj}} = E_{\mathrm{aer}} + \Delta E.
 \end{equation*}
-Essa soma distingue as duas distâncias usadas no cálculo: a posição da aeronave é medida a partir da origem do mapa, e o deslocamento do objeto é medido a partir da câmera. A Figura~\ref{fig_coordenadas_geograficas} mostra a origem $O$ no globo e as direções norte e leste do plano local associado a ela. A longitude $\lambda_0$ é medida a partir do meridiano de referência; a latitude $\phi_0$ indica a posição ao norte ou ao sul do equador. No detalhe em metros, parte-se de $O$, chega-se à posição da aeronave e acrescenta-se o deslocamento até o objeto. Por exemplo, para $N_{\mathrm{aer}}=1$~m e $E_{\mathrm{aer}}=2$~m, os deslocamentos do exemplo anterior, $\Delta N\approx-0{,}49$~m e $\Delta E\approx1{,}48$~m, resultam em $N_{\mathrm{obj}}\approx0{,}51$~m e $E_{\mathrm{obj}}\approx3{,}48$~m. A qualidade da estimativa depende da escala da imagem, da orientação, da sincronização com a telemetria e da precisão do posicionamento.
+Essa soma distingue as duas distâncias usadas no cálculo: a posição da aeronave é medida a partir da origem do mapa, e o deslocamento do objeto é medido a partir da câmera.
+
+A Figura~\ref{fig_coordenadas_geograficas} mostra a origem $O$ no globo e as direções norte e leste do plano local associado a ela. A longitude $\lambda_0$ é medida a partir do meridiano de referência; a latitude $\phi_0$ indica a posição ao norte ou ao sul do equador. No detalhe em metros, parte-se de $O$, chega-se à posição da aeronave e acrescenta-se o deslocamento até o objeto. Por exemplo, para $N_{\mathrm{aer}}=1$~m e $E_{\mathrm{aer}}=2$~m, os deslocamentos do exemplo anterior, $\Delta N\approx-0{,}49$~m e $\Delta E\approx1{,}48$~m, resultam em $N_{\mathrm{obj}}\approx0{,}51$~m e $E_{\mathrm{obj}}\approx3{,}48$~m. A qualidade da estimativa depende da escala da imagem, da orientação, da sincronização com a telemetria e da precisão do posicionamento.
 \begin{figure}[htb]
   \centering
   \caption{Origem geográfica, plano local norte--leste e composição da posição do objeto}
@@ -418,6 +416,8 @@ Essa soma distingue as duas distâncias usadas no cálculo: a posição da aeron
 \subsubsection{Origem da matriz de rotação}
 
 A transformação empregada acima pode ser obtida a partir dos ângulos de Euler. Adota-se um referencial local norte-leste com eixo vertical para baixo, conforme a convenção de \citeonline[p.~15--16]{etkin1996}, e o referencial da câmera definido anteriormente. A orientação entre eles é descrita pela sequência guinada, arfagem e rolamento \cite[p.~98]{etkin1996}.
+
+Para interpretar a sequência de rotações, parte-se dos eixos $x_0$ para norte, $y_0$ para leste e $z_0$ para baixo. Primeiro, a guinada gira o referencial em torno de $z_0$, produzindo os eixos $x_1,y_1,z_1$. Em seguida, a arfagem atua em torno do eixo $y_1$, já orientado pela guinada, produzindo $x_2,y_2,z_2$. Por fim, o rolamento atua em torno de $x_2$, chegando aos eixos da câmera $x_c,y_c,z_c$. Essa sequência corresponde ao produto $\mathbf{L}_{EB}=R_z(\psi)R_y(\theta_c)R_x(\phi_c)$. Os sentidos positivos seguem a regra da mão direita: na convenção adotada, a arfagem positiva eleva a frente e o rolamento positivo abaixa a direita. As colunas de $\mathbf{L}_{EB}$ são as direções desses três eixos finais expressas no referencial da Terra; por isso, multiplicar a matriz por um vetor da câmera fornece suas componentes nesse referencial.
 
 Aplicando à câmera a transformação dos eixos do corpo para os da Terra apresentada por \citeonline[Eq.~(4.4,3), p.~99]{etkin1996}, obtém-se
 \begin{equation*}
@@ -432,7 +432,6 @@ em que $\psi$, $\theta_c$ e $\phi_c$ são os ângulos de guinada, arfagem e rola
 
 Na orientação de referência adotada, o eixo $z$ da câmera já aponta verticalmente para baixo quando $\theta_c=\phi_c=0$. Portanto, esses ângulos medem desvios em relação à visada vertical. O valor próximo de $-90^\circ$ registrado para a arfagem do \textit{gimbal} expressa essa mesma visada em outra convenção de montagem e não deve ser substituído diretamente por $\theta_c$.
 
-Para interpretar a sequência de rotações, parte-se dos eixos $x_0$ para norte, $y_0$ para leste e $z_0$ para baixo. Primeiro, a guinada gira o referencial em torno de $z_0$, produzindo os eixos $x_1,y_1,z_1$. Em seguida, a arfagem atua em torno do eixo $y_1$, já orientado pela guinada, produzindo $x_2,y_2,z_2$. Por fim, o rolamento atua em torno de $x_2$, chegando aos eixos da câmera $x_c,y_c,z_c$. Essa sequência corresponde ao produto $\mathbf{L}_{EB}=R_z(\psi)R_y(\theta_c)R_x(\phi_c)$. Os sentidos positivos seguem a regra da mão direita: na convenção adotada, a arfagem positiva eleva a frente e o rolamento positivo abaixa a direita. As colunas de $\mathbf{L}_{EB}$ são as direções desses três eixos finais expressas no referencial da Terra; por isso, multiplicar a matriz por um vetor da câmera fornece suas componentes nesse referencial.
 Com $\theta_c=\phi_c=0$, a matriz completa se reduz a
 \begin{equation*}
   \mathbf{L}_{EB}(\psi, 0, 0) =
@@ -449,9 +448,9 @@ Seu bloco horizontal é a matriz de duas linhas e duas colunas usada na Equaçã
 
 \subsection{Redes convolucionais e detectores de estágio único}
 
-Redes neurais artificiais aprendem a aproximar funções a partir de exemplos, ajustando seus pesos por retropropagação do erro \cite{haykin2009}. Em visão computacional, as redes convolucionais exploram a estrutura espacial da imagem por meio de filtros com pesos compartilhados. Entre os detectores de objetos baseados nessas redes, os de estágio único tratam a detecção como um problema de regressão. Na formulação original do YOLO, uma única passada da rede prevê, para cada região de uma grade sobre a imagem, as caixas delimitadoras, uma medida de confiança e as probabilidades de classe \cite{redmon2016yolo}. Essa formulação dispensa a etapa separada de propostas de regiões e é o que torna esses detectores adequados ao processamento em tempo real. A família YOLO dispõe de implementações abertas, como a da Ultralytics, que oferece modelos de tamanhos diferentes com compromissos distintos entre precisão e custo computacional \cite{jocher2024yolo11}.
+Redes neurais artificiais aprendem a aproximar funções a partir de exemplos, ajustando seus pesos por retropropagação do erro \cite{haykin2009}. Em visão computacional, as redes convolucionais exploram a estrutura espacial da imagem por meio de filtros com pesos compartilhados. Entre os detectores de objetos baseados nessas redes, os de estágio único tratam a detecção como um problema de regressão. Na formulação original do YOLO, uma única passada da rede prevê, para cada região de uma grade sobre a imagem, as caixas delimitadoras, uma medida de confiança e as probabilidades de classe \cite{redmon2016yolo}. Ao dispensar uma etapa separada de propostas de regiões, essa arquitetura favorece a execução rápida; o cumprimento de prazos depende do modelo, da entrada e do hardware. A família YOLO dispõe de implementações abertas, como a da Ultralytics, que oferece modelos de tamanhos diferentes com compromissos distintos entre precisão e custo computacional \cite{jocher2024yolo11}.
 
-Na estratégia de recortes, um quadro 4K não é processado de uma só vez na resolução nativa. Para não reduzir os objetos pequenos a poucos pixels, a imagem é dividida em recortes de lado $s_t$ pixels, cada um processado por uma passada da rede. O número de passadas por quadro é
+Na estratégia de recortes, um quadro 4K não é processado de uma só vez na resolução nativa. Para preservar mais dos pixels disponíveis para objetos pequenos na entrada do detector, a imagem é dividida em recortes de lado $s_t$ pixels, cada um processado por uma passada da rede. O número de passadas por quadro é
 \begin{equation}
   n_t = \left\lceil \frac{N_x}{s_t} \right\rceil \left\lceil \frac{N_y}{s_t} \right\rceil.
   \label{eq_recortes}
@@ -485,7 +484,7 @@ Métricas por quadro, como a mAP, contam o mesmo objeto tantas vezes quantas ele
 
 A associação temporal pode ser feita por rastreadores que combinam um filtro de Kalman, para predizer a posição de cada objeto no quadro seguinte, com o algoritmo húngaro, para associar predições e novas detecções \cite{bewley2016sort}. A associação espacial agrupa as posições georreferenciadas (Seção~\ref{sec_georref}) de uma mesma classe que estejam a menos de uma distância limite.
 
-Depois de formados os focos previstos, sua avaliação exige uma correspondência com os objetos anotados. Para isso, define-se um pareamento um a um entre o conjunto de focos previstos e o conjunto $\mathcal{G}$ de focos reais anotados. Cada par válido deve ter a mesma classe e distância menor que $d_{\max}$. Adota-se um conjunto de pares $\mathcal{M}$ com o maior número possível de associações válidas; entre soluções com a mesma cardinalidade, minimiza-se a soma das distâncias. A taxa de detecção, para $|\mathcal{G}|>0$, é
+Formar focos previstos e avaliá-los são etapas distintas. Depois da associação temporal e espacial, os focos previstos são comparados ao conjunto $\mathcal{G}$ de objetos anotados por um pareamento um a um. Cada par válido deve ter a mesma classe e distância menor que $d_{\max}$. Adota-se um conjunto de pares $\mathcal{M}$ com o maior número possível de associações válidas; entre soluções com a mesma cardinalidade, minimiza-se a soma das distâncias. A taxa de detecção, para $|\mathcal{G}|>0$, é
 \begin{equation}
   \mathcal{R}_f = \frac{|\mathcal{M}|}{|\mathcal{G}|} = \frac{VP_f}{VP_f+FN_f},
   \label{eq_recall_focos}
@@ -500,6 +499,7 @@ O recall será acompanhado pela precisão por foco e pelo número de falsos posi
 \label{sec_embarcada}
 
 \subsection{Restrição de tempo real}
+\label{sec_tempo_real}
 
 Em um sistema de tempo real, cada tarefa precisa terminar dentro de um prazo \cite{laplante2004}. Para processamento serial sem sobreposição entre quadros, com prazo igual ao intervalo entre capturas, o tempo máximo de computação por quadro $C$ deve respeitar $C \leq 1/f_q$. De forma mais geral, para um conjunto de tarefas periódicas com tempos de computação $C_j$ e períodos $\tau_j$, a utilização do processador,
 \begin{equation}
@@ -510,7 +510,7 @@ mede a fração do tempo em que o processador está ocupado \cite[p.~10--11]{lap
 
 Para tarefas periódicas independentes, preemptivas, executadas em um único processador, com prazo relativo igual ao período e sem custos adicionais não modelados, $U_p\leq1$ é condição necessária e suficiente sob escalonamento por prazo mais próximo (EDF). Nessa análise, $C_j$ representa o pior tempo de execução considerado. Com prioridades fixas atribuídas pela taxa (RM), $U_p\leq n(2^{1/n}-1)$ é um limite suficiente, mas não necessário; ele tende a $\ln2\approx0{,}69$ para muitas tarefas \cite[p.~95--97]{laplante2004}.
 
-Esses teoremas não determinam diretamente a capacidade de uma plataforma heterogênea com CPU e GPU. Neste trabalho, $r_{\max}$ será medido para cada computador, modo de potência e configuração do detector, considerando o processamento completo: decodificação, transferência de dados, seleção dos recortes, inferência, pré e pós-processamento e associação geográfica. A condição $r\leq r_{\max}$ será usada como limite de capacidade, mas a taxa média não comprova o cumprimento dos prazos. Por isso, serão registradas latências e filas, e será definida uma regra de descarte em sobrecarga. O recall será avaliado na sequência efetivamente processada sob essa regra.
+Esses teoremas não determinam diretamente a capacidade de uma plataforma heterogênea com CPU e GPU. Neste trabalho, $r_{\max}$ será medido para cada estratégia, computador, modo de potência e configuração do detector, considerando o processamento completo: decodificação, transferência de dados, seleção dos recortes, inferência, pré e pós-processamento e associação geográfica. A condição $r\leq r_{\max}$ limitará a taxa média solicitada pela estratégia, mas não comprova o cumprimento dos prazos. Por isso, serão registradas latências e filas, e será definida uma regra de descarte em sobrecarga. O recall será avaliado na sequência efetivamente processada sob essa regra e poderá, portanto, depender do hardware.
 
 \subsection{Energia da computação}
 
@@ -518,35 +518,35 @@ Esses teoremas não determinam diretamente a capacidade de uma plataforma hetero
 
 A potência média do computador de bordo pode ser modelada como uma parcela fixa, consumida mesmo sem processamento, mais uma parcela proporcional à taxa de inferências:
 \begin{equation}
-  P_c = P_{c0} + r\,E_{\mathrm{inf}},
+  P_c = P_{c0} + r_{\mathrm{exec}}\,E_{\mathrm{inf}},
   \label{eq_pc}
 \end{equation}
-em que $r$ é o número de passadas da rede por segundo e $E_{\mathrm{inf}}$ é a energia adicional média atribuída a cada passada, obtida da potência do conjunto computacional após descontar a parcela fixa.
+em que $r_{\mathrm{exec}}$ é a taxa de passadas efetivamente concluídas e $E_{\mathrm{inf}}$ é a energia adicional média atribuída a cada passada, obtida da potência do conjunto computacional após descontar a parcela fixa. A taxa solicitada $r$ coincide com $r_{\mathrm{exec}}$ quando toda a demanda é concluída no intervalo considerado; filas e descarte podem fazê-las diferir.
 
 A versão de 8~GB do NVIDIA Jetson Orin Nano opera originalmente nos modos de 7 e 15~W; com a configuração introduzida no JetPack 6.2, os modos disponíveis passam a ser 15~W, 25~W e o modo sem limite MAXN SUPER \cite{nvidia2024orinnano,nvidia2025jetpack62}. Os parâmetros $P_{c0}$, $E_{\mathrm{inf}}$ e $r_{\max}$ dependem do modo escolhido.
 
-O ajuste afim da Equação~\eqref{eq_pc} será verificado para cada estratégia e modo de potência no intervalo de carga usado, mantendo fixa a configuração do detector. Aquecimento, concorrência, variações de frequência e custos de seleção e associação podem alterar a energia atribuída à inferência. As comparações usarão a energia total medida dos componentes instalados necessários ao processamento, incluindo refrigeração; o modo de potência configurado no módulo não substituirá o consumo medido.
+O ajuste afim da Equação~\eqref{eq_pc} será verificado para cada estratégia e modo de potência no intervalo de carga usado, mantendo fixa a configuração do detector. Aquecimento, concorrência, variações de frequência e custos de seleção e associação podem alterar $E_{\mathrm{inf}}$, que depende tanto do hardware quanto da estratégia. Se esses custos não forem bem representados pelo ajuste, será usada a potência total medida. As comparações incluirão todos os componentes necessários ao processamento, inclusive refrigeração; o modo de potência configurado no módulo não substituirá o consumo medido.
 
 \subsubsection{Taxa de inferências de cada estratégia}
 
-A taxa de inferências $r$ depende da estratégia de processamento. As quatro estratégias consideradas são distinguidas da seguinte forma:
+A taxa solicitada de inferências $r$ depende da estratégia de processamento. Antes das limitações de execução, as quatro estratégias têm as seguintes demandas:
 \begin{itemize}
     \item \textbf{quadro inteiro}: uma inferência por quadro, redimensionado para a entrada do detector, com $r=f_q$;
     \item \textbf{amostragem temporal de quadros inteiros}: uma inferência para cada $k$ quadros redimensionados, com $r=f_q/k$;
     \item \textbf{recortes fixos}: todos os $n_t$ recortes de cada quadro, com $r=n_t f_q$;
     \item \textbf{memória geográfica}: $r\approx n_v^{\ast}Vw/A_t$, em que $A_t=(s_t\,GSD)^2$ é a área ideal de solo coberta por um recorte e $n_v^{\ast}\leq n_v$ é o número desejado de observações de cada ponto.
 \end{itemize}
-A amostragem temporal também pode ser aplicada à grade de recortes, caso em que $r=n_t f_q/k$. Essa variante deve ser identificada separadamente nas comparações. A estimativa da memória geográfica pressupõe recortes úteis sem desperdício de área; sobreposição, preenchimento nas bordas e custo de seleção alteram a taxa real, que será medida. O limite $n_v^{\ast}\leq n_v$ expressa a disponibilidade de observações, sem garantir a detecção.
+A amostragem temporal também pode ser aplicada à grade de recortes, caso em que $r=n_t f_q/k$. Essa variante deve ser identificada separadamente nas comparações. A estimativa da memória geográfica pressupõe recortes úteis sem desperdício de área; sobreposição e preenchimento nas bordas alteram a demanda efetiva de passadas, que será medida. O custo de seleção também entra na avaliação de capacidade e energia. O limite $n_v^{\ast}\leq n_v$ expressa a disponibilidade de observações, sem garantir a detecção.
 
 Para testar a contribuição da informação geográfica, a referência principal será a amostragem temporal da mesma grade de recortes, mantendo detector, resolução e orçamento de passadas por área. Sua cadência será ajustada à velocidade e ao comprimento da região imageada na direção do voo, com parâmetros escolhidos na validação. Como referência ideal, $n_v^{\ast}$ observações durante $L/V$ segundos correspondem a um intervalo de aproximadamente $L/(Vn_v^{\ast})$ entre quadros processados. Com $L=30{,}2$~m, $V=4$~m/s e $n_v^{\ast}=5$, são cerca de 1,51~s, ou 45 quadros a 30~quadros/s. Essa estimativa não garante cinco observações úteis de cada objeto; bordas, oclusões e variações do movimento serão consideradas pela contagem efetiva.
 
 \subsubsection{Custo computacional por área inspecionada}
 
-Nas estratégias de taxa fixa, a taxa de inferências independe da velocidade de voo. Na memória geográfica, ela é proporcional à taxa de cobertura de área. Esse contraste tem uma consequência direta sobre a energia de computação por unidade de área, $P_c/(Vw)$. Com taxa de inferências fixa, essa energia diminui com a velocidade, porque o mesmo consumo é diluído em mais área.
+Considere uma mesma altura, detector, estratégia e hardware, com cadência fixa de quadros processados. Se toda a demanda for executada, a taxa de inferências permanece fixa ao variar a velocidade. Nesse caso, a energia de computação por área, $P_c/(Vw)$, diminui com a velocidade, porque o mesmo consumo é diluído em mais área. Essa conclusão não se aplica diretamente à amostragem temporal cuja cadência é ajustada à velocidade, como na referência de comparação de H1.
 
-Com memória geográfica, mantendo a altura, $n_v^{\ast}$ e $E_{\mathrm{inf}}$ fixos, a parcela proporcional às inferências fica constante, igual a $n_v^{\ast} E_{\mathrm{inf}}/A_t$, e só a parcela fixa $P_{c0}$ diminui com a velocidade.
+Com memória geográfica e execução de toda a demanda ideal, mantendo a altura, $n_v^{\ast}$ e $E_{\mathrm{inf}}$ fixos, a parcela proporcional às inferências fica constante, igual a $n_v^{\ast} E_{\mathrm{inf}}/A_t$, e só a parcela fixa $P_{c0}$ diminui com a velocidade.
 
-A Figura~\ref{fig_passadas} ilustra as taxas de passadas, calculadas como $10^6 r/(Vw)$, para o processamento de todos os recortes, a amostragem dessa grade a cada seis quadros e a memória geográfica idealizada. As curvas usam redundâncias diferentes e não demonstram superioridade da memória em uma comparação com orçamento e qualidade equivalentes. Essa comparação depende dos experimentos descritos acima.
+A Figura~\ref{fig_passadas} ilustra a demanda ideal de passadas por área, calculada como $10^6 r/(Vw)$, para o processamento de todos os recortes, a amostragem dessa grade a cada seis quadros e a memória geográfica idealizada. As curvas antecedem as limitações do hardware e usam redundâncias diferentes; não demonstram superioridade da memória em uma comparação com orçamento e qualidade equivalentes. Essa comparação depende dos experimentos descritos acima.
 \begin{figure}[htb]
   \centering
   \caption{Exemplo de carga de inferência por área imageada com diferentes redundâncias de observação}
@@ -566,24 +566,24 @@ A formulação integra o efeito da computação sobre a missão \cite{boroujerdi
     \underbrace{\dfrac{P\!\left(V;\, m_0 + m_H\right)}{\eta_m}}_{\text{propulsão}}
     + \underbrace{P_{av}}_{\text{aviônicos}}
     + \underbrace{P_{c0}(H)}_{\substack{\text{computação}\\\text{em repouso}}}
-    + \underbrace{r(\pi, h, V)\,E_{\mathrm{inf}}(H)}_{\substack{\text{processamento}\\\text{das imagens}}}
+    + \underbrace{r_{\mathrm{exec}}\,E_{\mathrm{inf}}(H,\pi)}_{\substack{\text{processamento}\\\text{das imagens}}}
   }{\underbrace{V\, w(h)}_{\text{área coberta por segundo}}},
   \label{eq_coprojeto}
 \end{equation}
-em que $m_0$ é a massa da aeronave sem o computador e $m_H$ é a massa acrescentada pelo hardware. O numerador soma as potências elétricas: a propulsão depende da velocidade e da massa total, com a eficiência $\eta_m$ convertendo a potência mecânica em elétrica; os aviônicos e a computação em repouso compõem as cargas de base. O processamento acrescenta o número de inferências por segundo, $r$, multiplicado pela energia de cada inferência, $E_{\mathrm{inf}}$. No denominador, a velocidade $V$ multiplicada pela largura imageada $w(h)$ fornece a área coberta por segundo. Assim, a razão entre potência e taxa de cobertura resulta na energia gasta por unidade de área.
+em que $m_0$ é a massa da aeronave sem o computador e $m_H$ é a massa acrescentada pelo hardware. O numerador soma as potências elétricas: a propulsão depende da velocidade e da massa total, com a eficiência $\eta_m$ convertendo a potência mecânica em elétrica; os aviônicos e a computação em repouso compõem as cargas de base. O processamento acrescenta a taxa de inferências concluídas, $r_{\mathrm{exec}}=r_{\mathrm{exec}}(\pi,h,V,H)$, multiplicada pela energia incremental de cada passada. No denominador, $Vw(h)$ é a área coberta por segundo. A razão entre potência e taxa de cobertura resulta na energia por unidade de área.
 
 A expressão pressupõe voo sem vento, de modo que a velocidade no modelo de potência e na taxa de cobertura seja a mesma. Cada comparação mantém fixos o detector, a resolução de entrada e a precisão numérica; $H$ inclui o modo de potência e $P_{av}$ exclui o consumo já contado em $P_c$. Modelos de detector diferentes exigem novas medições de energia, capacidade e recall.
 
-Uma configuração só é viável se detectar a fração exigida de focos e couber na capacidade de processamento do hardware. Sobre um conjunto admissível $\mathcal{D}$ de alturas $h>0$, velocidades $V>0$, estratégias e configurações de hardware, o ponto de operação ótimo resolve
+No modelo de otimização, uma configuração deve atingir a taxa de detecção exigida e manter sua demanda média dentro da capacidade medida do hardware. O cumprimento dos prazos será verificado pela análise de latências e filas da Seção~\ref{sec_tempo_real}. Sobre um conjunto admissível $\mathcal{D}$ de alturas $h>0$, velocidades $V>0$, estratégias e configurações de hardware, o ponto de operação ótimo resolve
 \begin{equation}
   \min_{(h,V,\pi,H)\in\mathcal{D}}\ e(h, V, \pi, H)
   \quad \text{sujeito a} \quad
-  \mathcal{R}_f(h, V, \pi) \geq \mathcal{R}_{\min},
-  \quad r(\pi, h, V) \leq r_{\max}(H),
+  \mathcal{R}_f(h, V, \pi,H) \geq \mathcal{R}_{\min},
+  \quad r(\pi, h, V) \leq r_{\max}(H,\pi),
   \label{eq_otimizacao}
 \end{equation}
 em que $\mathcal{R}_{\min}$ é a meta de taxa de detecção de focos únicos adotada no estudo. Essa meta e o conjunto $\mathcal{D}$ serão fixados antes dos experimentos, respeitando o domínio de validade dos modelos. Se nenhuma configuração satisfizer as duas restrições, o problema será declarado inviável no domínio avaliado.
 
 O ótimo dessa formulação é condicionado aos parâmetros adotados e à representação da detecção em cada cenário. A análise será repetida para conjuntos plausíveis de parâmetros de propulsão, massa e eficiência, com origem e intervalos documentados. Serão distinguidos os resultados medidos nas condições da base e os estimados por extrapolação. A recomendação poderá ser uma faixa de operação ou um conjunto de alternativas dependente do cenário; a coincidência do modelo com um ponto da telemetria não será tomada como validação de toda a curva.
 
-Na Equação~\eqref{eq_coprojeto}, a altitude aumenta $w$, mas reduz o tamanho dos objetos em pixels e pode reduzir $\mathcal{R}_f$. A velocidade altera a potência de voo e o borrão; a estratégia de inferência altera $r$. O hardware determina $P_{c0}$, $E_{\mathrm{inf}}$, $r_{\max}$ e a massa acrescentada, cujo efeito na propulsão é discutido na Seção~\ref{sec_momento}. Os capítulos seguintes descrevem como esses termos são medidos ou estimados a partir da base MBG-V2 e do computador embarcado de referência.
+Na Equação~\eqref{eq_coprojeto}, a altitude aumenta $w$, mas reduz o tamanho dos objetos em pixels e pode reduzir $\mathcal{R}_f$. A velocidade altera a potência de voo e o borrão; a estratégia de inferência altera $r$. O hardware determina $P_{c0}$, $E_{\mathrm{inf}}$, $r_{\max}$ e a massa acrescentada, cujo efeito na propulsão é discutido na Seção~\ref{sec_momento}. O Capítulo 3 caracteriza a base MBG-V2 e os dados disponíveis para estimar parte desses termos; os procedimentos experimentais completarão a avaliação da detecção e da computação embarcada.
