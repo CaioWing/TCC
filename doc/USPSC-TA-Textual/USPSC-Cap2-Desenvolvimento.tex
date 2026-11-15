@@ -143,7 +143,7 @@ A arfagem medida em voo não depende apenas do arrasto parasita. Há três limit
 \end{itemize}
 Voar em trajetórias de ida e volta não resolve sozinho a última limitação. O vento contribui com sinais opostos nas duas pernas, mas separá-lo do arrasto exige assumir a forma da lei de arrasto. Uma estimativa independente do vento é necessária para avaliar a inferência de $f_e$ pela arfagem, junto às demais limitações do modelo.
 
-Uma verificação preliminar com a telemetria do MBG-V2 ilustra esse problema: com o arrasto quadrático, quatro dos cinco voos analisados exigiriam ventos de 12 a 17~m/s, valores implausíveis para as missões registradas. Portanto, a relação de equilíbrio, por si só, não identifica o arrasto da aeronave a partir desses registros.
+A inclinação permite estimar a força horizontal necessária ao equilíbrio, mas sua atribuição ao arrasto depende das hipóteses do modelo. Como a telemetria fornece a velocidade em relação ao solo, a estimativa do arrasto também exige considerar o vento, que não pode ser determinado por essa relação isoladamente.
 
 \subsubsection{Relação com a equação de movimento}
 
@@ -222,29 +222,40 @@ Com potência em watts, velocidade em m/s e largura em metros, $e$ é obtida em 
 \section{Geometria do imageamento aéreo}
 \label{sec_imageamento}
 
-\subsection{Resolução no solo, pegada e cobertura}
+\subsection{Resolução no solo e cobertura da imagem}
 
-\subsubsection{Escala e pegada da imagem}
+\subsubsection{Escala e cobertura da imagem}
 
-Em uma fotografia vertical sobre terreno plano, a escala da imagem é a razão entre uma distância na imagem e sua correspondente no solo, igual a $f_c/h$ \cite[p.~75]{paine2012}. Em imagens digitais, a distância de amostragem no solo (GSD) é a distância entre os centros de pixels vizinhos projetados no terreno \cite{cabreira2019survey}. Aplicando a escala ao pixel do sensor, obtém-se
+Em uma fotografia vertical sobre terreno plano, a escala da imagem é a razão entre uma distância na imagem e sua correspondente no solo, igual a $f_c/h$ \cite[p.~75]{paine2012}. Essa escala também permite converter o espaçamento entre os centros de dois pixels vizinhos no sensor em uma distância no terreno. A distância resultante no solo é denominada distância de amostragem no solo (GSD) \cite{cabreira2019survey}. Para um espaçamento $p$ no sensor, a relação de escala fornece $p/GSD=f_c/h$, de onde se obtém
 \begin{equation}
   GSD = \frac{h\,p}{f_c},
   \label{eq_gsd}
 \end{equation}
-em que $h$ é a altura de voo sobre o terreno, $p$ é o tamanho físico do pixel no sensor e $f_c$ é a distância focal. A expressão pressupõe projeção central, pixels quadrados, imagem sem distorção óptica relevante e terreno plano perpendicular ao eixo óptico. O $GSD$ descreve a amostragem, não garante a resolução efetiva da óptica nem a detecção de um objeto.
+em que $h$ é a altura de voo sobre o terreno, $p$ é o tamanho físico do pixel no sensor e $f_c$ é a distância focal.
 
-A pegada é a região do terreno vista em um quadro. Para uma imagem com $N_x \times N_y$ pixels, sendo $N_x$ na direção transversal ao voo, a pegada no solo tem largura e comprimento
+A expressão usa o modelo de projeção central, no qual os raios que ligam os pontos do terreno às suas imagens passam por um único ponto ideal, chamado centro de projeção. Com o terreno plano e perpendicular ao eixo óptico da câmera, esse modelo permite relacionar as distâncias no sensor e no solo por semelhança de triângulos. Pressupõem-se ainda pixels quadrados e imagem sem distorção óptica relevante. O $GSD$ descreve a amostragem, não garante a resolução efetiva da óptica nem a detecção de um objeto.
+
+A área de cobertura da imagem é a região do terreno registrada em um único quadro, aqui denominada região imageada. Para uma imagem com $N_x \times N_y$ pixels, sendo $N_x$ na direção transversal ao voo, essa região tem largura e comprimento
 \begin{equation}
   w = N_x\,GSD = \frac{N_x\,p}{f_c}\,h,
   \qquad
   L = N_y\,GSD = \frac{N_y\,p}{f_c}\,h.
   \label{eq_pegada}
 \end{equation}
-Os fatores $N_x p/f_c$ e $N_y p/f_c$ dependem apenas da câmera: são iguais a $2\tan(\beta_x/2)$ e $2\tan(\beta_y/2)$, em que $\beta_x$ e $\beta_y$ são os ângulos de campo de visão nas duas direções. Para uma câmera fixa, portanto, a largura e o comprimento da pegada crescem na mesma proporção que a altura de voo.
+Os fatores $N_x p/f_c$ e $N_y p/f_c$ dependem apenas da câmera: são iguais a $2\tan(\beta_x/2)$ e $2\tan(\beta_y/2)$, em que $\beta_x$ e $\beta_y$ são os ângulos de campo de visão nas duas direções. Para uma câmera fixa, portanto, a largura e o comprimento da região imageada crescem na mesma proporção que a altura de voo.
+
+A Figura~\ref{fig_escala_pegada} ilustra a projeção central e essas relações. Mantida a câmera, dobrar a altura de voo dobra tanto o $GSD$ quanto as dimensões da região imageada: cada quadro abrange uma região maior, mas o espaçamento entre as amostras no solo também aumenta.
+\begin{figure}[htb]
+  \centering
+  \caption{Projeção central e efeito da altura de voo sobre o GSD e a região imageada}
+  \label{fig_escala_pegada}
+  \includegraphics[width=0.95\textwidth]{figuras/fig_escala_pegada.pdf}
+  \fonte{Elaborado pelo autor. Os esquemas em (a) e (b), sem escala, mostram os ângulos de visão $\beta_x$ e $\beta_y$ nas direções da largura e do comprimento da região imageada. As curvas em (c) e (d) ilustram as Equações~\eqref{eq_gsd} e~\eqref{eq_pegada} para uma câmera fixa, com $GSD = 1{,}4$~cm/pixel a 40~m e imagem de $3840 \times 2160$ pixels; os pontos destacam as alturas de 40 e 80~m.}
+\end{figure}
 
 \subsubsection{Tempo de observação e cobertura}
 
-Quanto maior a pegada na direção do voo e menor a velocidade, mais tempo um ponto do solo permanece na imagem. Em translação retilínea alinhada ao comprimento $L$ da pegada, sem rotação da câmera, com velocidade constante $V>0$ em relação ao solo e taxa de quadros $f_q$, cada ponto do solo permanece no campo de visão durante
+Quanto maior o comprimento da região imageada na direção do voo e menor a velocidade, mais tempo um ponto do solo permanece na imagem. Em translação retilínea alinhada ao comprimento $L$ da região imageada, sem rotação da câmera, com velocidade constante $V>0$ em relação ao solo e taxa de quadros $f_q$, cada ponto do solo permanece no campo de visão durante
 \begin{equation}
   t_{v} = \frac{L}{V},
   \qquad\text{e aparece em}\qquad
@@ -253,7 +264,16 @@ Quanto maior a pegada na direção do voo e menor a velocidade, mais tempo um po
 \end{equation}
 O valor de $n_v$ é uma estimativa contínua: a contagem inteira depende dos instantes de captura.
 
-Sem revisitas, a área nova que entra continuamente no campo de visão por unidade de tempo é $Vw$, e a fração nova de cada quadro em relação ao anterior é $\min\{1,V/(f_q L)\}$. A forma $V/(f_q L)$ vale quando $V/f_q\leq L$; acima desse limite, surgem lacunas entre as imagens. Quando $n_v$ é elevado, um mesmo ponto aparece em muitos quadros; a memória geográfica explora essa redundância para selecionar as regiões a processar. A Figura~\ref{fig_geometria} mostra essas grandezas para os voos da base MBG-V2.
+Nessas condições e sem revisitas, a área nova que entra continuamente no campo de visão por unidade de tempo é $Vw$. Para quantificar quanto cada quadro acrescenta ao anterior, considera-se a fração de sua área que corresponde a terreno ainda não imageado. Entre duas capturas consecutivas, decorre um intervalo $1/f_q$, durante o qual a aeronave avança $\Delta x=V/f_q$. Se $\Delta x\leq L$, a faixa nova tem área $w\,\Delta x$, enquanto a área total registrada em um quadro é $wL$. Portanto,
+\begin{equation*}
+  \text{fração de área nova}
+  = \frac{w\,\Delta x}{wL}
+  = \frac{\Delta x}{L}
+  = \frac{V}{f_q L}.
+\end{equation*}
+Se o deslocamento atingir ou ultrapassar $L$, toda a região registrada no quadro seguinte será nova. Assim, a expressão geral é $\min\{1,V/(f_q L)\}$; quando $\Delta x>L$, há também lacunas de terreno não registrado entre as imagens.
+
+Pela Equação~\eqref{eq_visibilidade}, enquanto houver sobreposição entre quadros, essa fração é aproximadamente $1/n_v$. Por exemplo, um avanço de $L/10$ entre capturas faz com que apenas 10\% da área de cada quadro seja nova e um ponto do solo apareça em cerca de dez quadros. Portanto, um $n_v$ elevado indica forte repetição das regiões observadas. A memória geográfica explora essa redundância para selecionar as regiões a processar. A Figura~\ref{fig_geometria} ilustra a geometria da cobertura, destacando a faixa nova correspondente a um segundo de deslocamento.
 \begin{figure}[htb]
   \centering
   \caption{Geometria do imageamento com visada vertical nas condições dos voos da base MBG-V2}
@@ -319,7 +339,22 @@ Considere um ponto da imagem com coordenadas $(u,v)$ e o ponto principal da câm
 
 Frente e direita dependem da orientação da câmera. Para expressar o mesmo deslocamento no mapa, usa-se a guinada da câmera, $\psi$, medida no plano horizontal a partir do norte, no sentido do leste. Por exemplo, $\psi=0$ indica que o topo da imagem aponta para o norte; $\psi=90^\circ$ indica que ele aponta para o leste.
 
-A rotação pelo ângulo $\psi$ fornece o deslocamento do objeto em relação à câmera nas direções norte e leste, $\Delta N$ e $\Delta E$:
+Para construir essa transformação, retomam-se os deslocamentos definidos acima. Denotando por $x_c$ a distância para a frente e por $y_c$ a distância para a direita, ambas em metros, tem-se
+\begin{equation*}
+  x_c = -GSD\,(v-c_y),
+  \qquad
+  y_c = GSD\,(u-c_x).
+\end{equation*}
+O sinal negativo em $x_c$ faz com que um ponto acima do ponto principal, com $v<c_y$, tenha deslocamento positivo para a frente.
+
+A direção frontal da câmera faz um ângulo $\psi$ com o norte. Assim, o deslocamento $x_c$ contribui com $x_c\cos\psi$ na direção norte e $x_c\sin\psi$ na direção leste. Na mesma convenção angular, a direção da direita forma com o norte o ângulo $\psi+90^\circ$. Como $\cos(\psi+90^\circ)=-\sin\psi$ e $\sin(\psi+90^\circ)=\cos\psi$, o deslocamento $y_c$ contribui com $-y_c\sin\psi$ para norte e $y_c\cos\psi$ para leste. Somando as duas contribuições, obtêm-se
+\begin{equation*}
+  \begin{aligned}
+    \Delta N &= x_c\cos\psi-y_c\sin\psi, \\
+    \Delta E &= x_c\sin\psi+y_c\cos\psi.
+  \end{aligned}
+\end{equation*}
+Essas duas relações podem ser reunidas em uma matriz. Substituindo as expressões de $x_c$ e $y_c$ e colocando o $GSD$ em evidência, chega-se a
 \begin{equation}
   \begin{bmatrix} \Delta N \\ \Delta E \end{bmatrix}
   = GSD
@@ -327,7 +362,7 @@ A rotação pelo ângulo $\psi$ fornece o deslocamento do objeto em relação à
   \begin{bmatrix} -(v - c_y) \\ u - c_x \end{bmatrix}.
   \label{eq_georref}
 \end{equation}
-Lida da direita para a esquerda, a equação primeiro organiza os afastamentos em pixels nas direções frente e direita, depois os gira para norte e leste e, pelo fator $GSD$, os expressa em metros. Essa rotação é o caso de visada vertical da transformação de atitude de \citeonline[Eq.~(4.4,3), p.~99]{etkin1996}, apresentada adiante.
+A matriz reúne, portanto, as projeções das direções frente e direita nos eixos norte e leste. Essa rotação é o caso de visada vertical da transformação de atitude de \citeonline[Eq.~(4.4,3), p.~99]{etkin1996}, apresentada adiante. Quando $\psi=0$, as relações se reduzem a $\Delta N=x_c$ e $\Delta E=y_c$: o topo da imagem aponta para o norte, e sua direita, para o leste.
 
 Como exemplo, considere $GSD=1{,}4$~cm/pixel e o topo da imagem apontado para o norte. Um ponto 100 pixels à direita e 50 pixels acima do ponto principal fica 1,4~m a leste e 0,7~m ao norte da câmera. Se a câmera mudar de orientação, esses deslocamentos precisam ser girados antes de serem somados à posição da aeronave.
 
@@ -479,7 +514,7 @@ A taxa de inferências $r$ depende da estratégia de processamento. As quatro es
 \end{itemize}
 A amostragem temporal também pode ser aplicada à grade de recortes, caso em que $r=n_t f_q/k$. Essa variante deve ser identificada separadamente nas comparações. A estimativa da memória geográfica pressupõe recortes úteis sem desperdício de área; sobreposição, preenchimento nas bordas e custo de seleção alteram a taxa real, que será medida. O limite $n_v^{\ast}\leq n_v$ expressa a disponibilidade de observações, sem garantir a detecção.
 
-Para testar a contribuição da informação geográfica, a referência principal será a amostragem temporal da mesma grade de recortes, mantendo detector, resolução e orçamento de passadas por área. Sua cadência será ajustada à velocidade e à pegada, com parâmetros escolhidos na validação. Como referência ideal, $n_v^{\ast}$ observações durante $L/V$ segundos correspondem a um intervalo de aproximadamente $L/(Vn_v^{\ast})$ entre quadros processados. Com $L=30{,}2$~m, $V=4$~m/s e $n_v^{\ast}=5$, são cerca de 1,51~s, ou 45 quadros a 30~quadros/s. Essa estimativa não garante cinco observações úteis de cada objeto; bordas, oclusões e variações do movimento serão consideradas pela contagem efetiva.
+Para testar a contribuição da informação geográfica, a referência principal será a amostragem temporal da mesma grade de recortes, mantendo detector, resolução e orçamento de passadas por área. Sua cadência será ajustada à velocidade e ao comprimento da região imageada na direção do voo, com parâmetros escolhidos na validação. Como referência ideal, $n_v^{\ast}$ observações durante $L/V$ segundos correspondem a um intervalo de aproximadamente $L/(Vn_v^{\ast})$ entre quadros processados. Com $L=30{,}2$~m, $V=4$~m/s e $n_v^{\ast}=5$, são cerca de 1,51~s, ou 45 quadros a 30~quadros/s. Essa estimativa não garante cinco observações úteis de cada objeto; bordas, oclusões e variações do movimento serão consideradas pela contagem efetiva.
 
 \subsubsection{Custo computacional por área inspecionada}
 

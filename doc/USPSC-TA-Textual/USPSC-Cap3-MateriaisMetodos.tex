@@ -36,7 +36,7 @@ Os vídeos e a telemetria informam a resolução das imagens, a taxa de quadros,
 
 Em todos os voos, o \textit{gimbal} mantém a câmera apontada verticalmente para baixo, com ângulo de arfagem registrado de $-89{,}9^\circ$. A altitude da telemetria fica entre 39,8 e 40,1~m (percentis 5 e 95 de todas as amostras). Esse valor é medido em relação ao ponto de decolagem e não fornece, necessariamente, a altura da câmera sobre cada objeto imageado.
 
-As principais diferenças entre as campanhas estão na velocidade e na configuração do vídeo. Na região A, o vídeo tem 4096 pixels de largura e 23,976 quadros por segundo, e a aeronave voa a cerca de 7,9~m/s. Nas regiões B a M, o vídeo tem 3840 pixels de largura e 29,97 quadros por segundo, e a velocidade fica perto de 4,1~m/s. A Tabela~\ref{tab_campanhas} separa essas informações dos valores de $GSD$, pegada e número de observações estimados neste trabalho.
+As principais diferenças entre as campanhas estão na velocidade e na configuração do vídeo. Na região A, o vídeo tem 4096 pixels de largura e 23,976 quadros por segundo, e a aeronave voa a cerca de 7,9~m/s. Nas regiões B a M, o vídeo tem 3840 pixels de largura e 29,97 quadros por segundo, e a velocidade fica perto de 4,1~m/s. A Tabela~\ref{tab_campanhas} separa essas informações dos valores de $GSD$, das dimensões da região imageada e do número de observações estimados neste trabalho.
 
 \begin{table}[htb]
   \centering
@@ -58,8 +58,8 @@ As principais diferenças entre as campanhas estão na velocidade e na configura
     \hline
     \multicolumn{3}{l}{\textit{Grandezas estimadas neste trabalho}} \\
     $GSD$ ajustado (cm/pixel) & 1,21--1,23 & 1,20--1,78 \\
-    Largura da pegada, $w$ (m) & 49,6--50,4 & 46,1--68,4 \\
-    Comprimento da pegada, $L$ (m) & 26,1--26,6 & 25,9--38,4 \\
+    Largura da região imageada, $w$ (m) & 49,6--50,4 & 46,1--68,4 \\
+    Comprimento da região imageada, $L$ (m) & 26,1--26,6 & 25,9--38,4 \\
     Quadros por ponto do solo, $n_v$ & 79--81 & 190--283 \\
     \hline
   \end{tabular}}
@@ -88,7 +88,7 @@ Subtraindo a posição verdadeira do objeto, obtém-se
 \begin{equation*}
   \mathbf{x}_{\mathrm{proj}} - \mathbf{x}_{\mathrm{obj}} = \left(1 - \frac{GSD}{GSD_{\mathrm{real}}}\right)\bigl(\mathbf{x}_{\mathrm{aer}} - \mathbf{x}_{\mathrm{obj}}\bigr).
 \end{equation*}
-Quando $GSD=GSD_{\mathrm{real}}$, o fator entre parênteses é zero e as projeções coincidem com a posição do objeto. Nos demais casos, a expressão mostra quanto do movimento da aeronave aparece como deslocamento indevido do objeto. Para uma trilha que atravessa todo o campo de visão em voo retilíneo, com orientação constante, a aeronave percorre aproximadamente o comprimento $L$ da pegada. As projeções se espalham então por um segmento de comprimento $\lvert1-GSD/GSD_{\mathrm{real}}\rvert L$. Como exemplo desse modelo ideal, um erro de 10\% na escala produziria cerca de 3 a 4~m de espalhamento para os comprimentos de pegada da Tabela~\ref{tab_campanhas}; esse espalhamento não é uma medição dos voos.
+Quando $GSD=GSD_{\mathrm{real}}$, o fator entre parênteses é zero e as projeções coincidem com a posição do objeto. Nos demais casos, a expressão mostra quanto do movimento da aeronave aparece como deslocamento indevido do objeto. Para uma trilha que atravessa todo o campo de visão em voo retilíneo, com orientação constante, a aeronave percorre aproximadamente o comprimento $L$ da região imageada. As projeções se espalham então por um segmento de comprimento $\lvert1-GSD/GSD_{\mathrm{real}}\rvert L$. Como exemplo desse modelo ideal, um erro de 10\% na escala produziria cerca de 3 a 4~m de espalhamento para os comprimentos da região imageada da Tabela~\ref{tab_campanhas}; esse espalhamento não é uma medição dos voos.
 
 \subsubsection{Procedimento de ajuste}
 
@@ -115,11 +115,11 @@ O ajuste com as próprias trilhas anotadas mede consistência interna e será id
 
 Projetar previsões e referências com a mesma geometria permite avaliar a associação entre objetos, mas pode ocultar erros comuns às duas projeções e não valida a localização absoluta.
 
-Como referência para comparação, $GSD=0$ faz as projeções coincidirem com a posição da aeronave e eleva a dispersão mediana para 6,2 a 9,1~m.\footnote{Em uma travessia completa e uniformemente amostrada de um segmento de comprimento $L$, a distância mediana ao centro é $L/4$, entre 6,5 e 9,6~m para as pegadas da Tabela~\ref{tab_campanhas}.} Esse caso não integra a busca por escalas positivas.
+Como referência para comparação, $GSD=0$ faz as projeções coincidirem com a posição da aeronave e eleva a dispersão mediana para 6,2 a 9,1~m.\footnote{Em uma travessia completa e uniformemente amostrada de um segmento de comprimento $L$, a distância mediana ao centro é $L/4$, entre 6,5 e 9,6~m para os comprimentos da região imageada apresentados na Tabela~\ref{tab_campanhas}.} Esse caso não integra a busca por escalas positivas.
 
 Embora a altitude registrada seja próxima de 40~m em todos os voos, isso não implica a mesma distância entre câmera e terreno. Diferenças de cota entre o ponto de decolagem e a área imageada são uma explicação possível para parte da variação do $GSD$. Essa hipótese não foi verificada, e a base não informa o modelo da aeronave nem os parâmetros da câmera para uma conferência independente da escala.
 
-Com o $GSD$ ajustado, foram calculados a largura e o comprimento da pegada e o número de quadros por ponto do solo apresentados na Tabela~\ref{tab_campanhas}. Pela Equação~\eqref{eq_visibilidade}, o tempo de permanência de um ponto no campo de visão, $t_v=L/V$, é de 3,3--3,4~s na região A e de 6,4--9,4~s nas demais. As durações medianas das trilhas anotadas, de 3,4~s e 7,2~s, respectivamente, são compatíveis com esses intervalos.
+Com o $GSD$ ajustado, foram calculados a largura e o comprimento da região imageada e o número de quadros por ponto do solo apresentados na Tabela~\ref{tab_campanhas}. Pela Equação~\eqref{eq_visibilidade}, o tempo de permanência de um ponto no campo de visão, $t_v=L/V$, é de 3,3--3,4~s na região A e de 6,4--9,4~s nas demais. As durações medianas das trilhas anotadas, de 3,4~s e 7,2~s, respectivamente, são compatíveis com esses intervalos.
 
 No regime observado, com $V/f_q<L$, a fração nova de cada quadro é $V/(f_qL)$: de 1,24 a 1,27\% na região A e de 0,35 a 0,53\% nas regiões B a M. Assim, um ponto do solo aparece em cerca de 80 quadros na região A e em 190 a 280 nas demais. A maior velocidade e a menor taxa de quadros da primeira campanha reduzem, portanto, a redundância disponível para a memória geográfica.
 
@@ -191,9 +191,9 @@ O tamanho dos objetos no solo é coerente com o que cada classe representa: os p
   \fonte{Elaborado pelo autor a partir das anotações e da telemetria da base MBG-V2 \cite{smt2024mbgv2}. (a) Trilhas por hectare de área imageada em cada voo; os voos marcados com asterisco são da campanha de 2019. (b) Número de trilhas por classe e número de voos em que a classe aparece; as miniaturas são exemplos reais de cada classe. (c) Lado dos objetos no solo; as caixas indicam os percentis 25 e 75, e as hastes se estendem até 1,5 vez o intervalo interquartil. A linha pontilhada corresponde a 32 pixels com o $GSD$ mediano de 1,42~cm/pixel.}
 \end{figure}
 
-Para comparar voos de durações diferentes, a densidade de objetos foi calculada como o número de trilhas por hectare de área imageada. A área imageada de cada voo, de 2,8--11,6~ha, é a união das pegadas da câmera ao longo do voo, calculada numa grade de 1~m com o $GSD$ ajustado e a guinada da câmera em cada instante. Somadas por região, essas áreas totalizam 1,42~km$^2$, e a razão entre a área imageada e a área do polígono de cada região fica entre 0,88--1,20, uma comparação descritiva dependente do $GSD$ ajustado. A densidade varia de 19,4--94,8 trilhas por hectare entre os voos, com mediana de 60,1; o voo menos denso é o 13 e o mais denso é o 21. Em todos os voos há objetos na maior parte do vídeo: a fração de quadros com pelo menos um objeto tem mediana de 98,6\% e mínimo de 66,4\%.
+Para comparar voos de durações diferentes, a densidade de objetos foi calculada como o número de trilhas por hectare de área imageada. A área imageada de cada voo, de 2,8--11,6~ha, é a união das regiões imageadas em cada quadro ao longo do voo, calculada numa grade de 1~m com o $GSD$ ajustado e a guinada da câmera em cada instante. Somadas por região, essas áreas totalizam 1,42~km$^2$, e a razão entre a área imageada e a área do polígono de cada região fica entre 0,88--1,20, uma comparação descritiva dependente do $GSD$ ajustado. A densidade varia de 19,4--94,8 trilhas por hectare entre os voos, com mediana de 60,1; o voo menos denso é o 13 e o mais denso é o 21. Em todos os voos há objetos na maior parte do vídeo: a fração de quadros com pelo menos um objeto tem mediana de 98,6\% e mínimo de 66,4\%.
 
-A grade também permite quantificar a revisita a áreas já imageadas, onde um mesmo objeto pode receber mais de uma trilha. Dentro de um voo, as passadas vizinhas quase não se sobrepõem: a área imageada é, em mediana, apenas 4\% menor que o produto da distância percorrida pela largura da pegada, com máximo de 27\% no voo 14. Os dois voos de cada região cobrem metades complementares, com sobreposição de 0,7--10,7\% da área imageada (Figura~\ref{fig_regioes}b). A baixa sobreposição sugere que o número de trilhas aproxima o número de objetos distintos, mas não permite quantificar quantos objetos foram anotados mais de uma vez. A possível duplicação deve ser considerada na definição e na interpretação da avaliação de focos únicos.
+A grade também permite quantificar a revisita a áreas já imageadas, onde um mesmo objeto pode receber mais de uma trilha. Dentro de um voo, as passadas vizinhas quase não se sobrepõem: a área imageada é, em mediana, apenas 4\% menor que o produto da distância percorrida pela largura da região imageada, com máximo de 27\% no voo 14. Os dois voos de cada região cobrem metades complementares, com sobreposição de 0,7--10,7\% da área imageada (Figura~\ref{fig_regioes}b). A baixa sobreposição sugere que o número de trilhas aproxima o número de objetos distintos, mas não permite quantificar quantos objetos foram anotados mais de uma vez. A possível duplicação deve ser considerada na definição e na interpretação da avaliação de focos únicos.
 
 \subsection{Telemetria e energia dos voos}
 \label{sec_base_energia}
