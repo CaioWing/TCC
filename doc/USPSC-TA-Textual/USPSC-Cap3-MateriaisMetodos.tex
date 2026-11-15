@@ -98,9 +98,13 @@ Com a escala correta, o fator entre parênteses é zero: a aeronave se move, mas
 
 Em uma passagem retilínea, com altitude e orientação constantes, o deslocamento da aeronave entre a entrada e a saída do objeto no campo de visão é aproximadamente $L$. Assim, a distância entre a primeira e a última projeção é $\lvert1-GSD/GSD_{\mathrm{real}}\rvert L$. Para os valores de $L$ da Tabela~\ref{tab_campanhas}, um erro de 10\% na escala produziria uma separação de cerca de 2,6 a 3,8~m. Essa é uma previsão do modelo ideal para a extensão total da trilha projetada, não a dispersão mediana medida no procedimento de ajuste a seguir.
 
-\begin{samepage}
 \subsubsection{Procedimento de ajuste}
 
+A relação anterior mostra que a escala correta faz as projeções de um objeto parado coincidirem no modelo ideal. O ajuste procura essa mesma condição nos dados reais, escolhendo o $GSD$ que produz o menor espalhamento. Não se exige que ele seja zero, pois as anotações e a telemetria podem conter erros.
+
+\edef\gsdParIndent{\the\parindent}
+\noindent\begin{minipage}{\textwidth}
+\setlength{\parindent}{\gsdParIndent}
 O ajuste foi feito separadamente para cada voo. As caixas foram amostradas a cada 5 quadros, e foram usadas apenas trilhas com pelo menos 5 amostras. Para cada valor candidato de $GSD$, aplicou-se a seguinte sequência:
 \begin{enumerate}[topsep=0.4\baselineskip,itemsep=0.2\baselineskip,parsep=0pt]
   \item projetar no solo cada caixa $k$ de cada trilha $j$, obtendo a posição $\mathbf{x}_{jk}(GSD)$ em coordenadas norte-leste;
@@ -108,21 +112,34 @@ O ajuste foi feito separadamente para cada voo. As caixas foram amostradas a cad
   \item calcular a dispersão da trilha como a mediana das distâncias de suas projeções a esse centro;
   \item calcular a dispersão do voo como a mediana das dispersões de todas as trilhas usadas no ajuste.
 \end{enumerate}
-\end{samepage}
-Escolheu-se o $GSD$ que minimiza essa última medida. A busca percorreu valores de 0,80 a 2,20~cm/pixel, inicialmente com passo de 0,05~cm/pixel e depois com refinamento de 0,01~cm/pixel. A Equação~\eqref{eq_gsd_ajuste} reúne os quatro passos e a escolha do mínimo:
+\end{minipage}
+\par
+
+As posições $\mathbf{x}_{jk}(GSD)$ do primeiro passo são as projeções $\mathbf{x}_{\mathrm{proj}}$ da seção anterior, agora identificadas por trilha e quadro. Elas são calculadas pela Equação~\eqref{eq_georref}, usando os centros das caixas, a guinada, a posição da aeronave e o $GSD$ testado. Portanto, o cálculo não precisa conhecer $GSD_{\mathrm{real}}$ nem a posição verdadeira do objeto: esses valores aparecem apenas na explicação teórica de por que a escala afeta o espalhamento.
+
+No segundo passo, as projeções do mesmo objeto são comparadas com uma posição central, obtida pelas medianas. Isso permite medir quanto elas se agrupam, sem conhecer a posição verdadeira do objeto. A mediana reduz a influência de projeções muito afastadas, e o centro é recalculado a cada $GSD$ testado.
+
+Esse centro representa o conjunto de quadros e não precisa coincidir com a projeção do instante em que o alvo está mais próximo da vertical da aeronave. Com a câmera apontada para baixo, um alvo próximo ao centro da imagem sofre menor efeito de erros no $GSD$, pois há menos pixels de deslocamento a converter em metros. Usar apenas esse quadro, porém, faria a referência depender dos erros de anotação e telemetria daquela observação. A mediana permite aproveitar as demais observações da trilha.
+
+Escolheu-se o $GSD$ que minimiza a dispersão do voo. A busca percorreu valores de 0,80 a 2,20~cm/pixel, inicialmente com passo de 0,05~cm/pixel e depois com refinamento de 0,01~cm/pixel. A Equação~\eqref{eq_gsd_ajuste} reúne os quatro passos e a escolha do mínimo:
 \begin{equation}
   \widehat{GSD} \in \arg\min_{GSD\in\mathcal{S}}\
   \underbrace{\operatorname*{med}_{j}\Biggl[\ \underbrace{\operatorname*{med}_{k}\ \bigl\lVert \mathbf{x}_{jk}(GSD) - \tilde{\mathbf{x}}_j(GSD) \bigr\rVert}_{\text{dispersão da trilha } j}\ \Biggr]}_{\text{dispersão do voo}},
   \label{eq_gsd_ajuste}
 \end{equation}
-em que $\mathcal{S}$ é o conjunto de escalas positivas pesquisadas e $\widehat{GSD}$ é uma das que minimizam a dispersão do voo. As medianas reduzem a influência de caixas mal posicionadas e de objetos móveis, como sacos plásticos levados pelo vento.\footnote{O centro de cada trilha é calculado por medianas coordenada a coordenada no referencial norte-leste, procedimento que não é, em geral, invariante a uma rotação dos eixos. Eventuais empates na busca do mínimo exigem uma regra de escolha registrada na implementação.}
+em que $\mathcal{S}$ é o conjunto de escalas positivas pesquisadas e $\widehat{GSD}$ é uma das que minimizam a dispersão do voo. A mediana entre as trilhas reduz a influência de trilhas atípicas, como as de objetos móveis.\footnote{O centro de cada trilha é calculado por medianas coordenada a coordenada no referencial norte-leste, procedimento que não é, em geral, invariante a uma rotação dos eixos. Eventuais empates na busca do mínimo exigem uma regra de escolha registrada na implementação.}
 
-A Figura~\ref{fig_ajuste_gsd} apresenta a curva calculada para o voo 03, da região B. A dispersão diminui até o mínimo em 1,35~cm/pixel e volta a crescer para escalas maiores. Nesse ponto, a dispersão é de aproximadamente 0,55~m. Para calcular essa curva, os centros das caixas foram projetados usando a guinada do \textit{gimbal} e a posição da aeronave, interpoladas nos instantes dos quadros. O primeiro registro da telemetria foi associado ao início do vídeo, sem defasagem adicional.
+No voo 03, cada valor candidato de $GSD$ foi usado para projetar as mesmas 292 trilhas no terreno.\footnote{A posição da aeronave e a guinada do \textit{gimbal} foram interpoladas nos instantes dos quadros, associando o primeiro registro da telemetria ao início do vídeo, sem defasagem adicional.} Para cada trilha, calculou-se a distância mediana das projeções ao seu centro. A mediana desses 292 resultados fornece a dispersão do voo para aquele $GSD$, ou seja, um ponto da curva da Figura~\ref{fig_ajuste_gsd}.
+
+\begin{samepage}
+Na busca inicial, por exemplo, os valores de 1,30, 1,35 e 1,40~cm/pixel produziram dispersões de 0,571, 0,548 e 0,646~m, respectivamente. O menor resultado foi obtido com 1,35~cm/pixel. Em seguida, a busca foi repetida entre 1,30 e 1,40~cm/pixel, com passo menor, de 0,01~cm/pixel. Como nenhum dos valores adicionais reduziu a dispersão, manteve-se 1,35~cm/pixel como o $GSD$ ajustado do voo.
+\par
+\end{samepage}
 \begin{figure}[H]
   \centering
   \caption{Dispersão das posições projetadas em função do GSD testado no voo 03}
   \label{fig_ajuste_gsd}
-  \includegraphics[width=0.95\textwidth]{figuras/fig_ajuste_gsd.pdf}
+  \includegraphics[width=0.85\textwidth]{figuras/fig_ajuste_gsd.pdf}
   \fonte{Elaborado pelo autor a partir das anotações e da telemetria da base MBG-V2 \cite{smt2024mbgv2}. Foram usadas 292 trilhas, com 13.228 caixas em quadros múltiplos de cinco e pelo menos cinco amostras por trilha. A busca inicial usa passo de 0,05~cm/pixel; o refinamento, de 0,01~cm/pixel no intervalo de 1,30 a 1,40~cm/pixel. Cada ponto representa a mediana das dispersões das trilhas, conforme a Equação~\eqref{eq_gsd_ajuste}; as linhas apenas conectam os valores calculados. O destaque indica o mínimo entre os valores testados.}
 \end{figure}
 
@@ -143,7 +160,13 @@ O ajuste com as próprias trilhas anotadas mede consistência interna e será id
 
 Projetar previsões e referências com a mesma geometria permite avaliar a associação entre objetos, mas pode ocultar erros comuns às duas projeções e não valida a localização absoluta.
 
-Como referência para comparação, $GSD=0$ faz as projeções coincidirem com a posição da aeronave e eleva a dispersão mediana para 6,2 a 9,1~m.\footnote{Em uma travessia completa e uniformemente amostrada de um segmento de comprimento $L$, a distância mediana ao centro é $L/4$, entre 6,5 e 9,6~m para os comprimentos da região imageada apresentados na Tabela~\ref{tab_campanhas}.} Esse caso não integra a busca por escalas positivas.
+Como referência de comparação, considerou-se também o caso matemático \mbox{$GSD=0$}. As caixas continuam presentes na imagem, mas seus deslocamentos em pixels são multiplicados por zero na projeção. Substituindo esse valor na expressão apresentada no princípio da estimativa, obtém-se
+\begin{equation*}
+  \mathbf{x}_{\mathrm{proj}} = \mathbf{x}_{\mathrm{aer}}
+  + \underbrace{\frac{0}{GSD_{\mathrm{real}}}\,\bigl(\mathbf{x}_{\mathrm{obj}}-\mathbf{x}_{\mathrm{aer}}\bigr)}_{0}
+  = \mathbf{x}_{\mathrm{aer}}.
+\end{equation*}
+Assim, a posição estimada de cada objeto coincide com a posição da aeronave no quadro correspondente, e a dispersão passa a refletir o movimento da aeronave, atingindo de 6,2 a 9,1~m.\footnote{Em uma travessia completa e uniformemente amostrada de um segmento de comprimento $L$, a distância mediana ao centro é $L/4$, entre 6,5 e 9,6~m para os comprimentos da região imageada apresentados na Tabela~\ref{tab_campanhas}.} Esse caso não representa uma escala física válida da câmera e fica fora da busca pelo $GSD$ ajustado.
 
 Embora a altitude registrada seja próxima de 40~m em todos os voos, isso não implica a mesma distância entre câmera e terreno. Diferenças de cota entre o ponto de decolagem e a área imageada são uma explicação possível para parte da variação do $GSD$. Essa hipótese não foi verificada, e a base não informa o modelo da aeronave nem os parâmetros da câmera para uma conferência independente da escala.
 
@@ -216,12 +239,22 @@ O tamanho dos objetos no solo é coerente com o que cada classe representa: os p
   \caption{Densidade, composição e tamanho dos objetos anotados na base MBG-V2}
   \label{fig_anotacoes}
   \includegraphics[width=\textwidth]{figuras/fig_mbgv2_anotacoes.pdf}
-  \fonte{Elaborado pelo autor a partir das anotações e da telemetria da base MBG-V2 \cite{smt2024mbgv2}. (a) Trilhas por hectare de área imageada em cada voo; os voos marcados com asterisco são da campanha de 2019. (b) Número de trilhas por classe e número de voos em que a classe aparece; as miniaturas são exemplos reais de cada classe. (c) Lado dos objetos no solo; as caixas indicam os percentis 25 e 75, e as hastes se estendem até 1,5 vez o intervalo interquartil. A linha pontilhada corresponde a 32 pixels com o $GSD$ mediano de 1,42~cm/pixel.}
+  \fonte{Elaborado pelo autor a partir das anotações e da telemetria da base MBG-V2 \cite{smt2024mbgv2}. (a) Trilhas por km$^2$ de área imageada em cada voo; os voos marcados com asterisco são da campanha de 2019. (b) Número de trilhas por classe e número de voos em que a classe aparece; as miniaturas são exemplos reais de cada classe. (c) Lado dos objetos no solo; as caixas indicam os percentis 25 e 75, e as hastes se estendem até 1,5 vez o intervalo interquartil. A linha pontilhada corresponde a 32 pixels com o $GSD$ mediano de 1,42~cm/pixel.}
 \end{figure}
 
-Para comparar voos de durações diferentes, a densidade de objetos foi calculada como o número de trilhas por hectare de área imageada. A área imageada de cada voo, de 2,8--11,6~ha, é a união das regiões imageadas em cada quadro ao longo do voo, calculada numa grade de 1~m com o $GSD$ ajustado e a guinada da câmera em cada instante. Somadas por região, essas áreas totalizam 1,42~km$^2$, e a razão entre a área imageada e a área do polígono de cada região fica entre 0,88--1,20, uma comparação descritiva dependente do $GSD$ ajustado. A densidade varia de 19,4--94,8 trilhas por hectare entre os voos, com mediana de 60,1; o voo menos denso é o 13 e o mais denso é o 21. Em todos os voos há objetos na maior parte do vídeo: a fração de quadros com pelo menos um objeto tem mediana de 98,6\% e mínimo de 66,4\%.
+Para comparar voos de durações diferentes, a densidade de objetos foi calculada como o número de trilhas por km$^2$ de área imageada. A área imageada de cada voo, de 0,028--0,116~km$^2$, é a união das regiões imageadas em cada quadro ao longo do voo, calculada numa grade de 1~m com o $GSD$ ajustado e a guinada da câmera em cada instante. Somadas por região, essas áreas totalizam 1,42~km$^2$, e a razão entre a área imageada e a área do polígono de cada região fica entre 0,88--1,20, uma comparação descritiva dependente do $GSD$ ajustado. A densidade varia de 1.940--9.480 trilhas por km$^2$ entre os voos, com mediana de 6.010; o voo menos denso é o 13 e o mais denso é o 21.
 
 A grade também permite quantificar a revisita a áreas já imageadas, onde um mesmo objeto pode receber mais de uma trilha. Dentro de um voo, as passadas vizinhas quase não se sobrepõem: a área imageada é, em mediana, apenas 4\% menor que o produto da distância percorrida pela largura da região imageada, com máximo de 27\% no voo 14. Os dois voos de cada região cobrem metades complementares, com sobreposição de 0,7--10,7\% da área imageada (Figura~\ref{fig_regioes}b). A baixa sobreposição sugere que o número de trilhas aproxima o número de objetos distintos, mas não permite quantificar quantos objetos foram anotados mais de uma vez. A possível duplicação deve ser considerada na definição e na interpretação da avaliação de focos únicos.
+
+Além da distribuição espacial, interessa saber quantos objetos aparecem simultaneamente nas imagens. A fração de quadros com pelo menos um objeto tem mediana de 98,6\% e mínimo de 66,4\% entre os voos. Essa métrica indica a frequência de presença de alvos; para mostrar também sua quantidade, a Figura~\ref{fig_objetos_por_quadro} mostra a distribuição das contagens por voo e no conjunto da base, usando as mesmas faixas e cores nos dois painéis. Considerando todos os 193.901 quadros da base, 90,5\% contêm dois ou mais objetos anotados, e a faixa mais frequente é de 6 a 10 objetos, com 36,7\% dos quadros.
+
+\begin{figure}[htb]
+  \centering
+  \caption{Presença e quantidade de objetos anotados simultaneamente nos quadros da base MBG-V2}
+  \label{fig_objetos_por_quadro}
+  \includegraphics[width=\textwidth]{figuras/fig_objetos_por_quadro.pdf}
+  \fonte{Elaborado pelo autor a partir das anotações da base MBG-V2 \cite{smt2024mbgv2}. São contadas as caixas presentes em cada quadro, de todas as classes. (a) Cada barra reúne 100\% dos quadros de um voo; todas as parcelas, exceto a cinza (zero objetos), compõem a fração com pelo menos um objeto. Os asteriscos identificam a campanha de 2019. (b) Distribuição no conjunto dos 193.901 quadros, com o mesmo peso para cada quadro. Os percentuais desse painel são calculados sobre o total da base, e não pela mediana entre os voos.}
+\end{figure}
 
 \subsection{Telemetria e energia dos voos}
 \label{sec_base_energia}
