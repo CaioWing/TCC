@@ -80,25 +80,35 @@ O $GSD$ controla a escala dessa projeção. Se ele for pequeno demais, a distân
   \fonte{Elaborado pelo autor, com valores ilustrativos. (a) O mesmo objeto aparece em três posições da imagem à medida que a aeronave avança. (b) Cada caixa é projetada no solo pela Equação~\eqref{eq_georref}. No modelo ideal, o $GSD$ correto faz as projeções coincidirem; um valor 30\% menor ou maior produz dispersão, em sentidos opostos. O círculo tracejado indica a posição real do objeto.}
 \end{figure}
 
-Essa relação pode ser escrita a partir de duas posições no plano horizontal: a do objeto, $\mathbf{x}_{\mathrm{obj}}$, e a da aeronave em cada quadro, $\mathbf{x}_{\mathrm{aer}}$. Seja $GSD_{\mathrm{real}}$ a escala verdadeira, desconhecida. No modelo de projeção com visada vertical da Seção~\ref{sec_georref}, após considerar a rotação pela guinada, a projeção calculada com um valor candidato de $GSD$ é
+Para entender esse efeito, considere a posição horizontal da aeronave, $\mathbf{x}_{\mathrm{aer}}$, e a de um objeto parado, $\mathbf{x}_{\mathrm{obj}}$. A projeção soma à posição da aeronave o deslocamento até o objeto, calculado a partir dos pixels. No modelo ideal de visada vertical da Seção~\ref{sec_georref}, com a guinada já considerada, usar uma escala incorreta multiplica esse deslocamento pela razão entre o $GSD$ testado e o verdadeiro:
 \begin{equation*}
-  \mathbf{x}_{\mathrm{proj}} = \mathbf{x}_{\mathrm{aer}} + \frac{GSD}{GSD_{\mathrm{real}}}\,\bigl(\mathbf{x}_{\mathrm{obj}} - \mathbf{x}_{\mathrm{aer}}\bigr).
+  \mathbf{x}_{\mathrm{proj}} = \mathbf{x}_{\mathrm{aer}}
+  + \underbrace{\frac{GSD}{GSD_{\mathrm{real}}}}_{\text{fator de escala}}\;\cdot\;
+  \underbrace{\bigl(\mathbf{x}_{\mathrm{obj}}-\mathbf{x}_{\mathrm{aer}}\bigr)}_{\text{deslocamento até o objeto}}.
 \end{equation*}
-Subtraindo a posição verdadeira do objeto, obtém-se
-\begin{equation*}
-  \mathbf{x}_{\mathrm{proj}} - \mathbf{x}_{\mathrm{obj}} = \left(1 - \frac{GSD}{GSD_{\mathrm{real}}}\right)\bigl(\mathbf{x}_{\mathrm{aer}} - \mathbf{x}_{\mathrm{obj}}\bigr).
-\end{equation*}
-Quando $GSD=GSD_{\mathrm{real}}$, o fator entre parênteses é zero e as projeções coincidem com a posição do objeto. Nos demais casos, a expressão mostra quanto do movimento da aeronave aparece como deslocamento indevido do objeto. Para uma trilha que atravessa todo o campo de visão em voo retilíneo, com orientação constante, a aeronave percorre aproximadamente o comprimento $L$ da região imageada. As projeções se espalham então por um segmento de comprimento $\lvert1-GSD/GSD_{\mathrm{real}}\rvert L$. Como exemplo desse modelo ideal, um erro de 10\% na escala produziria cerca de 3 a 4~m de espalhamento para os comprimentos da região imageada da Tabela~\ref{tab_campanhas}; esse espalhamento não é uma medição dos voos.
+Por exemplo, um $GSD$ 10\% menor que o verdadeiro faz o deslocamento calculado corresponder a apenas 90\% do deslocamento real. O valor $GSD_{\mathrm{real}}$ é desconhecido e aparece aqui apenas para explicar o efeito do erro de escala.
 
+O que interessa ao ajuste é comparar as projeções do mesmo objeto em quadros diferentes. Como o objeto está parado, sua posição se cancela ao subtrair as expressões de dois quadros. Mantendo a mesma escala, obtém-se
+\begin{equation*}
+  \underbrace{\Delta\mathbf{x}_{\mathrm{proj}}}_{\substack{\text{movimento aparente}\\\text{do objeto}}}
+  = \left(1-\frac{GSD}{GSD_{\mathrm{real}}}\right)
+  \underbrace{\Delta\mathbf{x}_{\mathrm{aer}}}_{\substack{\text{deslocamento}\\\text{da aeronave}}}.
+\end{equation*}
+Com a escala correta, o fator entre parênteses é zero: a aeronave se move, mas a projeção do objeto permanece no mesmo lugar. Com uma escala 10\% menor, um avanço de 10~m da aeronave faz a projeção avançar indevidamente 1~m; com uma escala 10\% maior, ela se desloca 1~m no sentido oposto.
+
+Em uma passagem retilínea, com altitude e orientação constantes, o deslocamento da aeronave entre a entrada e a saída do objeto no campo de visão é aproximadamente $L$. Assim, a distância entre a primeira e a última projeção é $\lvert1-GSD/GSD_{\mathrm{real}}\rvert L$. Para os valores de $L$ da Tabela~\ref{tab_campanhas}, um erro de 10\% na escala produziria uma separação de cerca de 2,6 a 3,8~m. Essa é uma previsão do modelo ideal para a extensão total da trilha projetada, não a dispersão mediana medida no procedimento de ajuste a seguir.
+
+\begin{samepage}
 \subsubsection{Procedimento de ajuste}
 
 O ajuste foi feito separadamente para cada voo. As caixas foram amostradas a cada 5 quadros, e foram usadas apenas trilhas com pelo menos 5 amostras. Para cada valor candidato de $GSD$, aplicou-se a seguinte sequência:
-\begin{enumerate}
+\begin{enumerate}[topsep=0.4\baselineskip,itemsep=0.2\baselineskip,parsep=0pt]
   \item projetar no solo cada caixa $k$ de cada trilha $j$, obtendo a posição $\mathbf{x}_{jk}(GSD)$ em coordenadas norte-leste;
   \item calcular o centro da trilha, $\tilde{\mathbf{x}}_j(GSD)$, pela mediana de cada coordenada das posições projetadas;
   \item calcular a dispersão da trilha como a mediana das distâncias de suas projeções a esse centro;
   \item calcular a dispersão do voo como a mediana das dispersões de todas as trilhas usadas no ajuste.
 \end{enumerate}
+\end{samepage}
 Escolheu-se o $GSD$ que minimiza essa última medida. A busca percorreu valores de 0,80 a 2,20~cm/pixel, inicialmente com passo de 0,05~cm/pixel e depois com refinamento de 0,01~cm/pixel. A Equação~\eqref{eq_gsd_ajuste} reúne os quatro passos e a escolha do mínimo:
 \begin{equation}
   \widehat{GSD} \in \arg\min_{GSD\in\mathcal{S}}\
@@ -106,6 +116,24 @@ Escolheu-se o $GSD$ que minimiza essa última medida. A busca percorreu valores 
   \label{eq_gsd_ajuste}
 \end{equation}
 em que $\mathcal{S}$ é o conjunto de escalas positivas pesquisadas e $\widehat{GSD}$ é uma das que minimizam a dispersão do voo. As medianas reduzem a influência de caixas mal posicionadas e de objetos móveis, como sacos plásticos levados pelo vento.\footnote{O centro de cada trilha é calculado por medianas coordenada a coordenada no referencial norte-leste, procedimento que não é, em geral, invariante a uma rotação dos eixos. Eventuais empates na busca do mínimo exigem uma regra de escolha registrada na implementação.}
+
+A Figura~\ref{fig_ajuste_gsd} apresenta a curva calculada para o voo 03, da região B. A dispersão diminui até o mínimo em 1,35~cm/pixel e volta a crescer para escalas maiores. Nesse ponto, a dispersão é de aproximadamente 0,55~m. Para calcular essa curva, os centros das caixas foram projetados usando a guinada do \textit{gimbal} e a posição da aeronave, interpoladas nos instantes dos quadros. O primeiro registro da telemetria foi associado ao início do vídeo, sem defasagem adicional.
+\begin{figure}[H]
+  \centering
+  \caption{Dispersão das posições projetadas em função do GSD testado no voo 03}
+  \label{fig_ajuste_gsd}
+  \includegraphics[width=0.95\textwidth]{figuras/fig_ajuste_gsd.pdf}
+  \fonte{Elaborado pelo autor a partir das anotações e da telemetria da base MBG-V2 \cite{smt2024mbgv2}. Foram usadas 292 trilhas, com 13.228 caixas em quadros múltiplos de cinco e pelo menos cinco amostras por trilha. A busca inicial usa passo de 0,05~cm/pixel; o refinamento, de 0,01~cm/pixel no intervalo de 1,30 a 1,40~cm/pixel. Cada ponto representa a mediana das dispersões das trilhas, conforme a Equação~\eqref{eq_gsd_ajuste}; as linhas apenas conectam os valores calculados. O destaque indica o mínimo entre os valores testados.}
+\end{figure}
+
+A Figura~\ref{fig_trilha_real_gsd} detalha a trilha 96, de uma caixa-d'água do mesmo voo, usando o $GSD$ de 1,35~cm/pixel, sem reajuste individual. Entre o início e o fim do trecho, separados por 7,34~s, a aeronave se desloca 30,85~m e o centro da caixa muda de posição em aproximadamente 2.112~pixels. As projeções no terreno permanecem agrupadas, embora a primeira e a última estejam separadas por 2,79~m. Essa separação entre extremos difere da dispersão mediana da trilha, de 0,55~m, calculada com suas 45 amostras. A trilha foi escolhida por apresentar dispersão próxima da mediana do voo, entre caixas-d'água observadas em trechos com pouca variação de guinada.
+\begin{figure}[H]
+  \centering
+  \caption{Posições na imagem e projeções no terreno de uma trilha real do voo 03}
+  \label{fig_trilha_real_gsd}
+  \includegraphics[width=\textwidth]{figuras/fig_trilha_real_gsd.pdf}
+  \fonte{Elaborado pelo autor a partir da base MBG-V2 \cite{smt2024mbgv2}. Os pontos 1, 2 e 3 correspondem aos quadros 3735, 3845 e 3955 da trilha 96. Em (a), acompanha-se o centro da caixa em pixels. Em (b), os quadrados indicam a aeronave e os círculos, as projeções do objeto; as setas ligam as posições correspondentes em cada quadro. A origem é a posição da aeronave no primeiro quadro destacado. Em (c), amplia-se a região das projeções, mantendo o mesmo referencial. Os traçados cinzas incluem as 45 amostras, em ordem temporal. Cada painel mantém escalas iguais nos dois eixos.}
+\end{figure}
 
 \subsubsection{Valores obtidos e interpretação}
 

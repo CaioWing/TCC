@@ -335,11 +335,20 @@ Considere um ponto da imagem com coordenadas $(u,v)$ e o ponto principal da câm
 
 É preciso, porém, observar o sentido dos eixos. Na imagem, $u$ cresce para a direita e $v$ cresce para baixo. No referencial da câmera adotado aqui, $x$ aponta para a frente, correspondente ao topo da imagem, $y$ para a direita e $z$ verticalmente para baixo. Essa convenção segue a orientação dos eixos do corpo apresentada por \citeonline[p.~101--102]{etkin1996}. Assim, o deslocamento para a frente é $-GSD\,(v-c_y)$, enquanto o deslocamento para a direita é $GSD\,(u-c_x)$. O sinal negativo aparece porque avançar para o topo da imagem significa diminuir $v$.
 
+Denotando por $x_c$ e $y_c$ os deslocamentos no solo para a frente e para a direita da câmera, respectivamente, a Figura~\ref{fig_deslocamentos_imagem} compara dois exemplos. O ponto A está acima e à direita do ponto principal: $v-c_y<0$ e $u-c_x>0$, resultando em $x_c>0$ e $y_c>0$. Já o ponto B está abaixo e à esquerda: $v-c_y>0$ e $u-c_x<0$, resultando em $x_c<0$ e $y_c<0$. Assim, o sinal de $v-c_y$ é invertido para expressar o deslocamento no eixo frontal; o sinal de $u-c_x$ é preservado no eixo da direita.
+\begin{figure}[htb]
+  \centering
+  \caption{Sinais dos deslocamentos na imagem e no solo para uma câmera com visada vertical}
+  \label{fig_deslocamentos_imagem}
+  \includegraphics[width=0.95\textwidth]{figuras/fig_deslocamentos_imagem.pdf}
+  \fonte{Elaborado pelo autor. Os mesmos pontos A e B são representados em pixels em (a) e em metros em (b), com $GSD=1{,}4$~cm/pixel. Os deslocamentos são relativos ao ponto principal da imagem e à projeção da câmera no solo. Cada painel usa a mesma escala nos dois eixos; em (a), o eixo vertical cresce para baixo. Frente e direita seguem a orientação da câmera.}
+\end{figure}
+
 \subsubsection{Do referencial da câmera às direções norte e leste}
 
 Frente e direita dependem da orientação da câmera. Para expressar o mesmo deslocamento no mapa, usa-se a guinada da câmera, $\psi$, medida no plano horizontal a partir do norte, no sentido do leste. Por exemplo, $\psi=0$ indica que o topo da imagem aponta para o norte; $\psi=90^\circ$ indica que ele aponta para o leste.
 
-Para construir essa transformação, retomam-se os deslocamentos definidos acima. Denotando por $x_c$ a distância para a frente e por $y_c$ a distância para a direita, ambas em metros, tem-se
+Para construir essa transformação, retomam-se os deslocamentos $x_c$ e $y_c$, em metros, definidos acima:
 \begin{equation*}
   x_c = -GSD\,(v-c_y),
   \qquad
@@ -364,7 +373,14 @@ Essas duas relações podem ser reunidas em uma matriz. Substituindo as express�
 \end{equation}
 A matriz reúne, portanto, as projeções das direções frente e direita nos eixos norte e leste. Essa rotação é o caso de visada vertical da transformação de atitude de \citeonline[Eq.~(4.4,3), p.~99]{etkin1996}, apresentada adiante. Quando $\psi=0$, as relações se reduzem a $\Delta N=x_c$ e $\Delta E=y_c$: o topo da imagem aponta para o norte, e sua direita, para o leste.
 
-Como exemplo, considere $GSD=1{,}4$~cm/pixel e o topo da imagem apontado para o norte. Um ponto 100 pixels à direita e 50 pixels acima do ponto principal fica 1,4~m a leste e 0,7~m ao norte da câmera. Se a câmera mudar de orientação, esses deslocamentos precisam ser girados antes de serem somados à posição da aeronave.
+Como exemplo, retoma-se o ponto A da Figura~\ref{fig_deslocamentos_imagem}, com $x_c=0{,}7$~m e $y_c=1{,}4$~m. A Figura~\ref{fig_guinada_deslocamentos} mostra como esses mesmos deslocamentos relativos à câmera são expressos no mapa para duas guinadas. Com $\psi=0$, o ponto fica 0,7~m ao norte e 1,4~m a leste da câmera. Com $\psi=45^\circ$, a frente aponta para nordeste e a direita, para sudeste: a contribuição da direita para o sul supera a contribuição da frente para o norte. O resultado é $\Delta N\approx-0{,}49$~m e $\Delta E\approx1{,}48$~m, isto é, o ponto fica ao sul e a leste da câmera. Por isso, os deslocamentos devem ser orientados pela guinada antes de serem somados à posição da aeronave.
+\begin{figure}[htb]
+  \centering
+  \caption{Efeito da guinada na conversão dos deslocamentos da câmera para norte e leste}
+  \label{fig_guinada_deslocamentos}
+  \includegraphics[width=0.95\textwidth]{figuras/fig_guinada_deslocamentos.pdf}
+  \fonte{Elaborado pelo autor. Os painéis mantêm $x_c=0{,}7$~m e $y_c=1{,}4$~m, variando apenas a guinada, com eixos em metros e escalas iguais. As setas cinzas representam os deslocamentos para frente e para a direita, somados em sequência; a seta laranja representa sua soma. $\Delta N$ e $\Delta E$ são as componentes dessa soma no mapa, relativas à câmera; valores negativos indicam sul e oeste, respectivamente.}
+\end{figure}
 
 A correspondência entre o topo da imagem e o eixo frontal deve ser conferida para a orientação efetiva dos arquivos. Além disso, a guinada da aeronave só pode substituir a da câmera quando o alinhamento entre elas for conhecido.
 
@@ -390,7 +406,14 @@ Por fim, desprezando a separação entre a câmera e a antena de posicionamento,
   \qquad
   E_{\mathrm{obj}} = E_{\mathrm{aer}} + \Delta E.
 \end{equation*}
-Essa soma distingue as duas distâncias usadas no cálculo: a posição da aeronave é medida a partir da origem do mapa, e o deslocamento do objeto é medido a partir da câmera. A qualidade da estimativa depende da escala da imagem, da orientação, da sincronização com a telemetria e da precisão do posicionamento.
+Essa soma distingue as duas distâncias usadas no cálculo: a posição da aeronave é medida a partir da origem do mapa, e o deslocamento do objeto é medido a partir da câmera. A Figura~\ref{fig_coordenadas_geograficas} mostra a origem $O$ no globo e as direções norte e leste do plano local associado a ela. A longitude $\lambda_0$ é medida a partir do meridiano de referência; a latitude $\phi_0$ indica a posição ao norte ou ao sul do equador. No detalhe em metros, parte-se de $O$, chega-se à posição da aeronave e acrescenta-se o deslocamento até o objeto. Por exemplo, para $N_{\mathrm{aer}}=1$~m e $E_{\mathrm{aer}}=2$~m, os deslocamentos do exemplo anterior, $\Delta N\approx-0{,}49$~m e $\Delta E\approx1{,}48$~m, resultam em $N_{\mathrm{obj}}\approx0{,}51$~m e $E_{\mathrm{obj}}\approx3{,}48$~m. A qualidade da estimativa depende da escala da imagem, da orientação, da sincronização com a telemetria e da precisão do posicionamento.
+\begin{figure}[htb]
+  \centering
+  \caption{Origem geográfica, plano local norte--leste e composição da posição do objeto}
+  \label{fig_coordenadas_geograficas}
+  \includegraphics[width=0.95\textwidth]{figuras/fig_coordenadas_geograficas.pdf}
+  \fonte{Elaborado pelo autor, com coordenadas ilustrativas. Em (a), o globo é esférico e o plano tangente foi ampliado para mostrar as direções locais. No cálculo com WGS-84, a latitude geodésica é o ângulo da normal ao elipsoide com o plano equatorial; essa normal, em geral, difere da direção radial mostrada no globo esférico. Em (b), os eixos estão em metros e a seta tracejada liga diretamente a origem à posição final do objeto.}
+\end{figure}
 
 \subsubsection{Origem da matriz de rotação}
 
@@ -409,6 +432,7 @@ em que $\psi$, $\theta_c$ e $\phi_c$ são os ângulos de guinada, arfagem e rola
 
 Na orientação de referência adotada, o eixo $z$ da câmera já aponta verticalmente para baixo quando $\theta_c=\phi_c=0$. Portanto, esses ângulos medem desvios em relação à visada vertical. O valor próximo de $-90^\circ$ registrado para a arfagem do \textit{gimbal} expressa essa mesma visada em outra convenção de montagem e não deve ser substituído diretamente por $\theta_c$.
 
+Para interpretar a sequência de rotações, parte-se dos eixos $x_0$ para norte, $y_0$ para leste e $z_0$ para baixo. Primeiro, a guinada gira o referencial em torno de $z_0$, produzindo os eixos $x_1,y_1,z_1$. Em seguida, a arfagem atua em torno do eixo $y_1$, já orientado pela guinada, produzindo $x_2,y_2,z_2$. Por fim, o rolamento atua em torno de $x_2$, chegando aos eixos da câmera $x_c,y_c,z_c$. Essa sequência corresponde ao produto $\mathbf{L}_{EB}=R_z(\psi)R_y(\theta_c)R_x(\phi_c)$. Os sentidos positivos seguem a regra da mão direita: na convenção adotada, a arfagem positiva eleva a frente e o rolamento positivo abaixa a direita. As colunas de $\mathbf{L}_{EB}$ são as direções desses três eixos finais expressas no referencial da Terra; por isso, multiplicar a matriz por um vetor da câmera fornece suas componentes nesse referencial.
 Com $\theta_c=\phi_c=0$, a matriz completa se reduz a
 \begin{equation*}
   \mathbf{L}_{EB}(\psi, 0, 0) =
@@ -538,11 +562,15 @@ A Figura~\ref{fig_passadas} ilustra as taxas de passadas, calculadas como $10^6 
 A formulação integra o efeito da computação sobre a missão \cite{boroujerdian2018mavbench,krishnan2020sky} ao planejamento de cobertura com consciência energética \cite{difranco2016coverage}. Reunindo as Equações~\eqref{eq_pv}, \eqref{eq_pel}, \eqref{eq_e_area}, \eqref{eq_gsd} e \eqref{eq_pc}, a energia por área inspecionada é escrita como função da altitude $h$, da velocidade $V$, da estratégia de inferência $\pi$ e do hardware embarcado $H$:
 \begin{equation}
   e(h, V, \pi, H) =
-  \frac{ \dfrac{P\!\left(V;\, m_0 + m_H\right)}{\eta_m} + P_{av} + P_{c0}(H) + r(\pi, h, V)\,E_{\mathrm{inf}}(H) }
-       { V\, w(h) },
+  \frac{
+    \underbrace{\dfrac{P\!\left(V;\, m_0 + m_H\right)}{\eta_m}}_{\text{propulsão}}
+    + \underbrace{P_{av}}_{\text{aviônicos}}
+    + \underbrace{P_{c0}(H)}_{\substack{\text{computação}\\\text{em repouso}}}
+    + \underbrace{r(\pi, h, V)\,E_{\mathrm{inf}}(H)}_{\substack{\text{processamento}\\\text{das imagens}}}
+  }{\underbrace{V\, w(h)}_{\text{área coberta por segundo}}},
   \label{eq_coprojeto}
 \end{equation}
-em que $m_0$ é a massa da aeronave sem o computador e $m_H$ é a massa acrescentada pelo hardware. O numerador soma a potência elétrica de propulsão, dos aviônicos e da computação; o denominador representa a taxa de cobertura.
+em que $m_0$ é a massa da aeronave sem o computador e $m_H$ é a massa acrescentada pelo hardware. O numerador soma as potências elétricas: a propulsão depende da velocidade e da massa total, com a eficiência $\eta_m$ convertendo a potência mecânica em elétrica; os aviônicos e a computação em repouso compõem as cargas de base. O processamento acrescenta o número de inferências por segundo, $r$, multiplicado pela energia de cada inferência, $E_{\mathrm{inf}}$. No denominador, a velocidade $V$ multiplicada pela largura imageada $w(h)$ fornece a área coberta por segundo. Assim, a razão entre potência e taxa de cobertura resulta na energia gasta por unidade de área.
 
 A expressão pressupõe voo sem vento, de modo que a velocidade no modelo de potência e na taxa de cobertura seja a mesma. Cada comparação mantém fixos o detector, a resolução de entrada e a precisão numérica; $H$ inclui o modo de potência e $P_{av}$ exclui o consumo já contado em $P_c$. Modelos de detector diferentes exigem novas medições de energia, capacidade e recall.
 
