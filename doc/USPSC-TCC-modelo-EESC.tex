@@ -133,6 +133,9 @@ brazil				% o último idioma é o principal do documento
 %\renewcommand{\thefootnote}{\Roman{footnote}}     %Comando para inserção de números romanos minúsculos  em nota de rodapé
 
 \renewcommand{\footnotesize}{\small} %Comando para diminuir a fonte das notas de rodapé
+\feetatbottom % Mantém as notas na base da página também com \raggedbottom.
+\feetbelowfloat % Posiciona as notas abaixo de eventuais figuras no fim da página.
+\interfootnotelinepenalty=10000 % Mantém cada nota inteira na mesma página.
 %Para utilizar a fonte Times New Roman, inclua retire % do início do comando abaixo 
 %\renewcommand{\ABNTEXchapterfont}{\rmfamily}
 
@@ -379,6 +382,13 @@ brazil				% o último idioma é o principal do documento
 % ELEMENTOS TEXTUAIS
 % ----------------------------------------------------------
 \textual
+% Evita ampliar os intervalos entre parágrafos e figuras para preencher a página.
+\raggedbottom
+\widowpenalty=10000
+\clubpenalty=10000
+\setlength{\textfloatsep}{16pt}
+\setlength{\intextsep}{12pt}
+\setlength{\floatsep}{12pt}
 % Os capítulos são inseridos como arquivos externos 
 
 % Capítulo 1 - Introdução
