@@ -1,0 +1,78 @@
+{
+  "sources_sha256": {
+    "data\\mbg_v2\\raw\\flight-mbg-v2-01-regionA\\ann\\video01_regionA.xml": "dfb0835fcb71d35051186bbfab4c6dba6943c67ec027b55e6fa4f51d23a3c2f4",
+    "data\\mbg_v2\\raw\\flight-mbg-v2-02-regionA\\ann\\video02_regionA.xml": "41ab844987a1b09cd8ed4cd99cf87cc153e5c752f05942cc6b0e93da5fcb18bc",
+    "data\\mbg_v2\\raw\\flight-mbg-v2-03-regionB\\ann\\video03_regionB.xml": "d4c64dc4d1c9697dfe74e148c705ff8dde493dc0a1fcc8efb122e4afaa7ef53b",
+    "data\\mbg_v2\\raw\\flight-mbg-v2-04-regionB\\ann\\video04_regionB.xml": "64683e3458343689c2773e58d2a21b00381def35ea3a218ee9d44bc95c892fbd",
+    "data\\mbg_v2\\raw\\flight-mbg-v2-05-regionC\\ann\\video05_regionC.xml": "e1efafc98a9bed1ff206cba20df05da23c4e9d4bdb186723e7be16a5830ab0cd",
+    "data\\mbg_v2\\raw\\flight-mbg-v2-06-regionC\\ann\\video06_regionC.xml": "4326815b7807f87c52bbeb1b159d9cadfa805e39158ba772657d438824483bc2",
+    "data\\mbg_v2\\raw\\flight-mbg-v2-07-regionD\\ann\\video07_regionD.xml": "bf5431109b429051f728b69566406a7a33e0408a29d2e38051c20d09224c19c5",
+    "data\\mbg_v2\\raw\\flight-mbg-v2-08-regionD\\ann\\video08_regionD.xml": "2f73d79d71a81a360cfac17de6c678818b4867e8396b36fa3207354a24f41d29",
+    "data\\mbg_v2\\raw\\flight-mbg-v2-09-regionE\\ann\\video09_regionE.xml": "ff186798dccd3105bccc88835da5d482d0202984eae2c553fbfc0a3f116be580",
+    "data\\mbg_v2\\raw\\flight-mbg-v2-10-regionE\\ann\\video10_regionE.xml": "d19054ef36cbfaf6c499fde2ed1ff179963db50cabb855c729480c9f2870ee6a",
+    "data\\mbg_v2\\raw\\flight-mbg-v2-11-regionF\\ann\\video11_regionF.xml": "f366deb52c27414b672600025df5d0a4886df4452ffeda4e075cd3bd9ca72aec",
+    "data\\mbg_v2\\raw\\flight-mbg-v2-12-regionF\\ann\\video12_regionF.xml": "3d452cd57bf65bf3928cad354d620a1c9b92e82d459baadcaa90512027b838f4",
+    "data\\mbg_v2\\raw\\flight-mbg-v2-13-regionG\\ann\\video13_regionG.xml": "638465d5674144c427fb8c5d1de5924519ae58a7235021d344363c65b5d916d5",
+    "data\\mbg_v2\\raw\\flight-mbg-v2-14-regionG\\ann\\video14_regionG.xml": "fb3db4af5fa3a17fd14fb9742bd543d4ce06982a79ad5a07090fd0283bc4d6f9",
+    "data\\mbg_v2\\raw\\flight-mbg-v2-15-regionH\\ann\\video15_regionH.xml": "c87685aa634ad1ca20fd1f65d88fd60887051b7b156461430ddc776ef1761615",
+    "data\\mbg_v2\\raw\\flight-mbg-v2-16-regionH\\ann\\video16_regionH.xml": "adeb8a89c1779f368194585f02c8ac988dfae91f7b06c05288044e0b6a9c3242",
+    "data\\mbg_v2\\raw\\flight-mbg-v2-17-regionI\\ann\\video17_regionI.xml": "dba5c47427e9552dad820874323ffb113b65165cb853df8879a22cbe0a17b9f8",
+    "data\\mbg_v2\\raw\\flight-mbg-v2-18-regionI\\ann\\video18_regionI.xml": "9fd9ebd6183929117007e43ae684433ed59cc002894c4fb7255e91aafa36ba3f",
+    "data\\mbg_v2\\raw\\flight-mbg-v2-19-regionJ\\ann\\video19_regionJ.xml": "6eeae3ee8949e5d34fc94acad1b30f5f4c04d1521367ffd6d5080e1ebaba179c",
+    "data\\mbg_v2\\raw\\flight-mbg-v2-20-regionJ\\ann\\video20_regionJ.xml": "fb3ab8e3bec574086431254377bfec424effff4f3fad9e7009445cdf48648281",
+    "data\\mbg_v2\\raw\\flight-mbg-v2-21-regionK\\ann\\video21_regionK.xml": "cab6e73f94d74d8cd872e64db2b508e68b2e23080877ad6d42a729f5723f8530",
+    "data\\mbg_v2\\raw\\flight-mbg-v2-22-regionK\\ann\\video22_regionK.xml": "6c011fcaa793f605a8fd614e46cd3ddb09c7b7079ff6ccec2db9f06b3fbb36bb",
+    "data\\mbg_v2\\raw\\flight-mbg-v2-23-regionL\\ann\\video23_regionL.xml": "1ef47adfbe9b925ba095452845bcf8aef5807b2c91043766c955fb89438158d5",
+    "data\\mbg_v2\\raw\\flight-mbg-v2-24-regionL\\ann\\video24_regionL.xml": "9aa1d595881d5e2c775b2c3b0327c8fc9f07be76c77ac465db772f2967f3242c",
+    "data\\mbg_v2\\raw\\flight-mbg-v2-25-regionM\\ann\\video25_regionM.xml": "fcd7e9f30e75994cd96ef1218cbf0af9b6223bc3898c07e68cd4e10bb405c6df",
+    "data\\mbg_v2\\raw\\flight-mbg-v2-26-regionM\\ann\\video26_regionM.xml": "f139f7e9197f4cc3062f269086a49080199ac2c520da7127628b689508409a56"
+  },
+  "counting": "One annotated track per frame; all classes; outside=1 excluded; occluded=1 retained; all video frames including zero objects; no telemetry filtering",
+  "flights": 26,
+  "frames": 193901,
+  "tracks": 8441,
+  "raw_boxes": 1657466,
+  "outside": 8238,
+  "included_boxes": 1649228,
+  "at_least_one_pct_median_across_flights": 98.5510887790254,
+  "at_least_one_pct_min_across_flights": 66.44184270806821,
+  "at_least_two_pct_median_across_flights": 96.24861990632223,
+  "at_least_two_pct_min_across_flights": 55.536304929910216,
+  "pooled_at_least_one_pct": 93.59363799052093,
+  "pooled_at_least_two_pct": 90.52042021443933,
+  "pooled_mean_objects": 8.505515701311493,
+  "pooled_median_objects": 8.0,
+  "pooled_max_objects": 65,
+  "distribution": [
+    {
+      "label": "0",
+      "frames": 12422,
+      "percent": 6.406362009479064
+    },
+    {
+      "label": "1",
+      "frames": 5959,
+      "percent": 3.073217776081609
+    },
+    {
+      "label": "2–5",
+      "frames": 45242,
+      "percent": 23.332525360880037
+    },
+    {
+      "label": "6–10",
+      "frames": 71149,
+      "percent": 36.69346728485155
+    },
+    {
+      "label": "11–20",
+      "frames": 53098,
+      "percent": 27.384077441581013
+    },
+    {
+      "label": "21 ou mais",
+      "frames": 6031,
+      "percent": 3.1103501271267295
+    }
+  ]
+}

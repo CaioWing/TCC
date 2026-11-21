@@ -1,0 +1,446 @@
+% ----------------------------------------------------------
+% Capítulo 4 - Resultados e discussão
+% ----------------------------------------------------------
+\chapter{Resultados e discussão}
+\label{cap_resultados}
+
+Quanto custa levar o detector a bordo e quantos recipientes ele encontra com esse orçamento? Para responder à primeira pergunta, confronta-se a curva de potência com a bateria dos voos e estima-se quanto o transporte da Jetson acrescenta à propulsão. As medições da placa em repouso e durante a inferência completam o balanço. Para responder à segunda, mantêm-se o detector e a trajetória e varia-se a seleção das imagens. A comparação distingue a área de terreno coberta dos recipientes efetivamente reconhecidos nessa área.
+
+\section{Até que ponto a curva de potência reproduz a telemetria?}
+\label{sec_curva_potencia_voos}
+
+A curva da Figura~\ref{fig_curva_potencia} prevê que o voo a cerca de 8~m/s exige menos potência que o voo a 4~m/s. Ao avançar, mais ar atravessa o disco e diminui a potência induzida necessária para sustentar o peso. Em velocidades suficientemente altas, o aumento do arrasto reverte essa tendência. A MBG-V2 permite verificar a queda entre os dois regimes de cruzeiro. A localização do mínimo e o ramo crescente dependem da extrapolação do modelo.
+
+\subsection{Comparação em trechos de cruzeiro}
+
+A simulação usa o quadrirrotor de 1,4~kg da Figura~\ref{fig_curva_potencia} e os parâmetros aerodinâmicos da sua legenda. Para cada velocidade, calcula-se o arrasto $D$ e a tração $T=\sqrt{(mg)^2+D^2}$ em voo nivelado. Com $\alpha_d=\arctan[D/(mg)]$, resolve-se a Equação~\eqref{eq_glauert} para a velocidade induzida positiva. A soma das parcelas induzida, de perfil e parasita da Equação~\eqref{eq_pv} fornece a potência mecânica $P(V;m)$. Na ausência de medida de vento, usou-se a velocidade horizontal relativa ao solo como aproximação da velocidade relativa ao ar.
+
+A comparação com a bateria requer trechos próximos do cruzeiro estacionário. Os registros válidos foram divididos em janelas consecutivas de 5~s, com lacunas de até 1~s, altitude relativa de $40\pm2$~m e velocidade vertical de até 0,3~m/s em módulo. Dentro de cada janela, admitiu-se um desvio máximo de 0,5~m/s do vetor velocidade horizontal em relação à sua média. Selecionaram-se as janelas em que a velocidade horizontal média diferia em até 0,6~m/s da velocidade de cruzeiro da campanha (4,1 ou 7,9~m/s). A potência elétrica de cada janela é a média temporal do produto da tensão pela corrente. Para dar o mesmo peso a voos de durações diferentes, cada ponto da Figura~\ref{fig_potencia_telemetria} reúne as medianas de velocidade e de potência entre as janelas de um único voo.
+
+A bateria alimenta os motores e os aviônicos. Para comparar a previsão mecânica com a potência elétrica registrada, adotou-se $P_{av}=0$ na Equação~\eqref{eq_pel} e estimou-se um fator de conversão efetivo, de modo que $\widehat P_{el}=P(V;m_0)/\eta$. Calculou-se a razão $P(V_i;m_0)/P_{el,i}$ em cada um dos 14 voos das regiões de treinamento (Seção~\ref{sec_detector}). A mediana dessas razões, $\eta=0{,}836$, incorpora o consumo dos aviônicos e as simplificações do modelo aerodinâmico. Esse mesmo valor foi usado para prever a potência nos outros 12 voos.
+
+\begin{figure}[!htbp]
+  \centering
+  \caption{Potência elétrica prevista pelo modelo ajustado e registrada pela bateria em cruzeiro}
+  \label{fig_potencia_telemetria}
+  \includegraphics[width=\textwidth]{figuras/fig_potencia_telemetria.pdf}
+  \fonte{Elaborado pelo autor com as Equações~\eqref{eq_glauert}--\eqref{eq_pv} e \eqref{eq_pel} e a telemetria da MBG-V2 \cite{smt2024mbgv2}. Em (a), a linha dá a previsão do modelo e cada ponto resume um dos 26 voos, a partir de 1.103 janelas de cruzeiro. Há observações em torno de 4,1 e 7,9~m/s. Em (b), cada ponto representa um dos 12 voos que ficaram fora do ajuste. Acima de zero, o modelo prevê mais potência que a registrada pela bateria.}
+\end{figure}
+
+Nos dez voos de outras regiões da mesma campanha, a cerca de 4,1~m/s, a previsão diferiu da potência medida em 4,2~W, em média, tomando o valor absoluto do erro em cada voo. Em relação à potência medida em cada um deles, o erro absoluto médio foi de 2,3\%. A dispersão dos pontos junto a 4,1~m/s mostra que voos quase à mesma velocidade ainda exigem potências diferentes.
+
+Nos dois voos da região A, a cerca de 7,9~m/s, a curva previu 163,9~W para ambos. A bateria registrou 166,9 e 170,6~W. Os pontos dos voos 1 e 2 aparecem, por isso, 3,0 e 6,6~W abaixo de zero no painel (b). A potência caiu no cruzeiro mais rápido, como previa o modelo, mas a queda observada foi menor que a prevista. A comparação entre campanhas sustenta essa leitura nos dois regimes registrados. Já os valores de 182 e 171~W da Seção~\ref{sec_base_energia} resumem os percursos completos, incluindo curvas e transientes.
+
+\subsection{O que a inclinação revela sobre o modelo}
+
+A inclinação da aeronave oferece uma verificação do arrasto independente da potência da bateria. Projetaram-se arfagem e rolamento na direção do movimento. Nas amostras de cruzeiro, identificaram-se as pernas de ida e de volta pelas velocidades horizontais a até 15$^\circ$ do eixo principal do movimento. Para cada voo, calculou-se a média das medianas nos dois sentidos. O voo~12 tinha registros em apenas um sentido e ficou fora. A 4,1~m/s, o arrasto parasita adotado ($f_e=0{,}02$~m$^2$) prevê $\tan\theta=0{,}015$, frente a 0,100 na mediana dos voos com ida e volta. Na campanha mais rápida, o valor observado foi 0,185. A razão entre campanhas, 1,85, se aproxima mais da razão entre as velocidades (1,93) que da razão entre seus quadrados (3,73), como mostra a Figura~\ref{fig_verificacao_telemetria}c.
+
+A inclinação é compatível com uma contribuição das forças dos rotores no plano do disco, discutidas na Seção~\ref{sec_voo_frente}. Vento e identidade incerta da aeronave entre campanhas também limitam a interpretação. Por isso, toma-se a curva como referência local para calcular o acréscimo de potência ao mudar a massa. A sensibilidade dessa estimativa à resposta dos rotores é examinada na Seção~\ref{sec_balanco_por_voo}.
+
+\section{Da trajetória à demanda de processamento}
+\label{sec_res_telemetria}
+
+A energia por área depende tanto da potência quanto da rapidez com que a câmera imageia terreno novo. Na Figura~\ref{fig_verificacao_telemetria}, $P_{el}$ e $V$ são as medianas de potência e velocidade dentro de cada voo. A largura $w$ da pegada determina a faixa de terreno coberta a cada passagem. O comprimento $L$ e a velocidade determinam quanto tempo um objeto permanece à vista e, portanto, quantas oportunidades há de observá-lo.
+
+\begin{figure}[!htbp]
+  \centering
+  \caption{Comparação das previsões com os voos da MBG-V2 e efeito da amostragem sobre a cobertura}
+  \label{fig_verificacao_telemetria}
+  \includegraphics[width=\textwidth]{figuras/fig_verificacao_telemetria.pdf}
+  \fonte{Elaborado pelo autor a partir da MBG-V2 \cite{smt2024mbgv2}. Em (a) e (b), cada ponto é um voo e o desvio é $100\,(\mathrm{observado}/\mathrm{previsto}-1)$. Zero indica concordância com a previsão de energia por área (Equações~\eqref{eq_e_area} e \eqref{eq_e_voo}) ou de tempo de visibilidade (Equação~\eqref{eq_visibilidade}). Acima de zero, a bateria registrou mais energia por área ou as trilhas duraram mais que o previsto. A faixa cinza marca $\pm10\%$. Em (c), comparam-se a razão observada de $\tan\theta$ entre campanhas e as razões esperadas para crescimento com $V$ ou $V^2$. Em (d), a linha azul indica a mediana e a faixa, os extremos dos 24 voos de B a M. O tracejado indica a fração de área sem análise com a memória adiada.}
+\end{figure}
+
+\subsection{Energia por área}
+
+Em cruzeiro retilíneo, a Equação~\eqref{eq_e_area} prevê um gasto específico $e=P_{el}/(Vw)$. Nos registros completos das regiões B a M, a razão entre a energia por área obtida da bateria e a prevista vai de 0,97 a 1,20, com mediana de 1,05 (Figura~\ref{fig_verificacao_telemetria}a). Para entender o desvio, dividiu-se o balanço do voo, dado pela Equação~\eqref{eq_e_voo}, pela estimativa de cruzeiro. A razão pode ser escrita como
+\begin{equation*}
+  \frac{e_{\mathrm{voo}}}{e} =
+  \underbrace{\frac{\bar{P}_{el}}{P_{el}}}_{\text{potência}}\;
+  \underbrace{\frac{V}{\bar{V}}}_{\text{velocidade}}\;
+  \underbrace{\frac{s\,w}{A_{\mathrm{img}}}}_{\text{revisitas}},
+\end{equation*}
+em que $\bar{P}_{el}=E/t_{\mathrm{voo}}$ e $\bar{V}=s/t_{\mathrm{voo}}$ são as médias de potência e de velocidade no trecho de duração $t_{\mathrm{voo}}$ e distância $s$. Os dois primeiros fatores expressam quanto os valores usados na previsão diferem dessas médias. O terceiro compara a faixa que seria varrida em linha reta, $sw$, à área efetivamente imageada, $A_{\mathrm{img}}$, que conta o terreno revisitado uma única vez.
+
+Nas regiões B a M, excluído o voo 14, os fatores de potência e de velocidade ficam entre 0,94 e 1,03. Nesses 23 voos, a correlação entre o fator de revisitas e a razão entre a medida e a previsão é de 0,98. Sobreposições entre passadas vizinhas e nas curvas reduzem a área nova coberta por unidade de distância. Em trechos retos com sobreposição lateral planejada, o espaçamento entre passadas representa melhor essa largura útil. O voo 14 requer tratamento próprio porque o registro bruto se estende 44,6~s além do vídeo, enquanto a última amostra válida de bateria antecede o fim do vídeo em 0,8~s. Combinar a distância do registro bruto com a duração de outro intervalo distorceria a decomposição. O balanço da Seção~\ref{sec_balanco_por_voo} inclui este voo e usa somente o intervalo comum para integrar a energia.
+
+Na região A, a energia por área supera a previsão em 32\% e 12\%. Nos dois voos a 7,9~m/s, acelerações e curvas ocupam uma fração maior do trecho. A velocidade usada na estimativa supera a média do trajeto por fatores de 1,27 e 1,07, respectivamente. O fator de revisitas é de apenas 1,03.
+
+\subsection{Tempo de visibilidade}
+
+Um alvo que atravessa todo o comprimento da pegada permanece visível durante $t_v=L/V$, pela Equação~\eqref{eq_visibilidade}. Nas regiões B a M, a previsão vai de 6,4 a 9,4~s, e a duração mediana das trilhas anotadas, calculada em cada voo, vai de 5,8 a 9,1~s. Na região A, os intervalos são de 3,3 a 3,4~s e de 3,3 a 3,5~s, respectivamente (Figura~\ref{fig_verificacao_telemetria}b). Voo a voo, os desvios relativos ficam entre $-10\%$ e $+5\%$, com mediana de $-3\%$ e correlação de 0,97 entre previsão e medida. Trilhas interrompidas por curvas ou pelas extremidades do vídeo ajudam a explicar a tendência a durações mais curtas.
+
+O alvo permanece à vista por segundos, mas sua nitidez em cada quadro depende de uma exposição de poucos milissegundos. Com o $GSD$ de 1,40~cm/pixel do voo~17 e velocidade de 4,1~m/s, limitar o borrão translacional a um pixel exigiria uma exposição de até 3,4~ms, pela Equação~\eqref{eq_borrao}. Nas condições da região A, com cerca de 1,22~cm/pixel e 7,9~m/s, o mesmo limite exigiria até 1,5~ms. Um pixel é o limite adotado para este cálculo ilustrativo.
+
+\subsection{Quantos recortes a memória geográfica seleciona?}
+
+O tempo de visibilidade permite adiar a análise de uma célula até sua última oportunidade de observação. Se cada recorte cobrisse apenas terreno novo, a demanda seria $r\approx n_v^{\ast} Vw/A_t$ recortes por segundo. Para uma observação por célula ($n_v^{\ast}=1$), a estimativa varia de 2,1 a 3,2 recortes/s nas regiões B a M e de 6,4 a 6,6 na região A. A simulação da Seção~\ref{sec_sim_estrategias} introduz a grade fixa de recortes e a pose registrada da câmera. A Figura~\ref{fig_memoria_voo17} ilustra como a decisão ocorre no voo 17.
+
+\begin{figure}[!htbp]
+  \centering
+  \caption{Seleção do recorte na última vista de uma célula e número de recortes por estratégia no voo 17}
+  \label{fig_memoria_voo17}
+  \includegraphics[width=\textwidth]{figuras/fig_memoria_voo17.pdf}
+  \fonte{Elaborado pelo autor com o vídeo e a telemetria da MBG-V2 \cite{smt2024mbgv2}. (a) A área azul mostra o terreno visível aos 85,85~s de voo. O contorno tracejado mostra o campo de visão um segundo depois. A faixa verde indica o terreno que entrou na imagem nesse intervalo. (b) O ponto laranja marca o centro da mesma célula de 0,5~m nos dois painéis. O retângulo delimita o recorte de $640\times640$~pixels selecionado antes que a célula saia da imagem no quadro seguinte. Adotou-se $GSD=1{,}40$~cm/pixel. (c) Contagens da simulação nos 337,1~s de vídeo. Os percentuais indicam a fração das células imageadas que apareceu em pelo menos um recorte selecionado. A amostragem em intervalos fixos começa no primeiro quadro.}
+
+\end{figure}
+
+No trecho da Figura~\ref{fig_memoria_voo17}a, a aeronave avança 4,10~m em um segundo. Apenas 13,6\% da imagem ao fim desse intervalo corresponde a terreno que acabou de entrar no campo de visão. A memória imediata seleciona um recorte assim que encontra nele uma célula ainda sem análise. A memória adiada espera até que uma dessas células esteja prestes a sair da imagem. No quadro seguinte ao do painel (b), o centro da célula marcada em laranja já fica fora do campo de visão. O recorte selecionado nessa última oportunidade permite analisar também as demais células que ele contém.
+
+Ao longo do voo, essa mudança no instante da seleção reduz a contagem de 52.191 para 1.995 recortes, preservando todas as células imageadas na simulação (Figura~\ref{fig_memoria_voo17}c). A amostragem de um quadro a cada 30 cobre 99,80\% da área com 8.088 recortes. Com um quadro a cada 122, a contagem cai para 1.992, apenas três a menos que na memória adiada, enquanto a cobertura cai para 99,15\%. A comparação com as anotações dos objetos, na Seção~\ref{sec_oportunidades}, examina o efeito dessa escolha sobre as vistas disponíveis para o detector.
+
+Nas regiões B a M, a demanda simulada da regra adiada varia de 5,4 a 8,9 recortes/s, ou 2,0 a 3,6 vezes a previsão ideal no mesmo voo. Na região A, são 9,2 a 10,7 recortes/s, de 1,4 a 1,6 vezes a previsão. A geometria explica o excesso. As quatro fileiras de 640~pixels se sobrepõem para cobrir os 2160~pixels de altura da imagem. Um recorte selecionado para analisar uma célula nova inclui também terreno já processado, e as curvas expõem novas células nas bordas laterais. A estimativa ideal funciona, assim, como limite inferior.
+
+A escolha do instante de análise tem efeito ainda maior. Nos 24 voos de B a M, as medianas de demanda são 2,7 recortes/s na estimativa ideal, 6,7 na simulação com análise adiada e 160 com análise imediata (147 a 179 entre voos). Embora cada quadro acrescente uma faixa de apenas 0,14~m, ela toca os seis recortes da fileira de entrada. Se o processamento ocorre na chegada, a contagem de análises por célula chega a 62, tomando-se a mediana primeiro entre as células de cada voo e depois entre os voos. Adiar a decisão permite cobrir as mesmas células com cerca de 24 vezes menos recortes. Frente aos 719 recortes/s do vídeo completo, o fator de redução vai de 81 a 133, com mediana de 107.
+
+As duas regras de memória alcançam todas as células imageadas na simulação. Já a amostragem de um quadro por segundo exige 24 recortes/s e deixa de analisar 0,13 a 0,61\% da área nas regiões B a M. Ao aumentar o intervalo para um quadro a cada 81 a 133, aproxima-se a demanda da memória adiada, mas a fração sem análise sobe para 0,47 a 1,99\% (mediana de 0,86\%). Nos dois voos da região A, a perda chega a 2,6 e 5,2\%. A seleção geográfica acrescenta pouca área nas pernas retas. Ela preserva sobretudo as células vistas por pouco tempo nas curvas e nas extremidades. Resta saber quantos objetos anotados aparecem nos quadros selecionados.
+
+\subsection{Oportunidades de observar os objetos anotados}
+\label{sec_oportunidades}
+
+Nos quatro voos de validação, contou-se quantas trilhas das seis classes principais conservavam ao menos uma caixa anotada após a seleção temporal dos quadros. Para cada voo, compararam-se duas cadências. Na primeira, reteve-se um quadro a cada 30, aproximadamente um por segundo. Na segunda, escolheu-se o passo inteiro $k$ mais próximo de $24N_q/N_a$, em que $N_q$ é o número de quadros do vídeo e $N_a$ é o número de recortes da memória adiada naquele voo. Como cada quadro selecionado requer 24 recortes, isso aproxima o custo das duas estratégias. A diferença entre os números de recortes, em média sobre os possíveis quadros iniciais, foi inferior a 0,6\% nos quatro voos.
+
+\begin{table}[!htbp]
+  \centering
+  \caption{Trilhas com ao menos uma caixa em um quadro selecionado na validação}
+  \label{tab_oportunidades}
+  \small
+  \begin{tabular}{lrrrr}
+    \hline
+    & & A cada 30 quadros & \multicolumn{2}{c}{Custo próximo ao da memória adiada} \\
+    \cline{4-5}
+    Voo (região) & Trilhas & Com vista (\%) & Passo $k$ & Com vista (\%) \\
+    \hline
+    11 (F) & 217 & 93,9 & 111 & 91,2 \\
+    12 (F) & 154 & 97,6 &  83 & 96,9 \\
+    17 (I) & 338 & 97,4 & 122 & 95,6 \\
+    18 (I) & 313 & 99,1 & 129 & 97,0 \\
+    \hline
+  \end{tabular}
+  \fonte{Elaborado pelo autor a partir das anotações da MBG-V2 \cite{smt2024mbgv2} e da demanda simulada. Cada percentual é a média dos $k$ resultados obtidos ao iniciar a amostragem nos quadros de 0 a $k-1$. Contaram-se as caixas marcadas como presentes, inclusive as oclusas.}
+\end{table}
+
+No voo 11, a seleção de um quadro a cada 111 preservou ao menos uma caixa em 193 a 207 das 217 trilhas, conforme o quadro inicial (Tabela~\ref{tab_oportunidades}). Assim, 10 a 24 trilhas ficaram sem uma vista anotada antes mesmo da execução do detector. No voo 18, apesar do intervalo maior entre quadros, a fração de trilhas com vista alcançou 97,0\% em média. Conhecer a duração típica das trilhas ajuda a escolher a cadência, mas as trilhas breves também precisam entrar nessa decisão. A contagem da tabela identifica a presença da anotação no quadro inteiro. A Seção~\ref{sec_qualidade_teste} acompanha a etapa seguinte, do reconhecimento no recorte à associação das vistas do mesmo recipiente.
+
+\section{Desempenho do detector nos recortes de validação}
+\label{sec_res_detector}
+
+Qual a chance de reconhecer um recipiente quando a seleção de quadros preserva uma vista dele? O desempenho do YOLO11n nos recortes de validação permite examinar essa questão por classe. A distinção entre caixas d'água e recipientes pequenos importa especialmente quando a estratégia de seleção procura garantir apenas uma observação de cada porção do terreno.
+
+O treinamento terminou na época 27 por parada antecipada. A época 17 forneceu os pesos selecionados (Seção~\ref{sec_detector}). A perda de localização das caixas caiu de 1,03 para 0,80 no treino. Na validação, estabilizou-se em torno de 0,91 a partir da época 16 (Figura~\ref{fig_treino_curvas}). A mAP$_{50}$ das doze classes já oscilava em torno de 0,30 desde a época 11. Das 30 épocas planejadas, as dez últimas estavam configuradas para treinamento sem mosaico de imagens. Sete delas foram realizadas, da 21 à 27. Nesse trecho, a perda continuou a cair no treino, enquanto o desempenho na validação permaneceu próximo do patamar anterior.
+
+\begin{figure}[!htbp]
+  \centering
+  \caption{Evolução do treinamento do YOLO11n na base MBG-V2}
+  \label{fig_treino_curvas}
+  \includegraphics[width=\textwidth]{figuras/fig_treino_curvas.pdf}
+  \fonte{Elaborado pelo autor com os registros das 27 épocas. Em (a), valores menores indicam melhor localização das caixas. Em (b), valores maiores indicam melhor detecção nas regiões de validação F e I. As métricas abrangem as doze classes. O círculo marca o maior mAP$_{50\text{--}95}$, na época 17. A faixa cinza corresponde às épocas 21 a 27, realizadas sem mosaico de imagens.}
+\end{figure}
+
+O YOLO11n reconheceu melhor caixas d'água e bueiros. Suas AP$_{50}$ foram de 0,93 e 0,89, com F1 máximo de 0,89 e 0,86, respectivamente (Tabela~\ref{tab_detector}). Para piscinas, a alta taxa de detecção (0,87) veio acompanhada de precisão menor (0,56). Os objetos pequenos ou de aparência variável foram mais difíceis de identificar. A AP$_{50}$ ficou em 0,38 para pneus, 0,25 para baldes e 0,20 para vasos de planta. Nas seis classes principais, a AP$_{50}$ média foi de 0,57 e a média dos F1 máximos, de 0,61. As seis classes raras, com 6 a 90 trilhas em toda a base e AP$_{50}$ de até 0,18, ficaram fora dessas médias.
+
+\begin{table}[!htbp]
+  \centering
+  \caption{Desempenho do YOLO11n por classe na validação (regiões F e I)}
+  \label{tab_detector}
+  \begin{tabular}{lcccccc}
+    \hline
+    Classe & Caixas & $P$ & $R$ & AP$_{50}$ & AP$_{50\text{-}95}$ & F1 máximo \\
+    \hline
+    Caixa d'água & 4.272 & 0,81 & 0,91 & 0,93 & 0,80 & 0,89 \\
+    Vaso de planta & 1.239 & 0,37 & 0,30 & 0,20 & 0,10 & 0,35 \\
+    Bueiro & 975 & 0,81 & 0,87 & 0,89 & 0,56 & 0,86 \\
+    Piscina & 664 & 0,56 & 0,87 & 0,77 & 0,60 & 0,77 \\
+    Pneu & 888 & 0,47 & 0,44 & 0,38 & 0,23 & 0,47 \\
+    Balde & 624 & 0,43 & 0,24 & 0,25 & 0,16 & 0,36 \\
+    \hline
+    Média das seis classes & -- & 0,57 & 0,60 & 0,57 & 0,41 & 0,61 \\
+    \hline
+  \end{tabular}
+  \fonte{Elaborado pelo autor. As caixas estão distribuídas em 7.944 recortes de validação. $P$ e $R$ são a precisão e a taxa de detecção no limiar que maximiza o F1 médio entre classes. As colunas seguintes apresentam a AP com IoU de 0,5 e a média das AP nos limiares de 0,50 a 0,95. A validação conserva 10\% dos recortes vazios, o que reduz as oportunidades de falso positivo em relação à varredura do quadro completo.}
+\end{table}
+
+\subsection{Comparação com trabalhos na mesma base}
+
+Dois trabalhos com a MBG-V2 dividem a base em cinco grupos por região, mantendo juntos os dois voos de cada uma, sem conjunto de teste separado. O Faster R-CNN de \citeonline{demelo2024robust} atingiu F1 médio de 0,83 para caixas d'água e de 0,16 para pneus, segundo \citeonline{souza2025aedes}. Este último estudo treinou um YOLOv8s de 11,2 milhões de parâmetros para pneus, com recortes de $640\times640$ pixels e sobreposição de 42~pixels. Um dos grupos coincide com a validação deste trabalho nos voos 11, 12, 17 e 18 (regiões F e I). Nesse grupo, o melhor F1 por faixa de confiança foi de cerca de 0,59, frente a 0,47 no presente trabalho \cite[Tabelas 3.1 e A.7]{souza2025aedes}.
+
+A comparação sugere uma dificuldade comum na detecção de pneus. Isolar o efeito da arquitetura exigiria igualar os protocolos. O YOLOv8s usou os outros 22 voos para treinar uma única classe. O YOLO11n estudado aqui usou 14 voos para doze classes, com 10\% dos recortes vazios na validação. Os resultados publicados para a primeira versão da MBG \cite{passos2022mbg} envolvem ainda outros voos, alturas de 10 a 40~m e outra divisão da base.
+
+Uma estratégia pode cobrir todo o terreno e ainda perder recipientes das classes mais difíceis. A Seção~\ref{sec_qualidade_teste} mede esse efeito nas regiões E, H e L com a regra de associação fixada na validação. Aqui, a primeira questão para o embarque é se a placa acompanha o fluxo de recortes solicitado por cada estratégia.
+
+\section{Desempenho e consumo do computador de bordo}
+\label{sec_res_jetson}
+
+O ensaio da Seção~\ref{sec_metodo_jetson} caracteriza o YOLO11n com pesos COCO na Jetson em modo de 25~W. A Tabela~\ref{tab_jetson_configuracoes} reúne as nove configurações, desde a imagem já decodificada até a saída das detecções (\texttt{e2e}). Na projeção para os voos, atribui-se esse custo a cada recorte de $640\times640$~pixels processado individualmente pelo detector da MBG-V2. A potência em repouso foi de 4,768~W no início e 4,757~W no fim do ensaio. Adotou-se a média dessas leituras, $P_{c0}=4{,}763$~W.
+
+\subsection{Comparação das configurações de execução}
+
+\begin{table}[!htbp]
+  \centering
+  \caption{Vazão, energia e qualidade do YOLO11n com pesos COCO nas nove configurações da Jetson}
+  \label{tab_jetson_configuracoes}
+  \small
+  \setlength{\tabcolsep}{3pt}
+  \begin{tabular}{lrrrrrrr}
+    \hline
+    Configuração & Vazão & Latência & p99 & Potência & $E_{\mathrm{total}}$ & $E_{\mathrm{inf}}$ & mAP$_{50\text{--}95}$ \\
+     & (inf/s) & (ms) & (ms) & (W) & (mJ/inf) & (mJ/inf) & (\%) \\
+    \hline
+    TensorRT FP32 & 36,56 & 27,35 & 28,44 & 7,71 & 210,78 & 80,51 & 41,19 \\
+    TensorRT FP16 & 44,87 & 22,28 & 23,30 & 6,81 & 151,86 & 45,72 & 41,24 \\
+    TensorRT INT8 & 50,32 & 19,87 & 20,77 & 6,38 & 126,81 & 32,17 & 35,93 \\
+    ORT--TensorRT FP32 & 29,71 & 33,66 & 34,09 & 7,24 & 243,86 & 83,54 & 41,19 \\
+    ORT--TensorRT FP16 & 42,46 & 23,54 & 24,66 & 6,71 & 158,10 & 45,95 & 41,22 \\
+    ORT--CUDA FP32 & 43,22 & 23,13 & 25,47 & 12,35 & 285,66 & 175,47 & 41,26 \\
+    ORT--CPU FP32 & 7,29 & 137,14 & 218,17 & 8,07 & 1.107,39 & 454,25 & 41,20 \\
+    TorchScript FP32 & 36,85 & 27,13 & 28,26 & 9,24 & 250,80 & 121,57 & 41,19 \\
+    TorchScript FP16 & 34,78 & 28,75 & 29,18 & 7,69 & 221,17 & 84,25 & 41,25 \\
+    \hline
+  \end{tabular}
+  \fonte{Elaborado pelo autor. ORT designa ONNX Runtime. A vazão, a latência média e seu percentil 99 (p99) vêm do ensaio \texttt{e2e}, da imagem decodificada até as detecções. A potência média foi medida em \texttt{VDD\_IN}. $E_{\mathrm{total}}$ inclui o repouso da placa, e $E_{\mathrm{inf}}$ é a energia acima do repouso. A mAP foi avaliada separadamente nas mesmas 500 imagens do COCO val2017 para as nove configurações. INT8 permite operações em FP16.}
+\end{table}
+
+Em TensorRT, a passagem de FP32 para FP16 reduziu a energia total por recorte de 211 para 152~mJ e elevou a vazão de 36,6 para 44,9 inferências/s. Isso importa mais para a missão do que a potência instantânea isolada. Por exemplo, a CPU consumiu cerca de 8~W, mas demorou o suficiente para gastar 1,11~J por recorte. A escolha entre FP16 e INT8 exige ainda verificar o efeito sobre a qualidade da detecção.
+
+O voo~17 permite comparar também os ambientes de execução à mesma precisão. Os 1.995 recortes da memória adiada em 337,1~s (Figura~\ref{fig_memoria_voo17}c) correspondem a 5,92 recortes/s. Para essa taxa, a Equação~\eqref{eq_pc} projeta 5,24~W na placa em TensorRT FP32. Com ONNX Runtime em FP32, a estimativa sobe para 5,80~W com o provedor CUDA e para 7,45~W com a CPU. A diferença decorre da energia por recorte medida em cada configuração da Tabela~\ref{tab_jetson_configuracoes}.
+
+\subsection{Precisão numérica e escopo da medição}
+
+Nas 500 imagens do COCO, as oito configurações em FP32 ou FP16 alcançaram mAP$_{50\text{--}95}$ entre 41,19\% e 41,26\% (Tabela~\ref{tab_jetson_configuracoes}). Nesses formatos, a escolha do ambiente afetou sobretudo a vazão e a energia por inferência. Na passagem de TensorRT FP16 para INT8, a energia total por recorte caiu 16,5\% e a mAP perdeu 5,31 pontos percentuais, chegando a 35,93\% (Figura~\ref{fig_jetson_precisao}). Para o detector treinado na MBG-V2, a Seção~\ref{sec_res_detector} apresenta a qualidade por classe na validação, e a Seção~\ref{sec_qualidade_teste} examina os recipientes encontrados nos voos de teste.
+
+\begin{figure}[!htbp]
+  \centering
+  \caption{Qualidade da detecção no COCO e energia por inferência na Jetson com TensorRT}
+  \label{fig_jetson_precisao}
+  \includegraphics[width=\textwidth]{figuras/fig_jetson_precisao.pdf}
+  \fonte{Elaborado pelo autor. À esquerda, mAP no conjunto de referência do benchmark, com 500 imagens; à direita, energia total da placa no ensaio \texttt{e2e} com 95 imagens já decodificadas. Os painéis usam conjuntos distintos. INT8 foi calibrado com 512 imagens disjuntas da avaliação e permite operações em FP16.}
+\end{figure}
+
+Para converter a demanda de recortes em uma taxa executável, importa definir o início e o fim de cada chamada. TensorRT FP16 alcançou 222 inferências/s ao medir apenas a GPU e 44,9 inferências/s desde a imagem decodificada até as detecções. Adotou-se a segunda vazão. Ela inclui pré e pós-processamento, enquanto decodificar o vídeo, selecionar recortes e associar as detecções acrescentaria trabalho ao sistema embarcado.
+
+\subsection{Capacidade de processamento e memória geográfica}
+\label{sec_res_jetson_memoria}
+
+Nas duas campanhas, a demanda média da memória adiada fica abaixo da vazão de bancada da Jetson. Nas regiões B a M, a Equação~\eqref{eq_demanda_bancada} dá $\rho_b=6{,}74/44{,}87\simeq0{,}150$. Assim, a estratégia solicita 15,0\% dos recortes que a placa processa por segundo em TensorRT FP16. Na região A, de maior velocidade de voo, a demanda chega a 23,9\% dessa capacidade. A Tabela~\ref{tab_jetson_demanda} usa a mesma referência para todas as estratégias.
+
+\begin{table}[!htbp]
+  \centering
+  \caption{Demanda de recortes e potência projetada na Jetson em TensorRT FP16}
+  \label{tab_jetson_demanda}
+  \small
+  \setlength{\tabcolsep}{4pt}
+  \begin{tabular}{lrrr}
+    \hline
+    Estratégia e regiões & Demanda (recortes/s) & $\rho_b$ & $P_c$ projetada (W) \\
+    \hline
+    Memória adiada, B a M & 5,40--8,86 & 0,120--0,197 & 5,01--5,17 \\
+    \quad mediana & 6,74 & 0,150 & 5,07 \\
+    Memória adiada, A & 9,17--10,71 & 0,204--0,239 & 5,18--5,25 \\
+    Amostragem a 1 quadro/s, B a M & 24,00 & 0,535 & 5,86 \\
+    Memória imediata, B a M, mediana & 159,93 & 3,564 & 12,07$^{*}$ \\
+    Todos os quadros, B a M & 719,28 & 16,029 & 37,65$^{*}$ \\
+    \hline
+  \end{tabular}
+  \fonte{Elaborado pelo autor. Para a vazão de referência de 44,87 recortes/s, a Equação~\eqref{eq_pc} estima a potência com $P_{c0}=4{,}763$~W e $E_{\mathrm{inf}}=45{,}72$~mJ, supondo toda a demanda atendida. O asterisco indica extrapolação além dos 44,87 recortes/s medidos ($\rho_b>1$). Os cálculos usam os valores antes do arredondamento. Os intervalos indicam os extremos entre voos. A amostragem usa a cadência nominal de 1 quadro/s. A demanda do vídeo completo é a estimativa da Seção~\ref{sec_res_telemetria}.}
+\end{table}
+
+\begin{figure}[!htbp]
+  \centering
+  \caption{Demanda geométrica das estratégias em relação à capacidade de referência TensorRT FP16}
+  \label{fig_jetson_demanda}
+  \includegraphics[width=\textwidth]{figuras/fig_jetson_demanda.pdf}
+  \fonte{Elaborado pelo autor. O eixo horizontal é logarítmico. A linha tracejada indica os 44,87 recortes/s processados na bancada. Para cada estratégia de memória, o ponto indica a mediana entre voos e o segmento se estende do menor ao maior valor. O custo por recorte inclui o processamento da imagem já decodificada até a saída das detecções. A seleção e a associação geográfica acrescentariam trabalho a bordo.}
+\end{figure}
+
+A Figura~\ref{fig_jetson_demanda} mostra onde a regra de seleção muda a viabilidade do processamento. A amostragem de um quadro por segundo cabe na capacidade média a 4,1~m/s. A memória imediata já excede essa capacidade em mais de três vezes, pois um pequeno avanço da câmera pode acionar uma fileira inteira de recortes. Adiar a análise até a saída das células do campo de visão reduz essa repetição. Na implementação, a chegada de vários recortes ao mesmo tempo ainda pode gerar filas e comprometer o prazo de uma observação.
+
+\subsection{Projeção do consumo das estratégias}
+
+Para a taxa de 6,74 recortes/s da Tabela~\ref{tab_jetson_demanda}, a Equação~\eqref{eq_pc} fornece a potência da placa em TensorRT FP16 pela soma do consumo ocioso com a parcela de inferência,
+\begin{equation*}
+  P_c \approx 4{,}763 + 6{,}74\times0{,}04572
+      \approx 5{,}07~\mathrm{W}.
+\end{equation*}
+A amostragem de um quadro por segundo exigiria 5,86~W. Ao passar de 24 para 6,74 recortes/s, a quantidade de inferências cai 71,9\%. A economia projetada na placa é de 0,79~W, ou 13,5\%, pois ela continua energizada entre chamadas. Na regra adiada, o repouso responde por cerca de 94\% dos 5,07~W. A extrapolação para essas cadências pressupõe que a energia incremental por inferência se mantenha igual à medida em bancada.
+
+Para a memória imediata, a demanda representativa de B a M é de 159,93 recortes/s. Atender a todos eles em FP16 corresponderia a 12,07~W, com uma taxa 3,56 vezes maior que a medida em bancada. Para o vídeo completo, a potência equivalente sobe a 37,65~W. A Tabela~\ref{tab_jetson_demanda} assinala ambas as extrapolações. Também se pode estimar a energia necessária para concluir os recortes, mesmo que o processamento termine após o pouso. Multiplicando as contagens do voo~17 (Figura~\ref{fig_memoria_voo17}c) pela energia incremental por recorte em TensorRT FP16, obtêm-se 3,08~Wh para todo o vídeo, 0,663~Wh para a memória imediata e 0,025~Wh para a adiada, acima do repouso.
+
+\section{Custo de transportar a Jetson e ativar a inferência}
+\label{sec_balanco_por_voo}
+
+A medição elétrica da Jetson cobre apenas parte do custo de embarcá-la. Os rotores passam a sustentar o peso do equipamento mesmo com a placa desligada. Para examinar H2, simulou-se a aeronave sem o kit e, em seguida, com o kit desligado, em repouso e executando inferências. A diferença entre estados consecutivos isola, no modelo, o custo do transporte, do repouso e da atividade do detector.
+
+\subsection{Peso e potência em cruzeiro}
+\label{sec_massa_jetson}
+
+Adotaram-se 174~g para o kit de desenvolvimento Jetson Orin Nano, massa de referência informada pela NVIDIA \cite{nvidia2023orinmass}. A montagem real pode mudar devido à placa portadora, ao suporte, ao conversor e aos cabos. Os cenários de 100 e 250~g representam, respectivamente, uma integração hipotética mais leve e uma carga total mais pesada. Na simulação principal, mantiveram-se a velocidade, o arrasto da fuselagem, a rotação e o fator de conversão $\eta=0{,}836$ da Seção~\ref{sec_curva_potencia_voos}. Para isolar o efeito da massa $m_H$, calculou-se a diferença entre as potências de propulsão com e sem o kit, no numerador da Equação~\eqref{eq_coprojeto},
+\begin{equation*}
+  \Delta P_{\mathrm{prop}}(V,m_H)=
+  \frac{P(V;m_0+m_H)-P(V;m_0)}{\eta}.
+\end{equation*}
+A alimentação da placa foi tratada como ideal entre a bateria e sua entrada. Perdas do conversor acrescentariam potência à parcela elétrica.
+
+\begin{figure}[!htbp]
+  \centering
+  \caption{Efeito da massa do kit na potência de voo e acréscimo de potência ao executar inferências na Jetson}
+  \label{fig_massa_inferencia}
+  \includegraphics[width=\textwidth]{figuras/fig_massa_inferencia.pdf}
+  \fonte{Elaborado pelo autor com a telemetria e o ensaio de bancada da Tabela~\ref{tab_jetson_configuracoes}. (a) A faixa azul cobre cargas de 100 a 250~g com a placa desligada. A verde reúne as combinações que a Jetson acompanha com o kit de 174~g, mantendo fixa a taxa de recortes ao variar a velocidade. (b) Parcelas comuns aos métodos com o kit de 174~g a 4,1~m/s. (c) Cada ponto mostra quanto a inferência acrescenta ao consumo da aeronave com a placa em repouso. Os dois eixos usam escala logarítmica. Da esquerda para a direita, as estratégias solicitam 6,74 (memória adiada), 6,77 (amostragem pareada), 24,01 (um quadro a cada 30), 159,93 (memória imediata) e 719,28 recortes/s (vídeo completo). As duas primeiras quase coincidem. A linha passa a ser tracejada a partir da vazão medida na Jetson para aquela configuração, indicada ao lado do símbolo da precisão numérica. ORT designa ONNX Runtime.}
+
+\end{figure}
+
+A 4,1~m/s, o modelo prevê 181,3~W sem o kit. Transportar os 174~g acrescenta 19,25~W à propulsão, e manter a Jetson em repouso acrescenta outros 4,76~W (Figura~\ref{fig_massa_inferencia}a--b). Os 205,30~W previstos nessa condição são a referência do painel (c). Mantidas a massa e a velocidade, o acréscimo ao ligar a inferência é $\Delta P=rE_{\mathrm{inf}}$, conforme a Equação~\eqref{eq_pc}. A estratégia de seleção determina a taxa solicitada $r$, em recortes por segundo, e o ambiente de execução e a precisão numérica determinam a energia incremental $E_{\mathrm{inf}}$, em joules por recorte. As cinco estratégias usam as taxas medianas dos 24 voos das regiões B a M.
+
+TensorRT e TorchScript em FP32 ilustram por que a taxa de processamento e a energia por recorte importam separadamente. Em bancada, os dois ambientes atingiram taxas próximas, de 36,56 e 36,85 recortes/s, mas gastaram, respectivamente, 80,51 e 121,57~mJ acima do repouso por recorte. Ambos acompanham a amostragem de um quadro a cada 30, que solicita 24,01 recortes/s. Para o mesmo trabalho, a inferência acrescenta 1,93~W com TensorRT e 2,92~W com TorchScript. A posição em que cada curva passa a tracejada depende da taxa medida. O aumento de potência até esse ponto depende da energia por recorte.
+
+A seleção das imagens também altera o consumo dentro de uma mesma configuração. Em TensorRT FP16, a amostragem de um quadro a cada 30 acrescenta 1,10~W ao repouso. Com a memória adiada, esse acréscimo cai para 0,31~W. A economia de 0,79~W corresponde a 13,5\% da potência da placa e a 0,38\% da potência do drone em relação à amostragem a cada 30 quadros. A amostragem pareada seleciona quase o mesmo número de recortes por voo que a memória adiada e também acrescenta 0,31~W nessa precisão.
+
+As nove configurações atingiram em bancada as taxas representativas da memória adiada e da amostragem pareada. Na seleção de um quadro a cada 30, oito acompanharam a demanda. A CPU atingiu somente 7,29 recortes/s. A memória imediata e o vídeo completo superaram até a configuração mais rápida, TensorRT INT8, que atingiu 50,32 recortes/s. Para o vídeo completo, os acréscimos teóricos vão de 23,14~W em TensorRT INT8 a 326,73~W com ONNX Runtime na CPU. Ambos pressupõem que a placa conclua 719,28 recortes/s, além da capacidade medida. A Tabela~\ref{tab_jetson_configuracoes} detalha o ensaio da imagem decodificada até a detecção, e a Figura~\ref{fig_jetson_precisao} mostra o efeito da precisão numérica na qualidade da detecção.
+
+Para a carga de 174~g, o acréscimo de potência de propulsão cai de 19,25~W a 4,1~m/s para 16,10~W a 7,9~m/s. Mantendo o cruzeiro a 4,1~m/s e variando a carga de 100 a 250~g, esse acréscimo vai de 10,91 a 28,04~W. Nas três configurações de massa, transportar a placa exige mais potência que os 5,07~W projetados para alimentá-la com a memória adiada em FP16 nessa velocidade.
+
+A hipótese de rotação fixa afeta a magnitude desse resultado. Como comparação, simulou-se o mesmo acréscimo de 174~g mantendo constante o coeficiente de tração $T_r/[\rho A(\Omega R)^2]$. Nesse caso, a rotação aumenta com a raiz quadrada da razão entre as trações e a parcela de perfil das pás também cresce. A 4,1~m/s, o acréscimo de propulsão passa de 19,25 para 36,22~W. As duas respostas de rotação produzem a mesma ordenação entre transportar e alimentar o kit. H2 é compatível com as duas projeções. A comparação com a bateria verifica a curva de potência da aeronave de referência. Medir o acréscimo devido à massa exige repetir o cruzeiro com e sem a carga.
+
+\subsection{Consequência para a energia por área imageada}
+\label{sec_exemplo_coprojeto}
+
+O voo~17 permite acompanhar a passagem da potência à energia por área com os dados de um único percurso. Em uma passada retilínea ideal, o lado transversal da imagem tem 3.840~pixels e o $GSD$ ajustado é 1,40~cm/pixel (Figura~\ref{fig_memoria_voo17}). Isso dá uma faixa de 53,76~m. Com a velocidade representativa de cruzeiro desse voo, 4,094~m/s, a câmera cobriria 220,1~m$^2$/s de terreno novo. Para a massa adicional de 174~g, a curva ajustada prevê 200,58~W com o kit desligado, incluindo a carga elétrica original da aeronave. Se a placa processar os 5,92 recortes/s solicitados pela memória adiada nesse voo, a Equação~\eqref{eq_coprojeto} fornece
+\begin{equation*}
+  e_{\mathrm{faixa}} =
+  \frac{200{,}58 + 4{,}76 + 5{,}92 \times 0{,}04572}{4{,}094 \times 53{,}76}
+  \frac{10^6}{3600}
+  \simeq 259{,}5~\mathrm{Wh/km^2}.
+\end{equation*}
+O fator $10^6/3600$ converte J/m$^2$ em Wh/km$^2$. Sem o kit, a potência de referência para o mesmo cruzeiro seria 181,33~W e o custo da faixa cairia para 228,9~Wh/km$^2$.
+
+Para aplicar o modelo às trajetórias registradas, partiu-se da energia $E_i$ fornecida pela bateria em cada voo. A integração no intervalo comum de vídeo e telemetria válida soma 330,21~Wh em 109,8~min para os 26 registros. A área $A_i$ corresponde à união das células imageadas na grade de 0,5~m. Ao comparar configurações, mantiveram-se a trajetória e a área, inclusive as células que a seleção temporal deixou sem análise.
+
+Sobre a energia medida, somou-se apenas a variação prevista ao acrescentar a carga. Para isso, aplicou-se o modelo de voo nivelado à velocidade horizontal de cada instante, como aproximação quase estacionária, e integrou-se o incremento de potência por trapézios nos tempos da telemetria. A potência da placa foi projetada com a taxa média de recortes $r_i$ do voo. Para $E_i$ em Wh, $A_i$ em km$^2$ e $t_i$ em segundos, o resultado em Wh/km$^2$ é
+\begin{equation}
+  e_i(m_H,r_i)=\frac{1}{A_i}\left[
+      E_i + \frac{1}{3600}\int_0^{t_i}\!\Delta P_{\mathrm{prop}}\bigl(V_i(t),m_H\bigr)\,dt
+      + \frac{(P_{c0}+r_iE_{\mathrm{inf}})t_i}{3600}
+  \right].
+  \label{eq_placa_por_area}
+\end{equation}
+Com a placa desligada, a última parcela é zero. No estado ocioso, $r_i=0$ e permanece $P_{c0}$. Curvas, acelerações e revisitas já afetam a energia por área da aeronave de referência. A correção de massa pressupõe que a aeronave carregada consiga repetir esse trajeto.
+
+No percurso completo do voo~17, a câmera imageou 0,06592~km$^2$ em 337,1~s, o que corresponde a 195,6~m$^2$/s de área nova. A bateria forneceu 17,255~Wh, ou 261,7~Wh/km$^2$. Ao acrescentar a massa e o consumo da placa ativa, a Equação~\eqref{eq_placa_por_area} projeta 296,2~Wh/km$^2$. O valor supera os 259,5~Wh/km$^2$ da faixa ideal porque a área nova por segundo é menor no percurso e a energia de referência incorpora o consumo registrado em todas as manobras. A Tabela~\ref{tab_balanco_telemetria} estende essa comparação às doze regiões da mesma campanha.
+
+\begin{table}[!htbp]
+  \centering
+  \caption{Energia por área imageada segundo a massa e o estado da placa, em Wh/km$^2$ (medianas dos 24 voos de B a M)}
+  \label{tab_balanco_telemetria}
+  \small
+  \begin{tabular}{lrrr}
+    \hline
+    & \multicolumn{3}{c}{Massa acrescentada}\\
+    \cline{2-4}
+    Configuração & 100~g & 174~g & 250~g \\
+    \hline
+    Aeronave sem a carga adicional & 238,3 & 238,3 & 238,3 \\
+    Placa transportada desligada   & 253,1 & 264,4 & 276,3 \\
+    Placa ligada, ociosa           & 259,5 & 270,8 & 282,7 \\
+    Placa com inferência adiada    & 259,9 & 271,2 & 283,1 \\
+    \hline
+  \end{tabular}
+  \fonte{Elaborado pelo autor. A primeira linha usa a energia registrada pela bateria e a área reconstruída da MBG-V2 \cite{smt2024mbgv2}. Em cada uma das demais, os incrementos simulados foram somados à energia do respectivo voo antes de resumir os 24 resultados. Adotaram-se rotação fixa e a energia incremental de TensorRT FP16 medida em bancada.}
+\end{table}
+
+Para o kit de 174~g, calcularam-se as diferenças entre configurações dentro de cada voo e tomou-se a mediana dessas diferenças nos 24 voos de B a M. Com a memória adiada, o acréscimo total projetado foi de 32,5~Wh/km$^2$, ou 13,5\% sobre a referência de bateria. Só o transporte da massa respondeu por 25,7~Wh/km$^2$ (Tabela~\ref{tab_balanco_telemetria}). Com a placa já instalada, trocar a amostragem de um quadro por segundo pela memória adiada economizou 1,05~Wh/km$^2$, ou 0,43\% da referência, pelo mesmo critério. Aliviar o conjunto reduz a potência necessária para sustentar a aeronave durante todo o voo. Selecionar os recortes atua sobretudo na capacidade de concluir as inferências enquanto os alvos permanecem à vista.
+
+Nos dois voos mais rápidos, a bateria forneceu 156,5 e 136,2~Wh/km$^2$. As energias dos trechos foram próximas, 15,63 e 15,87~Wh, mas o segundo voo imageou uma área maior (0,1165 frente a 0,0999~km$^2$). Para recomendar um regime com menor energia por área \emph{inspecionada}, seria preciso medir também a detecção em cada velocidade. Nos seis voos de teste de uma mesma campanha, podemos manter a trajetória fixa e verificar como a escolha das imagens afeta o número de recipientes encontrados.
+
+\section{Quantos recipientes o detector encontra nas vistas selecionadas?}
+\label{sec_qualidade_teste}
+
+Entre as estratégias de menor demanda, a memória adiada escolhe o recorte pela posição do terreno, e a amostragem temporal pareada escolhe o quadro pelo relógio. Para verificar se essa diferença afeta o reconhecimento, executou-se o YOLO11n treinado na MBG-V2 nos doze trechos de teste de E, H e L. Nos 1.440 quadros, há 137 trilhas das seis classes avaliadas. Cada trilha vale uma referência dentro do trecho, por mais vezes que o recipiente apareça. O processamento integral usa 34.560 recortes. A memória adiada usa 339 e a amostragem temporal pareada, 336. Com apenas três chamadas de diferença, pode-se comparar o efeito da escolha das imagens sobre os mesmos recipientes.
+
+\begin{table}[!htbp]
+  \centering
+  \caption{Recipientes reconhecidos e qualidade das detecções nos trechos de teste com TensorRT FP16}
+  \label{tab_qualidade_estrategias}
+  \small
+  \setlength{\tabcolsep}{4pt}
+  \input{dados/qualidade_memoria/tabela_estrategias.tex}
+  \begin{tabular}{lrrrrrrrr}
+    \hline
+    & & \multicolumn{3}{c}{Contagens por foco} & \multicolumn{3}{c}{Métricas por foco (\%)} & Por quadro \\
+    \cline{3-5}\cline{6-8}
+    Estratégia & Recortes & VP & FP & FN & Precisão & Recall & F1 & mAP (\%) \\
+    \hline
+    \linhasEstrategiasMBG
+    \hline
+  \end{tabular}
+  \fonte{Elaborado pelo autor com a MBG-V2. VP são os recipientes reconhecidos entre as 137 referências, FP são os focos previstos sem correspondência e FN são as referências omitidas. A mAP por quadro usa IoU de 0,50 a 0,95 e inclui os quadros sem inferência. O detector foi executado na estação de trabalho.}
+\end{table}
+
+Em TensorRT FP16, o detector reconheceu 105 dos 137 recipientes ao processar todos os recortes e 37 com a memória adiada (Tabela~\ref{tab_qualidade_estrategias}). A redução de 99,0\% no número de inferências veio acompanhada de uma queda de 49,6 pontos percentuais no recall, de 76,6\% para 27,0\%. A seleção também reduziu os falsos alarmes de 181 para 21. Com isso, a precisão dos focos indicados subiu de 36,7\% para 63,8\%. A amostragem de um quadro a cada 30 recuperou 89 recipientes com 1.152 recortes e alcançou o maior F1 das cinco estratégias, 60,1\%.
+
+Das 137 referências, 26 foram reconhecidas pelas duas estratégias de menor demanda, 11 apenas pela memória adiada e 33 apenas pela amostragem temporal pareada. A diferença líquida foi de 22 recipientes, ou 16,1 pontos percentuais de recall. As caixas d'água explicam 17 desses 22. Das 68 anotadas, a amostragem encontrou 37 e a memória, 20. Em E, a memória reconheceu 19 das 64 referências e a amostragem, 32. Em H, as contagens foram 12 e 21 entre 48 referências. Em L, ambas encontraram seis das 25. Pneus e baldes somaram apenas seis referências por classe nas três regiões, o que limita a comparação nessas classes.
+
+As métricas por imagem respondem a outra pergunta. A mAP por quadro da memória adiada (0,68\%) supera ligeiramente a da amostragem pareada (0,57\%), ainda que a segunda encontre mais recipientes distintos. Um objeto que reaparece em muitos quadros acrescenta oportunidades repetidas à mAP. Já o recall por foco credita uma única ocorrência. Uma verificação na própria imagem exigiu ao menos uma caixa da classe correta com IoU de 0,5 ou mais ao longo do trecho. Por esse critério, o processamento integral encontrou 99 trilhas, a amostragem temporal pareada encontrou 62 e a memória adiada, 34. A ordenação entre elas se manteve.
+
+\begin{table}[!htbp]
+  \centering
+  \caption{Número de recipientes reconhecidos entre as mesmas 137 referências por estratégia e ambiente de execução}
+  \label{tab_qualidade_motores}
+  \small
+  \setlength{\tabcolsep}{4pt}
+  \input{dados/qualidade_memoria/tabela_motores.tex}
+  \begin{tabular}{lrrrrrr}
+    \hline
+    & \multicolumn{5}{c}{Estratégia de seleção} & Diferença \\
+    \cline{2-6}
+    Ambiente & Todos & Imediata & Cada 30 & Pareada & Adiada & (p.p.) \\
+    \hline
+    \linhasMotoresMBG
+    \hline
+  \end{tabular}
+  \fonte{Elaborado pelo autor. A última coluna expressa a diferença de recall entre a memória adiada e a amostragem temporal pareada. ORT designa ONNX Runtime. Cada linha usa uma execução do detector treinado, com a mesma associação entre vistas.}
+\end{table}
+
+A Tabela~\ref{tab_qualidade_motores} repete a comparação nas nove configurações de execução. Em cada uma das oito configurações FP32 ou FP16, a contagem foi de 37 referências para a memória adiada e de 58 ou 59 para a amostragem temporal pareada. Considerando também INT8, a memória ficou de 15,3 a 17,5 pontos percentuais abaixo da amostragem em recall. Em relação ao processamento integral, a distância foi de 44,5 a 50,4 pontos, acima da margem descritiva de cinco pontos. Nos doze trechos e com o pareamento por voo, as duas comparações contrariaram as previsões de H1.
+
+O TensorRT INT8 alterou o resultado mesmo mantendo as imagens de entrada. Com a memória adiada, a passagem de FP16 para INT8 reduziu os focos reconhecidos de 37 para 25 e os falsos alarmes de 21 para 10. No processamento integral, o recall por foco caiu de 76,6\% para 62,8\%, embora a mAP por quadro permanecesse próxima de 22,0\% nas duas configurações. Para identificar o papel do limiar fixo de confiança, examinou-se o maior escore de uma caixa correta por trilha, usando IoU de pelo menos 0,5. Em 15 trilhas, somente FP16 atingiu a confiança de 0,50. Em todas as 15, INT8 também produziu uma caixa correta, mas com escore abaixo do limiar. O inverso ocorreu em uma trilha. Assim, a quantização afetou a decisão de emitir um alerta mesmo em casos em que a localização na imagem continuava correta.
+
+A duração dos trechos afeta principalmente a memória adiada, que aguarda a saída da célula do campo de visão. Das 137 trilhas, 133 já estavam visíveis no primeiro quadro ou continuavam visíveis no último. Dentro dos quatro segundos, a memória adiada ofereceu a 56 trilhas ao menos um recorte contendo 40\% ou mais de uma caixa anotada, critério de inclusão usado no treinamento. A amostragem pareada ofereceu essa oportunidade a 104 trilhas. Ao acompanhar as \emph{mesmas} trilhas durante toda a sua aparição anotada nos seis vídeos, as contagens geométricas passam a 124 e 135, respectivamente. Logo, 68 recipientes ganharam uma oportunidade de análise pela memória adiada fora dos trechos avaliados. Saber quantos deles seriam reconhecidos exige executar o detector também nessas vistas. O recall dos trechos, por si só, não estima o recall da missão completa.
+
+\subsection{Quanto se recupera com mais de uma vista do terreno?}
+\label{sec_resultado_multivistas}
+
+A perda observada com uma faixa motivou uma análise exploratória nos mesmos trechos. O maior ganho ocorreu ao passar de uma para duas faixas por célula. Em TensorRT FP16, as referências reconhecidas passaram de 37 para 63 entre as 137 avaliadas, com 339 e 681 recortes, respectivamente. As metas de três, quatro e cinco faixas levaram a 66, 75 e 78 reconhecimentos (Figura~\ref{fig_multivistas}a). O processamento integral encontrou 105 referências. Das 70 que ele reconheceu e a memória de uma faixa perdeu, 47 reapareceram entre os acertos da memória com cinco faixas. Seis acertos da primeira seleção deixaram de ocorrer, pois mudar as faixas também muda os quadros escolhidos. O ganho líquido foi de 41 referências. As oito configurações FP32 ou FP16 produziram a mesma contagem geográfica em cada meta. Em TensorRT INT8, a contagem foi de 25 com uma faixa, 42 com duas e 56 com cinco.
+
+\begin{figure}[!htbp]
+  \centering
+  \caption{Recipientes reconhecidos nos trechos de teste e demanda de processamento ao ampliar a meta de vistas}
+  \label{fig_multivistas}
+  \includegraphics[width=\textwidth]{figuras/fig_multivistas.pdf}
+  \fonte{Elaborado pelo autor com os vídeos e a telemetria de E, H e L. Em (a), o detector treinado na MBG-V2 foi executado em TensorRT FP16 na estação de trabalho. O intervalo da amostragem temporal foi ajustado por voo. Em (b), cada ponto é o quociente entre o total de recortes e a duração somada dos seis voos completos. As barras indicam a menor e a maior taxa média por voo.}
+\end{figure}
+
+Com a meta de cinco faixas, a memória reconheceu 78 referências e gerou 40 falsos alarmes. A amostragem temporal pareada por voo reconheceu 91 e gerou 80, mas usou mais recortes nos trechos avaliados (1.224 frente a 1.083). Para comparar as estratégias com orçamentos mais próximos, distribuiu-se um total de 1.080 recortes temporais entre os mesmos trechos e variou-se a posição do primeiro quadro (Seção~\ref{sec_metodo_multivistas}). Nas quatro fases, a amostragem reconheceu de 86 a 90 referências e gerou de 64 a 75 falsos alarmes.
+
+Assim, com cinco faixas e praticamente o mesmo número de inferências, a memória encontrou menos recipientes e produziu uma proporção maior de alertas corretos. Seu recall foi de 56,9\% e sua precisão, de 66,1\%. Na amostragem temporal, o recall variou de 62,8\% a 65,7\% e a precisão, de 53,7\% a 58,4\%. O F1 da memória (61,2\%) ficou dentro do intervalo temporal (58,2\% a 61,9\%). Com apenas uma faixa, a ordem em recall dependeu da fase. Para 336 recortes temporais, o deslocamento do primeiro quadro levou a contagens de 35 a 68 referências, frente a 37 para os 339 recortes geográficos.
+
+A economia frente ao vídeo completo permaneceu expressiva. As 1.083 inferências da memória com cinco vistas representam 3,1\% dos 34.560 recortes disponíveis nos trechos. Nos seis voos completos, a demanda média ponderada pelo tempo passou de 7,3 para 25,1 recortes/s (Figura~\ref{fig_multivistas}b). Aplicando os 45,72~mJ por recorte medidos na Jetson FP16, a potência adicional de inferência projetada sobre o repouso passou de 0,33 para 1,15~W. A maior média por voo com cinco vistas foi de 27,8 recortes/s, aquém dos 44,87 medidos em bancada. Em janelas de cerca de um segundo, porém, o voo~23 chegou a solicitar 63,9 recortes/s. A média dimensiona o volume de trabalho. O atendimento dos prazos depende também das rajadas e da fila a bordo.
+
+A meta de cinco vistas descreve uma decisão de processamento. Nos seis voos completos, 86,0\% das células imageadas receberam uma observação em cada uma das cinco faixas e todas foram analisadas pelo menos uma vez. Com a cadência temporal pareada por voo, essas frações foram de 85,7\% e 99,75\%, respectivamente. A cobertura do terreno foi, portanto, muito próxima nas duas estratégias. Nos trechos anotados, a diferença de desempenho apareceu sobretudo nos recipientes reconhecidos e nos alertas que exigiriam verificação.
+
+\subsection{O ganho da segunda vista se repete em outros trechos?}
+\label{sec_resultado_seguimento}
+
+Nos 18 trechos de seguimento, o detector encontrou 84 das 253 referências com uma faixa e 120 com duas (Figura~\ref{fig_seguimento_multivistas}a). O recall subiu de 33,2\% para 47,4\%, um ganho de 14,2 pontos percentuais. A segunda faixa recuperou 60 referências e deixou de reconhecer 24 que a primeira havia encontrado. O saldo foi positivo em cinco dos seis voos. A exceção foi o voo 15, em que a contagem caiu de 15 para 12. Assim, o resultado agregado sustenta H3 sob a demanda própria de cada meta. Os trechos pertencem aos mesmos voos da análise exploratória, mas nenhuma das 253 trilhas, identificadas por vídeo, classe e anotação, havia aparecido nos doze trechos iniciais.
+
+\begin{figure}[!htbp]
+  \centering
+  \caption{Recall por recipiente nos trechos de seguimento com o mesmo número de recortes para memória e amostragem temporal}
+  \label{fig_seguimento_multivistas}
+  \includegraphics[width=\textwidth]{figuras/fig_seguimento_multivistas.pdf}
+  \fonte{Elaborado pelo autor com 253 referências em 18 trechos de E, H e L. Em (a), cada meta usa todos os recortes propostos pela memória e o controle temporal recebe a mesma quantidade em cada trecho. Em (b), o orçamento por trecho também é mantido entre as cinco metas. A linha temporal representa a média das quatro fases e a faixa sombreada vai da menor à maior fração reconhecida.}
+\end{figure}
+
+Quanto desse ganho pode ser obtido simplesmente processando mais imagens? Ao passar de uma para duas faixas, a memória passou de 484 para 931 recortes. Com as mesmas quantidades em cada trecho, o recall médio da amostragem temporal subiu de 49,7\% para 64,1\% nas quatro fases. O aumento foi de 14,4 pontos percentuais, próximo dos 14,2 da memória. Com 931 recortes, a estratégia temporal encontrou de 159 a 165 referências, frente a 120 da memória. Também gerou mais falsos alarmes, de 103 a 111, frente a 57. A memória teve maior precisão (67,8\% ante 58,9\% a 61,3\%), embora o controle temporal tenha encontrado mais recipientes em todas as fases.
+
+Quando todas as metas receberam os mesmos 484 recortes, a passagem de uma para duas faixas produziu um único acerto líquido adicional, de 84 para 85 referências (Figura~\ref{fig_seguimento_multivistas}b). Esse saldo reúne 38 referências que passaram a ser reconhecidas e 37 que deixaram de ser. A amostragem temporal encontrou de 116 a 137 referências com esse orçamento. Com três, quatro e cinco faixas, as subamostras geográficas reconheceram 97, 94 e 97. Portanto, a escolha das vistas alterou quais recipientes foram encontrados. O ganho de 36 acertos da política de duas faixas encolheu para um quando se manteve a quantidade de recortes.
+
+O controle com quadros temporais inteiros também favoreceu a amostragem em recall. Para a meta de duas faixas, as duas estratégias receberam 720 recortes. A memória reconheceu 103 referências e a amostragem temporal, de 143 a 153. Sob o orçamento fixo mais restritivo, de 288 recortes, a memória passou de 51 para 59 acertos e a amostragem encontrou de 66 a 81. Neste último caso, seis trechos ficaram sem recortes para ambas as estratégias. A segunda faixa melhorou o recall da política completa nesses trechos, como previa H3. A contribuição da escolha das vistas foi menor quando as duas metas ficaram sujeitas ao mesmo orçamento.

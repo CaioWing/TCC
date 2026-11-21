@@ -1,0 +1,64 @@
+2.1: conservação de tração: OK (diferença simbólica zero)
+2.2: potência ideal: OK (diferença simbólica zero)
+Multirrotor: soma das potências com área total N A: OK (diferença simbólica zero)
+2.4: coeficiente linear em delta_m/m: OK (diferença simbólica zero)
+2.12: derivada de P/V: OK (diferença simbólica zero)
+Ótimo elétrico: condição com carga fixa e eficiência constante: OK (diferença simbólica zero)
+2.17: energia versus altura: OK (diferença simbólica zero)
+2.19: eliminação de altura: OK (diferença simbólica zero)
+2.20: altura limite: OK (diferença simbólica zero)
+Matriz de Euler: determinante: OK (diferença simbólica zero)
+Matriz de Euler: ortogonalidade: OK
+2.22: topo/direita nos casos yaw 0 e 90 graus: OK na convenção declarada
+Cap.3: erro de projeção: OK (diferença simbólica zero)
+Cap.3: mediana da distância L/4: OK (diferença simbólica zero)
+Computação: energia/área da memória geográfica: OK (diferença simbólica zero)
+Acréscimo exato de potência ideal para massa +10%: 15.368973% (linear: 15%)
+Exemplo pairado: potência induzida/modelada [W]: 87.907147
+Exemplo pairado: potência perfil [W]: 73.760951
+Exemplo pairado: aumento total massa +10%: 8.356890%
+Condições do exemplo anterior: rho=1,225; g=9,81; RPM e kappa fixos; parâmetros da legenda; não reproduz código original da figura
+Pegada 3840x2160, GSD=1,4 cm [m]: 53.76 x 30.24
+Área nova a cada segundo, V=4m/s: 13.2275%
+Visibilidade a 4m/s; 30 quadros/s: 7.5600 s; 226.8000 quadros (estimativa contínua)
+Objeto 0,4m a 40m/80m [pixels]: 28.5714; 14.2857
+Recortes 640x640 para quadro 3840x2160: 24
+Área recorte 640, GSD=1,4cm [m²]: 80.2816
+32 pixels a GSD=1,42 cm [cm]: 45.4400
+Conversão J/m² para Wh/km²: multiplicar por 277.777777778
+Fração nova para deslocamento de 2L por quadro: fórmula corrigida saturada=1, com lacunas entre quadros
+Contraexemplo de recall por proximidade: 2 anotações mesma classe a 0m e 1m; 1 previsão a 0,5m; dmax=1m: fórmula anterior=100%; pareamento corrigido um a um=50%
+Cobertura: equações numeradas identificadas: 33
+Inventário: eq_vh
+Inventário: eq_ph
+Inventário: eq_fm
+Inventário: eq_dm
+Inventário: eq_glauert
+Inventário: eq_pv
+Inventário: eq_equilibrio
+Inventário: eq_fe
+Inventário: eq_pel
+Inventário: eq_energia
+Inventário: eq_aut
+Inventário: eq_vrmax
+Inventário: eq_e_area
+Inventário: eq_gsd
+Inventário: eq_pegada
+Inventário: eq_visibilidade
+Inventário: eq_e_h
+Inventário: eq_spx
+Inventário: eq_e_spx
+Inventário: eq_hmax
+Inventário: eq_borrao
+Inventário: eq_georref
+Inventário: eq_raios
+Inventário: eq_recortes
+Inventário: eq_iou
+Inventário: eq_pr
+Inventário: eq_recall_focos
+Inventário: eq_utilizacao
+Inventário: eq_pc
+Inventário: eq_coprojeto
+Inventário: eq_otimizacao
+Inventário: eq_gsd_ajuste
+Inventário: eq_e_voo

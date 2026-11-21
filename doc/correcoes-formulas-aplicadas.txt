@@ -1,0 +1,105 @@
+CORREÇÕES DAS FÓRMULAS E REFERÊNCIAS DO TCC
+Data: 11/11/2026
+
+ESCOPO
+
+Correções autorizadas pelo autor após a auditoria de 33 equações numeradas,
+das derivações sem número e dos exemplos. Os pareceres anteriores ficam
+preservados como registro do diagnóstico. Os PDFs de Abeywickrama e Glauert
+foram conferidos na rodada complementar; não falta outro PDF para esses itens.
+
+ALTERAÇÕES APLICADAS
+
+1. Aerodinâmica e desempenho
+- Tração por rotor identificada por T_r e tração total por T=N T_r.
+- Potência do multirrotor escrita explicitamente como N vezes as parcelas
+  induzida e de perfil por rotor, mais a parcela parasita da aeronave.
+  Hipóteses: rotores idênticos, igualmente carregados, sem interação de esteiras.
+- Relação de potência ideal com massa deduzida usando a área total dos discos.
+- Exemplos de +15,37% na potência ideal e +8,36% na potência total acompanhados
+  de suas hipóteses, densidade, gravidade e parâmetros mantidos constantes.
+- Tração no cálculo da velocidade induzida vinculada ao ponto de operação;
+  domínio do fator de perfil K explicitado e equilíbrio de torques esclarecido.
+- Separados ótimo mecânico, ótimo elétrico e ótimo com computação; a tangência
+  foi identificada como condição necessária de um ótimo interior.
+- Legenda da curva de potência esclarece que a figura representa o ótimo
+  mecânico. A figura original não foi recalculada.
+
+2. Referências e balanço elétrico
+- Retirada a atribuição do balanço P_el=P/eta_m+P_av a Abeywickrama.
+  A expressão é agora declarada hipótese de modelagem deste trabalho.
+- Descrita corretamente a abordagem empírica por etapas de Abeywickrama;
+  sua Eq. (3), p. 58385, sustenta a integração de potência no tempo.
+- Corrigidos os nomes Hasini Viranga Abeywickrama e Beeshanga Abewardana
+  Jayawickrama. Eliminada a sugestão de que Di Franco (2016) se apoiava no
+  artigo de 2018.
+- Glauert referenciado pela reedição Cambridge Science Classics de 1983,
+  com nota sobre a segunda edição original de 1947 e páginas 201–204.
+- Adicionada O'Connor, Smith e James (2017), DOI 10.1177/0309133317703092,
+  com indicação do manuscrito aceito consultado e citação da Eq. (6) do borrão.
+- Delimitadas perdas de motores/controladores e potência nos terminais da
+  bateria; cargas computacionais separadas para impedir dupla contagem.
+
+3. Geometria e navegação
+- Condições da câmera ideal, terreno plano, GSD, pegada, visibilidade e borrão
+  explicitadas; GSD distinguido da resolução óptica e da capacidade de detecção.
+- Fração nova saturada em 1; contagem de observações identificada como estimativa.
+- Conversão local usa altura elipsoidal H_e, origem geodésica e radianos;
+  retirada a identificação indevida entre altura elipsoidal e 40 m de voo.
+- Convenções de câmera/gimbal, guinada e alinhamento dos pixels esclarecidas.
+- Delimitada a derivação de dispersão das trilhas; conjunto positivo de busca
+  do GSD e possibilidade de empates explicitados, sem alterar valores medidos.
+
+4. Detecção, computação e otimização
+- Distinguida a AP genérica da AP de 11 pontos do VOC2007 citado.
+- Recall de focos reformulado com pareamento um a um de mesma classe e
+  distância admissível. Critério: cardinalidade máxima e, em empate de
+  cardinalidade, menor distância total. Definidos VP_f, FN_f, FP_f e os
+  casos de denominadores nulos. Trata-se de definição para a avaliação futura.
+- Acrescentadas as premissas dos teoremas EDF/RM; limite RM identificado como
+  suficiente, não necessário. r_max depende de medição da plataforma completa.
+- Modelo afim de potência computacional identificado como aproximação a validar.
+- Distintos quadro inteiro redimensionado, salto de quadros, recortes fixos e
+  memória geográfica. A variante de saltar quadros com recortes é explicitada.
+- Esclarecido que a figura de passadas usa todos os recortes como referência;
+  essa figura original não foi recalculada.
+- Definido domínio admissível da otimização, detector/configuração fixos por
+  comparação e possibilidade de inexistência de configuração viável.
+- H2 separa comparações independentes; H3 distingue restrições de detecção e
+  processamento e usa como referência a energia elétrica total por área.
+- Conversão J/m² para Wh/km² e regra trapezoidal explicitadas no método.
+
+LIMITES E DECISÕES AINDA NECESSÁRIAS
+
+Não foram reprocessados os voos, as anotações ou as medições de hardware.
+As estatísticas do capítulo 3 foram preservadas. As correções do modelo
+não constituem validação empírica das curvas ou das posições geográficas.
+
+Antes dos experimentos, registrar: implementação e protocolo da AP, limiares
+de IoU/confiança/distância, classes, meta de recall, tolerância de H1, domínio
+de alturas e velocidades, detector/configuração e comparação equivalente
+entre estratégias. Verificar duplicações entre trilhas antes de formar a
+referência de focos únicos. Não foram inventados valores para esses parâmetros.
+
+Na implementação geográfica, registrar origem/altura de referência, convenções
+e alinhamento da câmera, regra de desempate da busca de GSD e tratamento dos
+intervalos sem telemetria, assegurando compatibilidade entre energia e área.
+Calibrar/medir o modelo de potência, eficiência, energia por inferência e r_max
+antes de afirmar validade fora das condições observadas.
+
+VALIDAÇÃO
+
+- Revisão adicional por subagente gpt-6.1-terra: correções de potência por rotor
+  e notação incorporadas; AP11, recall, altura elipsoidal e ótimo interior
+  considerados coerentes nas hipóteses declaradas.
+- auditoria-formulas-verificacoes.py: verificações simbólicas e numéricas
+  aprovadas; inventário mantém 33 equações numeradas. Saída em
+  auditoria-formulas-verificacoes.txt. Esses testes não validam a telemetria.
+- PDF recompilado com BibTeX e duas passagens finais de pdfLaTeX: 65 páginas,
+  sem citações ou referências indefinidas e sem pedido de nova passagem.
+- Inspeção visual das páginas físicas 36, 44, 45, 46, 49, 54 e 64: potência,
+  georreferenciamento, AP, recall, otimização, ajuste de GSD e referência nova
+  legíveis, sem cortes das equações. Não surgiram avisos de largura excedida
+  nos trechos corrigidos. Persiste o aviso anterior de 15,8 pt na URL longa
+  da referência NVIDIA, sem relação com estas correções matemáticas.
+- git diff --check: sem erros de espaços em branco.

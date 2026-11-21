@@ -1,0 +1,223 @@
+ATUALIZAÇÃO — VALIDADE DAS CONCLUSÕES E COMPARAÇÕES — 12/11/2026
+
+Incorporadas as prioridades da avaliação crítica autorizadas pelo autor:
+- Sincronização nominal tratada como hipótese; explicado por que uma translação
+  comum pode preservar a dispersão das trilhas. Resultados numéricos preservados.
+- GSD ajustado às anotações identificado como caracterização interna; separados
+  geometria calibrada por anotações, parâmetros disponíveis em operação e
+  validação da localização absoluta. Separação dos dados por região.
+- H1 passa a comparar memória com amostragem temporal da mesma grade, com
+  cadência ajustada à velocidade/pegada e mesmo orçamento por área. Gráfico 4
+  regenerado com nomes corretos e identificado como exemplo de redundâncias
+  distintas. Fonte reproduzível em code/plot_passadas_por_area.py.
+- H2 dividida em H2a/H2b. Objetivos e otimização passam a considerar conjuntos
+  plausíveis de parâmetros e recomendações condicionais ou faixas de operação.
+- Explicitados cenário embarcado, limites das transformações dos vídeos,
+  área imageada/processada, falsos positivos, avaliação por classe, medição do
+  conjunto computacional e efeito de filas/descarte sobre a avaliação.
+
+Preservada a estrutura atual dos capítulos. Não foram executados experimentos
+novos, escolhidos intervalos físicos de parâmetros ou produzidos resultados de
+validação; os procedimentos futuros estão identificados como tal. Nenhuma
+referência nova foi acrescentada. Revisão independente por subagente Terra e
+comparação literal de todos os blocos de equações numeradas com HEAD: intactos.
+PDF recompilado com 71 páginas; sem referências indefinidas ou pedido de nova
+passagem. Páginas alteradas inspecionadas visualmente. Permanece o aviso anterior
+de largura na URL de NVIDIA na bibliografia.
+
+ATUALIZAÇÃO EDITORIAL — CLAREZA DO CAPÍTULO 2 — 12/11/2026
+
+Reorganizada a seção 2.2.1: equilíbrio físico das forças e estimativa de arrasto,
+limitações da estimativa e, ao final, derivação pela equação vetorial de movimento.
+A seção 2.2.2 separa potência fornecida pela bateria e energia pela telemetria.
+Na abertura de 2.2, as parcelas de potência recebem uma explicação física antes
+da expressão total; a convenção de adimensionalização foi mantida em nota.
+Na seção 2.1, a derivação do efeito da massa foi compactada, preservando a razão
+exata, a aproximação de Taylor, as condições e os exemplos numéricos.
+Acrescentados subtópicos de autonomia/alcance e energia por área em 2.3,
+escala/pegada e tempo de observação em 2.4.1, e consumo/taxa de inferências/
+custo por área em 2.6.2. Parágrafos de 2.5, 2.6.1 e 2.7 foram divididos por ideia.
+
+Todos os blocos de equações numeradas foram comparados com a versão anterior
+à rodada: conteúdo literal e ordem preservados. O texto cresceu aproximadamente
+3%, com redução de contas repetidas e maior separação entre conceitos.
+Revisão Terra sem identificação de erro físico/matemático novo ou perda de
+hipóteses e referências. PDF final com 67 páginas, sem referências indefinidas;
+sumário e páginas representativas revisados visualmente, com ajuste local de
+espaçamento no subtítulo de massa. Permanece apenas o aviso de largura anterior
+na URL longa de NVIDIA, fora dos trechos reorganizados.
+
+ATUALIZAÇÃO EDITORIAL — SEÇÃO 2.4.4 — 11/11/2026
+
+Georreferenciamento reorganizado em quatro subtópicos numerados, do pixel
+ao deslocamento no solo, da câmera às direções norte/leste, da posição da
+aeronave à do objeto e, ao final, a derivação completa da rotação de Euler.
+Incluído exemplo didático de conversão de pixels em metros. As matrizes,
+as referências e os rótulos das equações foram preservados. Na conversão
+geodésica, N_aer/E_aer distinguem a posição da aeronave dos deslocamentos
+DeltaN/DeltaE do objeto; a soma final passou a aparecer explicitamente.
+Revisão Terra: sinais, exemplo e transformação consistentes. Compilação
+sem referências indefinidas; sumário e páginas da seção conferidos visualmente.
+
+ATUALIZAÇÃO EDITORIAL — SEÇÃO 3.1.2 — 11/11/2026
+
+A pedido do autor, foi mantida a estrutura atual dos capítulos e reorganizada
+apenas a seção Condições de voo e câmera. A exposição agora distingue dados
+registrados, princípio da estimativa de GSD, procedimento de ajuste e valores
+obtidos. A tabela separa informações da aquisição e grandezas estimadas.
+A definição de trilha e a motivação do ajuste precedem as equações. Foram
+preservados os resultados numéricos e as expressões matemáticas, com ressalva
+explícita de que o exemplo de espalhamento por erro de escala é idealizado.
+A revisão Terra confirmou a distinção entre dispersão e exatidão e a exclusão
+de GSD=0 da busca. PDF recompilado e páginas da seção inspecionadas visualmente.
+Não foram acrescentados protocolos ou resultados experimentais novos.
+
+REGISTRO ANTERIOR
+
+REVISÃO DO TCC POR TRÊS SUBAGENTES TERRA
+Data: 11/11/2026
+
+ESCOPO E PARECER
+
+Foram lidos os três capítulos ativos: Introdução, Fundamentação teórica e
+Materiais e métodos. Resumo e Abstract ainda contêm apenas marcadores.
+Os revisores trabalharam de forma independente, sem editar os arquivos.
+As sugestões foram consolidadas e as alterações selecionadas foram aplicadas
+pelo agente principal. Uma segunda leitura de coerência conferiu o diff.
+
+1. Naturalidade e voz autoral
+O texto já apresenta uma voz clara, natural e didática. Os exemplos concretos
+e as explicações de equações ajudam a leitura e foram preservados. Não há
+necessidade de reescrita ampla nem de trocar palavras simples por palavras
+mais rebuscadas. Foram ajustadas expressões coloquiais pontuais, repetições
+e passagens extensas. Naturalidade é uma avaliação editorial, não uma
+garantia objetiva nem um teste de autoria.
+
+2. Coerência acadêmica
+O principal problema era o grau de certeza de algumas afirmações: parte do
+texto tratava hipóteses ou aproximações como resultados já demonstrados.
+Foram explicitados os limites da telemetria, da emulação de altitude e da
+contagem por trilhas. A organização dos capítulos e os tempos verbais foram
+ajustados ao estágio atual do manuscrito.
+
+3. Precisão técnica e clareza
+Foram diferenciados consumo elétrico total e consumo de propulsão, objeto
+anotado e foco biologicamente confirmado, dispersão espacial e exatidão
+absoluta. A apresentação de precisão e recall por quadro foi esclarecida.
+As equações, os valores numéricos e as referências foram preservados.
+
+EXEMPLOS DE ALTERAÇÕES APLICADAS
+
+Introdução — Contexto e delimitação:
+Antes: “A energia de propulsão é medida na própria telemetria”.
+Depois: “A energia elétrica fornecida pela bateria é estimada a partir da
+telemetria e inclui a propulsão e as demais cargas da aeronave”.
+Motivo: a medição de tensão e corrente não separa esses consumos.
+
+Introdução — Justificativa:
+Antes: “Como o primeiro caminho é o menor dos três”.
+Depois: “O impacto relativo desses três efeitos será avaliado no modelo
+integrado”.
+Motivo: a comparação ainda faz parte da investigação proposta.
+
+Materiais e métodos — Representatividade e limitações:
+Antes: reduzir a resolução “equivale a voar mais alto”.
+Depois: a redução emula a diminuição do tamanho dos objetos em pixels;
+não reproduz todas as mudanças de perspectiva, oclusão e área coberta.
+Motivo: delimitar o que a emulação realmente representa.
+
+Materiais e métodos — Estatísticas das anotações:
+Antes: pouca sobreposição permitia tomar trilhas como objetos distintos.
+Depois: essa relação é apresentada como aproximação, com possível duplicação.
+Motivo: sobreposição de área não mede diretamente duplicatas por objeto.
+
+PENDÊNCIAS QUE EXIGEM DEFINIÇÃO OU EVIDÊNCIA DO AUTOR
+
+Prioridade alta
+
+A. Pareamento de focos e falsos positivos
+Local: Fundamentação teórica, “Dos quadros aos focos únicos”, eq_recall_focos.
+A fórmula atual aceita uma previsão próxima de mais de um objeto real. Foi
+acrescentada uma ressalva, mas a equação não foi alterada para não definir um
+protocolo ainda não implementado. Definir associação um a um, distância
+máxima, tratamento de classes e duplicatas, limiar de confiança e medida de
+falsos positivos/precisão. Recall isolado não controla alarmes falsos.
+
+B. Estratégias de inferência comparáveis
+Local: Introdução, objetivos; Fundamentação teórica, “Energia da computação”.
+A introdução promete quatro estratégias, mas a fundamentação descreve três
+casos e chama de “quadro inteiro” o processamento de todos os recortes.
+Especificar se quadro inteiro é imagem redimensionada em uma inferência,
+como recortes fixos se distinguem dele e qual unidade de custo será usada.
+Essa decisão pode exigir revisão das fórmulas, das figuras e do protocolo.
+
+C. Extrapolação do modelo de potência
+Local: Introdução, objetivos; Materiais e métodos, “Telemetria e energia”.
+A telemetria oferece essencialmente um ponto de operação comparável.
+Identificar a origem dos parâmetros de massa, rotor, arrasto e eficiência,
+as incertezas e a validação/sensibilidade necessária para extrapolar em
+velocidade e carga. A campanha da região A não isola o efeito da velocidade.
+
+D. Critérios de teste das hipóteses
+Local: Introdução, H1–H3; Fundamentação teórica, eq_otimizacao.
+Fixar antes dos experimentos a tolerância de H1, a meta de recall, o domínio
+de altitude/velocidade, as configurações de hardware e os critérios de
+comparação e incerteza. Em H2, a comparação entre efeitos de massa e consumo
+direto não implica, por si só, a segunda afirmação sobre ganhos de altitude
+e velocidade; convém tratá-las como proposições separadas. Em H3, esclarecer
+qual curva de potência define V_Rmax e sua relação com a restrição de tempo
+real. Não foram inventados valores nem alteradas as hipóteses nesta revisão.
+
+Prioridade intermediária
+
+E. Tempo real e plataforma
+Local: Fundamentação teórica, “Restrição de tempo real”.
+Explicitar as hipóteses dos resultados de EDF/RM e os limites de aplicá-los
+a CPU/GPU, filas, transferência de dados e execução concorrente. A taxa
+máxima de inferência precisa de medição no sistema efetivamente adotado.
+
+F. Intervalos válidos da telemetria
+Local: Materiais e métodos, “Verificação de integridade”.
+A comparação de durações cita apenas o voo 22 como exceção ao limite de
+0,8 s, mas o parágrafo seguinte menciona 44 s extras no voo 14. Esclarecer
+se a primeira comparação usa dados brutos, válidos ou recortados. Não foi
+escolhida uma interpretação sem conferir o processamento original.
+
+G. Georreferenciamento e símbolos
+Local: Fundamentação teórica, “Georreferenciamento das detecções”; Símbolos.
+Explicitar a transformação entre a arfagem do gimbal registrada como
+-89,9 graus e os ângulos nulos no referencial nadiral da modelagem. Distinguir
+altura sobre o terreno e altitude relativa à decolagem. R aparece como
+alcance e como raio em Omega R; considerar notações distintas ou registrar
+explicitamente os dois usos. Essas mudanças exigem conferência global.
+
+H. Modos de potência e medição
+Local: Introdução, hardware; Fundamentação teórica, “Energia da computação”.
+Uniformizar a descrição de modos entre capítulos, incluindo a configuração
+de software adotada. Diferenciar limite nominal de potência e consumo
+efetivamente medido, incluindo periféricos, dissipação e condições de carga.
+As especificações do fabricante não foram revalidadas nesta revisão.
+
+I. Texto ainda a desenvolver
+Resumo, Abstract, demais seções de métodos, resultados e conclusão precisam
+ser escritos com base no trabalho efetivamente realizado. A seção de
+organização agora identifica essa estrutura como prevista. Ao finalizar,
+atualizar os tempos verbais e retirar as observações de versão em andamento.
+
+LIMITES DA REVISÃO
+
+Esta foi uma revisão de redação e coerência interna. Não houve reprodução
+das análises da base, auditoria dos números, validação externa de todas as
+referências nem confirmação dos resultados experimentais. As pendências
+acima não devem ser tratadas como experimentos já definidos ou concluídos.
+
+VERIFICAÇÃO DA ENTREGA
+
+O PDF foi recompilado com BibTeX e duas passagens finais de pdfLaTeX.
+O log final não registra referências ou citações indefinidas. A conferência
+visual amostral incluiu introdução, métricas, georreferenciamento, tabela de
+campanhas, limitações e bibliografia. Foram corrigidas a largura da tabela
+de campanhas e a disposição da equação dos raios de curvatura, preservando
+seu conteúdo. Permanece um aviso de largura excedida em uma URL longa da
+bibliografia (15,8 pt), legível na inspeção; não impede a compilação.
+O PDF atualizado tem 61 páginas. O diff passou na verificação de espaços.

@@ -1,0 +1,17 @@
+﻿PARECER COMPLEMENTAR — GLAUERT, THE ELEMENTS OF AEROFOIL AND AIRSCREW THEORY
+
+Fonte examinada: PDF local em referencias/The Elements of Aerofoil and Airscrew Theory (H. Glauert) (z-library.sk, 1lib.sk, z-lib.sk).pdf, imagens das páginas físicas 5–6 e 209–217. A extração textual disponível não contém texto útil; a conferência foi visual.
+
+IDENTIFICAÇÃO BIBLIOGRÁFICA
+A folha de rosto (página física 5) identifica Second Edition e Cambridge University Press. A página de direitos (física 6) informa primeira publicação em 1926, segunda edição em 1947, reimpressões em 1948 e 1959, reedição na Cambridge Science Classics Series em 1983, reimpressões em 1986 e 1993 e transferência para impressão digital em 1999. Portanto 1948 é ano de uma reimpressão da 2ª edição, não ano original dessa edição. O PDF consultado traz informações posteriores a 1948 e não demonstra ser exemplar da reimpressão de 1948; para identificação precisa, citar a manifestação efetivamente consultada e esclarecer 2ª edição de 1947, conforme as normas adotadas. Não apresentar 1948 como data comprovada do exemplar digital consultado.
+
+SUPORTE DIRETO: DISCO ATUADOR E TEORIA DO MOMENTO
+Capítulo XV, seção 15.2, p. impressa 201 (física 211): o autor apresenta a teoria simples do momento baseada em Rankine e Froude, trata a hélice como disco circular e supõe tração uniformemente distribuída; despreza rotação da esteira e chama a concepção simplificada de disco atuador. Na p. 203 (física 213), descreve arrasto por atrito das pás e energia de rotação da esteira como perdas adicionais excluídas da eficiência ideal. Isso sustenta a citação inicial do capítulo 2 para o modelo ideal; uniformidade expressamente afirmada é a da distribuição de tração no disco, não uma velocidade espacialmente uniforme generalizada em todo o campo.
+
+Na p. 202 (física 212), V é velocidade axial a montante, v o acréscimo axial no disco e v1 o acréscimo na esteira distante: velocidades V, V+v e V+v1. A derivação por Bernoulli e momento fornece v=v1/2, T=2 A rho (V+v)v e potência ideal Omega Q=T(V+v). Na p. 203, a energia comunicada ao fluido no referencial de massa geral de fluido em repouso é E=Tv, enquanto TV é trabalho de tração associado ao avanço; não confundir E=Tv com potência total em avanço.
+
+LIMITE DERIVADO PARA PAIRADO
+Tomando V→0 com v→vh finito nas equações dimensionais da p. 202, obtém-se velocidade no disco vh, esteira distante 2vh, T=2 rho A vh² e potência ideal P=Omega Q=T vh. Essas formas em notação de pairado são consequência algébrica do modelo axial e não equações expressas literalmente nessa notação no trecho examinado. A p. 204 (física 214) reconhece diretamente que, quando V é zero, a=v/V diverge, mas a velocidade no disco permanece finita. Assim, não substituir diretamente V=0 em a finito; usar as expressões dimensionais ou tomar o limite preservando v finito. Leishman, já citado no TCC, continua sendo apoio direto para a exposição específica de rotor em pairado.
+
+ESCOPO E CONCLUSÃO
+O PDF fornecido é suficiente para verificar a base do disco atuador e a derivação dimensional para pairado; não é necessário outro PDF para essa confirmação. Se a referência precisar afirmar consulta à reimpressão específica de 1948, é necessário comprovar essa manifestação separadamente. A teoria de voo à frente atribuída a Glauert em Leishman deve ser examinada na sua própria fonte histórica: não identificar automaticamente o livro com os trabalhos de 1928/1935 nem afirmar que este trecho axial comprova aquela hipótese de voo à frente.

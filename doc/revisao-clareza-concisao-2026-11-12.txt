@@ -1,0 +1,519 @@
+ATUALIZAÇÃO — CORREÇÕES APLICADAS — 12/11/2026
+
+Após autorização do autor, foram editados os três capítulos ativos. O parecer
+original abaixo fica preservado como registro; suas linhas se referem à
+versão anterior às alterações.
+
+Alterações aplicadas:
+- Introdução: separadas as comparações de H1, esclarecida a redação de H2b,
+  distinguidas as variantes de amostragem temporal e reduzidas repetições
+  da contextualização, da lacuna bibliográfica e da descrição da base.
+- Fundamentação: corrigido “voo estacionário”, reorganizado o exemplo do
+  efeito da massa, simplificadas as explicações de GSD e de altura máxima,
+  reunidos os requisitos de medição e de validade do modelo computacional.
+  A descrição dos modos do Orin foi concentrada nessa seção. A lista de
+  disciplinas passou a nota; a frase “O currículo não tem disciplina
+  dedicada a asas rotativas” foi excluída por solicitação expressa do autor.
+- Métodos: reduzidos anúncios e definições repetidas, separados ajuste e
+  interpretação do GSD, compactada a comparação entre campanhas e reunidas
+  as consequências das limitações. A decisão sobre classes raras ficou
+  junto às estatísticas das classes. A lista de limpeza foi organizada por
+  tipo de problema, separada da decisão de analisar a região A à parte.
+- Corrigida a comparação de duração da telemetria para distinguir registros
+  brutos de trechos com bateria válida nos voos 14 e 22. A descrição genérica
+  de interrupções de “cerca de 3 s” foi retirada, pois há lacunas maiores.
+
+Evidência conferida para a telemetria:
+- code/mbg_splits.py, função telemetry_gaps, e data/mbg_v2/splits/voos.csv:
+  durações brutas, lacunas, linhas com bateria zero e tempos repetidos.
+- Leitura dos CSV originais de log dos voos 14 e 22: durações brutas de
+  267,678 s e 170,091 s; intervalos do primeiro registro à última amostra
+  com bateria não nula de 222,282 s e 158,680 s, respectivamente.
+- Conferência dos 26 CSV: 99 linhas com remainPowerPercent igual a zero,
+  713 tempos consecutivos repetidos, nenhuma linha comum aos dois conjuntos;
+  total de 812 linhas em 97.280, compatível com os 0,8% arredondados.
+Essa conferência não reproduz o procedimento original de interpolação.
+
+Pendências preservadas, sem escolher interpretações não comprovadas:
+- Item 2: H2b está mais clara, mas os controles e a referência experimental
+  ainda precisam ser definidos no protocolo.
+- Itens 20–21: não foi localizada a implementação que decide soma versus
+  união regional nem o denominador do percentual de sobreposição. A abertura
+  do item 21 foi corrigida para falar de revisita a áreas, não de identificação
+  direta de duplicatas de objetos.
+- Item 22: a estrutura e as durações foram corrigidas, mas os campos e o
+  método de interpolação e a implementação da remoção de duplicatas não
+  foram localizados. A descrição preexistente dessas operações foi mantida,
+  com comentário de pendência no fonte, sem acrescentar procedimentos.
+- Itens 10 e 25: não foram localizados o cálculo dos ventos de 12–17 m/s
+  nem o código que informa se o GSD foi fixado ou reajustado no teste de
+  defasagem. Esses trechos não foram reinterpretados nesta rodada.
+
+Verificação final:
+- 42 blocos de equações (38 na fundamentação e 4 nos métodos), incluindo
+  blocos não numerados, literalmente iguais aos anteriores após normalizar
+  finais de linha; rótulos e conjunto das 35 chaves de citação preservados.
+- Contagem bruta nos fontes dos capítulos: 14.853 para 14.275 palavras,
+  redução de 3,89%. Essa contagem inclui comandos LaTeX e notas; não é uma
+  estimativa isolada da prosa.
+- git diff --check sem erros.
+- PDF recompilado por duas passagens de pdfLaTeX: 69 páginas, contra 71
+  anteriormente; sem referências indefinidas nem pedido de nova passagem.
+- Inspeção visual amostral das páginas físicas 25, 31, 33, 37, 40, 50, 59 e
+  65: sumário, hipóteses, abertura da fundamentação, curva de potência,
+  autonomia, computação, GSD e tratamento dos dados legíveis e sem sobreposição.
+- Permanece o aviso anterior de largura de 15,8 pt na URL de NVIDIA na
+  bibliografia; ele não foi introduzido por esta revisão.
+
+PARECER ORIGINAL — REVISÃO DE CLAREZA E CONCISÃO — 12/11/2026
+
+Revisão realizada com três subagentes, divididos entre Introdução,
+Fundamentação teórica e Materiais e métodos, seguida de leitura e consolidação
+pelo agente principal. Este documento contém sugestões; os arquivos do TCC
+não foram alterados nesta rodada.
+
+Escopo: os três capítulos ativos, incluindo apenas o conteúdo já escrito de
+Materiais e métodos. Resumo e Abstract ainda contêm marcadores. A ausência de
+resultados, conclusão e procedimentos futuros não foi tratada como defeito
+editorial das seções concluídas. O histórico em revisao-editorial.txt foi
+considerado, mas os achados abaixo foram conferidos no texto atual.
+
+Diagnóstico: o texto explica os conceitos com exemplos úteis. O excesso está
+principalmente na repetição de contextualizações, de requisitos de avaliação
+e de explicações já dadas por listas ou equações. Há também ambiguidades
+localizadas que exigem acrescentar uma definição, e não cortar palavras.
+Não recomendo uma reescrita ampla nem eliminar as ressalvas sobre a validade
+dos modelos para encurtar o trabalho.
+
+As localizações abaixo são linhas dos arquivos-fonte na versão revisada.
+As propostas são redações locais, não substituições automáticas: comandos
+LaTeX, referências e rótulos devem ser conservados ao aplicá-las.
+
+PRIORIDADES
+
+1. Esclarecer as comparações de H1/H2b e os nomes das estratégias (itens 1–3).
+2. Especificar área, sobreposição e tratamento temporal (itens 20–22 e 25).
+3. Corrigir ambiguidades pontuais e antecipações (itens 9–11 e 23).
+4. Aplicar os cortes de repetição restantes, preservando exemplos didáticos.
+
+INTRODUÇÃO
+Arquivo: doc/USPSC-TA-Textual/USPSC-Cap1-Introducao.tex
+
+1. H1: separar as duas comparações
+Local: linha 56. Prioridade alta. Tipo: clareza.
+Trecho: “mantém a taxa de detecção [...] e, para um mesmo número de passadas
+da rede por área imageada, alcança taxa de detecção igual ou superior”.
+Problema: uma frase reúne comparação com a grade completa, tolerância,
+comparação sob orçamento equivalente e controles. O leitor precisa separar
+mentalmente dois testes diferentes.
+Sugestão:
+“A memória geográfica mantém, dentro de uma tolerância fixada antes dos
+experimentos, a taxa de detecção de focos únicos obtida ao processar a grade
+de recortes de todos os quadros. Sob o mesmo número de passadas da rede por
+área imageada, sua taxa de detecção é igual ou superior à da amostragem
+temporal dessa grade, cuja cadência é ajustada à velocidade e à pegada da
+câmera. As comparações mantêm o detector e a resolução dos recortes.”
+Não retirar a tolerância nem a equivalência do orçamento para encurtar.
+
+2. H2b: nomear os ganhos comparados
+Local: linha 58. Prioridade alta. Tipo: clareza e definição pendente.
+Trecho: “a margem de altitude e de velocidade permitida [...] reduz a
+energia [...] mais do que a troca de estratégia de inferência”.
+Problema: “a margem reduz” é abstrato; faltam referências explícitas para
+interpretar a comparação entre os dois ganhos.
+Sugestão de redação, sem definir um experimento novo:
+“Para um hardware fixo, o ganho energético obtido ao ajustar altitude e
+velocidade, respeitando a taxa mínima de detecção, supera o ganho obtido ao
+trocar a estratégia de inferência. A comparação será feita dentro dos
+cenários representados pelo modelo de voo e pela avaliação de detecção,
+separadamente da H2a.”
+Ainda é necessário indicar nos procedimentos qual configuração serve de
+referência e quais variáveis permanecem fixas em cada comparação. A redação
+sozinha não resolve essa definição.
+
+3. “Pular quadros”: explicitar a variante usada em H1
+Local: linhas 21, 56 e 71; cruzamento com capítulo 2, linhas 473–480.
+Prioridade alta. Tipo: consistência de nomenclatura.
+Trecho: “quadro inteiro, pular quadros, recortes fixos e memória geográfica”.
+Problema: o capítulo 2 distingue amostragem de quadros inteiros da amostragem
+da grade de recortes. A introdução não anuncia essa diferença, embora H1
+dependa da segunda variante. Não há razão para eliminar uma delas.
+Sugestão de complemento após a apresentação das estratégias:
+“A amostragem temporal será aplicada tanto a quadros inteiros quanto à
+grade de recortes; esta última será a referência para o teste de H1.”
+Usar “amostragem temporal de quadros inteiros” e “amostragem temporal da grade
+de recortes” quando a distinção importar, mantendo os mesmos nomes nos
+objetivos, gráficos e procedimentos.
+
+4. Trabalhos relacionados: eliminar a repetição da lacuna
+Local: linha 12. Prioridade média. Tipo: organização e síntese.
+Trechos: “No outro extremo”, “Em outra frente” e “Essas abordagens não
+avaliam conjuntamente [...]”.
+Problema: o parágrafo percorre várias famílias de trabalhos e enuncia a
+lacuna duas vezes. “Essas abordagens” também tem antecedente pouco preciso.
+Sugestão: separar o parágrafo após a referência a Krishnan e substituir a
+parte final por:
+“O planejamento de cobertura com consciência energética busca minimizar a
+energia de voo sob restrições de cobertura e resolução da imagem
+\cite{difranco2016coverage}, enquanto modelos empíricos estimam o consumo de
+multirrotores por etapa da missão \cite{abeywickrama2018energy}. Na bibliografia
+consultada, não foi identificado um trabalho que reúna energia de voo,
+energia da computação embarcada e quantidade de criadouros efetivamente
+encontrados na inspeção aérea de focos do \textit{Aedes aegypti}.”
+Preservar “na bibliografia consultada”: a revisão editorial não estabelece
+inexistência universal de trabalhos anteriores.
+
+5. Justificativa: começar pela questão de engenharia
+Local: linha 37, em comparação com linhas 8–10.
+Prioridade média. Tipo: repetição e antecedente ambíguo.
+Trecho: “A vigilância [...] depende de visitas de agentes aos imóveis”.
+Problema: a seção reconta a motivação já apresentada. No fim do parágrafo,
+“ele de fato encontra” parece retomar “município”, embora se refira ao sistema.
+Sugestão para o parágrafo:
+“Embora a detecção automática de potenciais criadouros em imagens aéreas
+seja viável \cite{passos2022mbg,hahm2026dar}, sua adoção exige avaliar a energia
+consumida por área inspecionada e a fração dos recipientes visíveis que o
+sistema detecta.”
+Esse corte resolve também o problema do pronome; não são duas correções
+independentes.
+
+6. Hardware: retirar o histórico de versões da lista de variáveis
+Local: linha 22. Prioridade baixa. Tipo: organização opcional.
+Trecho: “opera originalmente nos modos de 7 e 15 W; com a configuração
+introduzida no JetPack 6.2 [...]”.
+Problema: o detalhamento quebra o paralelismo com os outros itens, que apenas
+apresentam cada variável e seu efeito.
+Sugestão para o item:
+“o hardware embarcado e seu modo de potência, tendo como referência o módulo
+NVIDIA Jetson Orin Nano de 8 GB \cite{nvidia2024orinnano,nvidia2025jetpack62}.”
+Transferir a explicação das versões e modos para a caracterização do
+equipamento, indicando a configuração realmente usada. Não descartar essa
+distinção nem apresentar limite nominal como consumo medido.
+
+7. Viabilidade: evitar reapresentar todos os dados da base
+Local: linha 45, em comparação com linhas 29–33.
+Prioridade média. Tipo: síntese.
+Trecho: “reúne, com uma referência temporal comum, o vídeo 4K, anotações [...]”.
+Problema: a delimitação já descreveu os dados, a energia da bateria e a
+medição separada do computador. Aqui basta explicar a viabilidade do estudo.
+Sugestão:
+“A disponibilidade de vídeos, anotações por objeto e telemetria na base
+pública MBG-V2 permite realizar a análise sem uma campanha de voo própria
+\cite{smt2024mbgv2}. A energia registrada nos voos será relacionada às
+detecções obtidas na reprodução dos vídeos e complementada pela medição
+do consumo do computador de referência.”
+As ressalvas de associação temporal permanecem na delimitação e nos métodos.
+
+FUNDAMENTAÇÃO TEÓRICA
+Arquivo: doc/USPSC-TA-Textual/USPSC-Cap2-Desenvolvimento.tex
+
+8. Abertura: o catálogo de disciplinas interrompe o roteiro conceitual
+Local: linha 6. Prioridade baixa. Tipo: organização opcional.
+Trecho: “Sempre que possível, a modelagem segue a bibliografia das
+disciplinas do curso [...]”.
+Problema: a enumeração de seis disciplinas ocupa boa parte da apresentação
+do capítulo sem explicar um modelo. O vínculo curricular pode ser importante
+para o TCC, mas não precisa ocupar o fluxo principal.
+Sugestão: conservar o roteiro nas três primeiras frases e mover a lista e
+suas referências para uma nota. Encerrar o parágrafo principal com:
+“Para os efeitos específicos dos rotores, adota-se \citeonline{leishman2006},
+que estende ao rotor a teoria da quantidade de movimento usada em hélices.”
+É uma escolha de concisão, não uma incorreção do texto atual.
+
+9. Exemplo de 8,36%: resultado aparece antes de seu modelo
+Local: linha 61. Prioridade média. Tipo: ordem da explicação.
+Trecho: “os parâmetros ilustrativos da Figura [...] dão um aumento de
+cerca de 8,36% na potência total de pairado”.
+Problema: a seção anterior derivou o efeito sobre a potência ideal, mas a
+parcela de perfil e o modelo total ainda serão apresentados. O leitor recebe
+um segundo percentual sem poder acompanhar sua origem naquele ponto.
+Sugestão: deixar nesta seção apenas:
+“Esse resultado se refere à potência ideal. A variação da potência mecânica
+total também depende do arrasto de perfil, apresentado na próxima seção,
+e das mudanças de rotação e eficiência com a carga.”
+Mover o cálculo de 8,36%, com seus parâmetros e hipóteses, para depois da
+apresentação da curva de potência. Preservar o exemplo de 10% e 15,37%, que
+ilustra diretamente a equação já demonstrada.
+
+10. Verificação preliminar de vento: falta encaminhamento ao procedimento
+Local: linha 144. Prioridade média. Tipo: explicação ausente.
+Trecho: “quatro dos cinco voos analisados exigiriam ventos de 12 a 17 m/s”.
+Problema: o resultado é específico, mas a passagem não identifica os voos
+nem encaminha ao cálculo usado. Não é excesso de palavras; falta suporte
+local para o leitor entender de onde vem o número.
+Sugestão: manter a discussão teórica e deslocar o resultado para a análise
+da telemetria, indicando voos, parâmetros e procedimento de inferência. Na
+fundamentação, remeter à seção que realmente documentar essa análise.
+Não inventar uma referência interna para uma seção ainda inexistente.
+
+11. “Voo estacionário” pode ser entendido como pairado
+Local: linha 188. Prioridade alta. Tipo: ambiguidade terminológica.
+Trecho: “autonomia e o alcance em voo estacionário, sem vento e com
+velocidade constante”.
+Problema: o capítulo trata de multirrotores, contexto em que “estacionário”
+pode sugerir veículo parado. A equação de alcance considera avanço com V.
+Sugestão:
+“Para uma aeronave elétrica com energia útil de bateria E_b, tomada como
+fixa no modelo, a autonomia e o alcance em voo retilíneo e nivelado, em
+regime permanente e sem vento, são [...]”.
+Conservar a explicação posterior de autonomia, alcance e hipóteses da curva.
+
+12. Altura máxima: separar interpretação e condição de validade
+Local: linhas 287–292. Prioridade média. Tipo: frase sobrecarregada.
+Trecho: “fornece, nesse modelo simplificado e mantendo as demais restrições
+satisfeitas, o menor valor de energia por área naquela velocidade [...]”.
+Problema: a leitura alterna conclusão, cancelamento de parâmetros,
+condições fixas, limiar e ótimo antes de chegar à equação.
+Sugestão para o texto antes da equação de h_max:
+“Mantidas a velocidade, a potência total, a câmera e a dimensão do objeto,
+a Equação~\eqref{eq_e_spx} relaciona a redução da energia por área à redução
+do tamanho do objeto em pixels. A distância focal e o tamanho do pixel
+cancelam-se nessa relação; permanece o número de pixels transversais N_x.
+Se o detector exigir pelo menos s_px,min pixels para atingir a taxa de
+detecção desejada, a maior altura admissível será dada por [...].”
+Após a equação:
+“Nesse modelo simplificado, essa altura minimiza a energia por área na
+velocidade considerada, desde que as demais restrições sejam satisfeitas.”
+Manter o parágrafo seguinte: o limiar depende do detector, da classe e das
+condições e não constitui garantia universal de detecção.
+
+13. Tempo real: reunir os requisitos de medição
+Local: linhas 452–454. Prioridade média. Tipo: repetição.
+Trechos: “verificando os prazos do processamento completo” e “A medição
+deverá incluir decodificação [...]”.
+Problema: os dois parágrafos voltam a enumerar o que deve entrar na medição.
+Sugestão de bloco único:
+“Esses teoremas não determinam diretamente a capacidade de uma plataforma
+com CPU e GPU. Neste trabalho, r_max será medido para cada computador, modo
+de potência e configuração do detector, incluindo decodificação, transferência
+de dados, seleção dos recortes, pré e pós-processamento e associação
+geográfica. A condição r <= r_max indica capacidade média, mas não comprova
+o cumprimento dos prazos. Por isso, serão registradas latências e filas,
+e a regra de descarte em sobrecarga será definida. O recall será avaliado
+na sequência efetivamente processada sob essa regra.”
+Conservar as condições dos teoremas EDF/RM se suas fórmulas permanecerem.
+
+14. Modelo afim: explicar sua validação uma única vez
+Local: linhas 465–467. Prioridade média. Tipo: repetição.
+Trechos: “o ajuste afim será verificado para cada uma” e “é uma aproximação
+afim que deverá ser verificada no intervalo de carga usado”.
+Problema: a mesma necessidade é anunciada duas vezes em parágrafos vizinhos.
+Sugestão: conservar as definições de r e E_inf e a fronteira de medição;
+concentrar o aviso de validade em uma única passagem:
+“O ajuste afim será verificado para cada estratégia e modo de potência no
+intervalo de carga usado, mantendo fixa a configuração do detector.
+Aquecimento, concorrência, variações de frequência e custos de seleção e
+associação podem alterar a energia atribuída à inferência. As comparações
+usarão a energia total medida do conjunto instalado, incluindo refrigeração,
+e não o limite nominal do módulo.”
+Manter as referências do hardware junto de sua descrição.
+
+15. Formulação integrada: evitar reabrir a revisão bibliográfica
+Local: linhas 501 e 524; comparação com introdução, linha 12.
+Prioridade baixa. Tipo: síntese opcional.
+Trecho: “Os trabalhos de arquitetura de computação [...] Os trabalhos de
+planejamento de cobertura, por sua vez [...]”.
+Problema: a seção precisa integrar os modelos já apresentados, mas volta à
+motivação bibliográfica da introdução e encerra com outra recapitulação.
+Sugestão para a abertura:
+“A formulação integra o efeito da computação sobre a missão
+\cite{boroujerdian2018mavbench,krishnan2020sky} ao planejamento de cobertura
+com consciência energética \cite{difranco2016coverage}. Reunindo as
+Equações [...], a energia por área é escrita em função da altitude h,
+da velocidade V, da estratégia de inferência pi e do hardware H: [...]”.
+No encerramento, manter apenas a síntese necessária para interpretar a
+equação; não repetir novamente a lacuna bibliográfica. Não cortar o
+parágrafo 522, que limita a interpretação do ótimo.
+
+MATERIAIS E MÉTODOS
+Arquivo: doc/USPSC-TA-Textual/USPSC-Cap3-MateriaisMetodos.tex
+
+16. Abertura: reduzir a enumeração do próprio sumário
+Local: linha 6. Prioridade baixa. Tipo: síntese.
+Trecho: “sua origem, as condições em que os voos foram feitos, a estrutura
+dos arquivos, as estatísticas [...]”.
+Problema: o parágrafo enumera praticamente todas as subseções logo antes
+de elas aparecerem.
+Sugestão:
+“Nesta versão, o capítulo caracteriza a base MBG-V2. As estatísticas foram
+calculadas pelo autor a partir dos 26 voos, com o tratamento e as exclusões
+descritos na Seção~\ref{sec_base_integridade}.”
+Manter a indicação de versão em andamento enquanto os procedimentos não
+estiverem escritos.
+
+17. Origem da base: retirar detalhes históricos sem função analítica
+Local: linhas 15–17. Prioridade baixa. Tipo: organização opcional.
+Trechos: “participantes do Brasil, do Catar e da Espanha”; “211,6 GiB”.
+Problema: países dos participantes não ajudam a caracterizar a base nem
+o método. O volume de download pode ser útil, mas pertence à estrutura
+dos arquivos, não precisa interromper a descrição das campanhas.
+Sugestão:
+“A base MBG-V2 foi publicada pelo Laboratório de Sinais, Multimídia e
+Telecomunicações da COPPE/UFRJ \cite{smt2024mbgv2} e sucede a MBG
+\cite{passos2022mbg}, usada no desafio de detecção da ICIP 2023
+\cite{passos2023icip}. O trabalho vencedor combinou YOLOv7 e rastreamento
+para associar detecções do mesmo objeto ao longo do vídeo
+\cite{laranjeira2023yolov7}.”
+Na sequência, separar distribuição geográfica de cronologia das campanhas.
+Preservar a ausência de data no registro do voo 01, se mantida a data da
+campanha: ela explica a origem da informação.
+
+18. Ajuste do GSD: lista, fórmula e explicação repetem os mesmos passos
+Local: linhas 93–106. Prioridade média. Tipo: síntese.
+Trecho: “A mediana interna resume [...] a externa resume [...]”.
+Problema: a sequência já foi explicada na lista e está identificada sob os
+termos da equação. A explicação em prosa pode se limitar ao que ainda falta.
+Sugestão para o início do parágrafo 106:
+“O conjunto S contém as escalas positivas pesquisadas, e GSD estimado é
+um dos valores que minimizam a dispersão. O uso de medianas reduz a
+influência de caixas mal posicionadas e de objetos que se movem.”
+Preservar o intervalo e os passos da busca, o tamanho mínimo das trilhas,
+a amostragem e a nota sobre referencial e desempate. O corte deve atingir
+a repetição, não os elementos que permitem reproduzir o procedimento.
+
+19. GSD igual a zero: exemplo secundário pode virar nota
+Local: linha 114. Prioridade baixa. Tipo: síntese opcional.
+Trecho: “Esses valores são da ordem de L/4 [...]”.
+Problema: depois de apresentar ajuste, resultados e limitações, a exposição
+abre uma nova derivação sobre uma escala que não participa do ajuste.
+Sugestão para o corpo do texto:
+“Como referência degenerada, GSD=0 faz as projeções coincidirem com a
+posição da aeronave e eleva a dispersão mediana para 6,2–9,1 m. Esse caso
+não integra a busca por escalas positivas.”
+Mover a relação L/4, seus valores e as condições de travessia completa e
+amostragem uniforme para uma nota, se o exemplo for mantido. Não substituir
+esse exemplo por uma alegação de validação da localização absoluta.
+
+20. Áreas: distinguir soma de áreas e união espacial
+Local: linhas 17, 190 e 235. Prioridade alta. Tipo: definição a confirmar.
+Trecho: “Somadas por região, essas áreas totalizam 1,42 km²”.
+Problema: cada voo tem área definida como união de suas próprias pegadas,
+mas “somadas por região” não esclarece se a sobreposição entre os dois voos
+é descontada. Os 1,37 km² dos polígonos e os 1,42 km² imageados não são,
+por si, contraditórios; medem coisas diferentes e precisam ser nomeados.
+Se o cálculo usou união dos dois voos, escrever:
+“Para cada região, calculou-se a união das áreas imageadas pelos dois voos.
+A soma dessas áreas regionais é de 1,42 km², enquanto a soma das áreas dos
+polígonos fornecidos com a base é de 1,37 km².”
+Se usou soma das áreas individuais, escrever:
+“A soma das áreas imageadas pelos 26 voos é de 1,42 km² e contabiliza
+novamente as áreas comuns aos dois voos de uma mesma região.”
+Escolher apenas após conferir o cálculo. Na linha 235, usar o mesmo nome
+da grandeza, evitando simplesmente “as regiões cobrem 1,42 km²”.
+
+21. Sobreposição: explicitar denominador e alcance da verificação
+Local: linha 192. Prioridade alta. Tipo: definição a confirmar.
+Trechos: “verificar se um objeto pode ser contado duas vezes” e
+“sobreposição de 0,7–10,7% da área imageada”.
+Problema: a análise é de área, não de identidade dos objetos, e não se sabe
+se o percentual divide a interseção pela união, pela soma ou pela área de
+um voo. A ressalva posterior corrige parte da impressão inicial, mas a
+abertura pode ser mais precisa.
+Sugestão para a abertura:
+“A grade também permite quantificar a revisita a áreas já imageadas,
+onde um mesmo objeto pode receber mais de uma trilha.”
+Para o percentual, escrever “interseção dividida por [denominador usado]”,
+ou apresentar a razão correspondente, depois de conferir o cálculo.
+Preservar a conclusão de que pouca sobreposição não mede diretamente
+duplicatas de objetos.
+
+22. Limpeza da telemetria: separar operações e explicitar intervalos
+Local: linhas 219 e 226–227. Prioridade alta. Tipo: explicação a confirmar.
+Trechos: “os valores nesses intervalos foram interpolados”; “com exceção
+do voo 22”; “44 s além do fim do vídeo”.
+Problema: o texto reúne linhas de bateria inválida, lacunas temporais,
+carimbos repetidos e extremidades sem dados em dois itens extensos. Não
+identifica quais campos foram interpolados, o método de interpolação,
+nem se a comparação de durações usa registros brutos ou já tratados.
+A diferença de 44 s no voo 14 parece conflitar com o limite de 0,8 s se
+os dois enunciados forem lidos como comparação dos arquivos brutos.
+Sugestão de organização, conservando os números já informados:
+(a) Linhas com bateria inválida: registrar as 99 linhas, os cinco voos,
+os campos afetados e se a exclusão atingiu a linha inteira ou só esses campos.
+(b) Lacunas internas: declarar campos interpolados, método e limites dos
+intervalos, distinguindo-os das extremidades sem amostras vizinhas.
+(c) Tempos repetidos: explicar a retenção da primeira linha e a remoção
+das 713 redundantes, confirmando a contagem antes de manter o total de 812.
+(d) Extremidades: explicar o tratamento do voo 14 e a exclusão dos 9,8 s
+finais do vídeo 22 nas análises dependentes de georreferenciamento.
+Reescrever a comparação de durações identificando explicitamente a etapa
+do tratamento a que os 0,8 s se referem. Não presumir interpolação linear,
+extrapolação nas bordas ou recorte específico sem consultar a implementação.
+
+23. Região A: separar resultado observado de interpretação física
+Local: linha 206. Prioridade média. Tipo: clareza e síntese.
+Trecho: “dobrar a velocidade quase não altera a potência [...]”.
+Problema: o parágrafo começa com comparação entre campanhas e passa a uma
+formulação que pode soar como efeito isolado da velocidade. A ressalva
+correta aparece só depois de uma explicação extensa.
+Sugestão:
+“Nos dois voos da região A, a cerca de 7,9 m/s, as potências medianas são
+170 e 172 W, e as energias por área, 157 e 137 Wh/km², cerca de 39% abaixo
+da mediana das demais regiões. A maior velocidade com potência semelhante
+é compatível com menor energia por área, conforme a Equação~\eqref{eq_e_area}.
+Essa comparação, porém, não isola o efeito da velocidade: as campanhas
+diferem na configuração do vídeo e não há confirmação de que usaram a
+mesma aeronave.”
+Mover os indícios sobre células e ciclos da bateria para nota ou para a
+caracterização do equipamento; manter que os números de série estão ausentes.
+Evitar apresentar semelhança com uma curva ilustrativa como validação dela.
+
+24. Extrapolação: unir o diagnóstico e sua consequência
+Local: linhas 208–210. Prioridade média. Tipo: síntese.
+Trechos: “não calibrar a curva [...] inteira” e “Diferentes conjuntos de
+parâmetros podem reproduzir esse ponto [...]”.
+Problema: os parágrafos podem ser unidos sem perder a limitação central.
+Sugestão:
+“Nas regiões B a M, os voos se concentram em 40 m e cerca de 4,1 m/s.
+A telemetria fornece, portanto, uma referência nesse ponto, mas não
+identifica toda a curva de potência: diferentes parâmetros podem reproduzi-lo
+e prever ótimos ou efeitos de massa distintos. A extrapolação será avaliada
+com conjuntos plausíveis de parâmetros, com fontes e intervalos explícitos.
+Se as recomendações variarem entre esses conjuntos, serão apresentadas
+como cenários condicionais.”
+Manter a distinção entre valores medidos e extrapolados também na formulação
+do capítulo 2; essa repetição curta orienta a leitura de cada seção.
+
+25. Teste de defasagem: dizer se o GSD foi mantido ou reajustado
+Local: linha 135. Prioridade alta. Tipo: explicação a confirmar.
+Trecho: “foi examinada com o critério da Equação~\eqref{eq_gsd_ajuste}”.
+Problema: a equação referida inclui uma minimização em GSD. Não se sabe se
+cada defasagem temporal foi avaliada usando a escala anteriormente ajustada
+ou se a escala foi novamente ajustada. São procedimentos distintos, e o
+leitor precisa saber qual gerou o resultado informado.
+Sugestão, completando conforme a implementação:
+“Para avaliar a sensibilidade à defasagem temporal, deslocou-se a telemetria
+entre -1 e +1 s, em passos de 0,1 s. Para cada deslocamento, calculou-se a
+dispersão das trilhas [mantendo o GSD anteriormente ajustado / reajustando
+o GSD pelo mesmo procedimento].”
+Escolher uma das alternativas, não inserir o colchete na versão final.
+Manter os resultados e o parágrafo seguinte, que explica por que a dispersão
+pode não revelar uma defasagem em trechos de movimento uniforme.
+
+O QUE PRESERVAR NA LIMPEZA
+
+- As definições de foco potencial, trilha, objeto único e área de referência.
+- Os exemplos de pixels para metros e do efeito da massa: explicam as equações.
+- A distinção entre consistência interna do GSD e exatidão geográfica.
+- O motivo pelo qual baixa dispersão não confirma sincronização.
+- Os controles de H1, a separação por região e a fixação de parâmetros antes
+  do teste. São condições de interpretação, não ressalvas dispensáveis.
+- Os limites das transformações de imagem e da extrapolação da curva de voo.
+- A distinção entre capacidade média e cumprimento de prazos, e entre energia
+  nominal e medida.
+
+Algumas derivações complementares, como a equação vetorial do equilíbrio
+e a matriz completa de Euler, poderiam ir para apêndice se fosse desejada
+uma redução estrutural maior. Não são prioridade nesta rodada: o texto atual
+as separa em subtópicos, e sua presença pode ter função didática no TCC.
+
+LIMITES E ESTADO DA ENTREGA
+
+Este é um parecer de redação e coerência interna, com 25 itens consolidados.
+Não é uma nova auditoria de fórmulas, referências ou resultados científicos.
+Os valores citados foram lidos no manuscrito, não recalculados nesta rodada.
+Os itens 2, 20–22 e 25 incluem definições ou procedimentos que precisam ser
+confirmados antes de uma substituição final. Não foram criados experimentos,
+escolhidos parâmetros ou apresentados resultados ainda inexistentes.
+Os arquivos .tex e o PDF permanecem como estavam; não houve recompilação,
+pois a entrega desta rodada é o relatório de revisão.

@@ -1,0 +1,33 @@
+{
+  "conf": 0.5,
+  "raio_m": 1.5,
+  "f1_medio": 0.5540610014774148,
+  "dmax_m": 1.0,
+  "gsd_m": 0.013500000000000002,
+  "janela_s": 4,
+  "centros_fracao": [
+    0.3333333333333333,
+    0.6666666666666666
+  ],
+  "iou_nms": 0.7,
+  "conf_ap": 0.001,
+  "margem_descritiva_recall_pp": 5,
+  "pesos_sha256": "2e592d202d47e964767f883db7bc9bcd1d181648781f30023e536fd416313273",
+  "classes": [
+    "watertank",
+    "potted_plant",
+    "storm_drain",
+    "pool",
+    "tire",
+    "bucket"
+  ],
+  "validacao": [
+    "F",
+    "I"
+  ],
+  "teste": [
+    "E",
+    "H",
+    "L"
+  ]
+}

@@ -1,0 +1,38 @@
+[
+  {
+    "video": "video11_regionF",
+    "quadro": 2648,
+    "x": 1920,
+    "y": 507,
+    "formato": "TorchScript",
+    "erro_max_escore": 0.0,
+    "erro_max_caixa_px": 0.0
+  },
+  {
+    "video": "video11_regionF",
+    "quadro": 2648,
+    "x": 1920,
+    "y": 507,
+    "formato": "ONNX",
+    "erro_max_escore": 1.377401019908575e-07,
+    "erro_max_caixa_px": 0.0015869140625
+  },
+  {
+    "video": "video17_regionI",
+    "quadro": 3367,
+    "x": 1920,
+    "y": 507,
+    "formato": "TorchScript",
+    "erro_max_escore": 0.0,
+    "erro_max_caixa_px": 0.0
+  },
+  {
+    "video": "video17_regionI",
+    "quadro": 3367,
+    "x": 1920,
+    "y": 507,
+    "formato": "ONNX",
+    "erro_max_escore": 1.8477439880371094e-06,
+    "erro_max_caixa_px": 0.000823974609375
+  }
+]

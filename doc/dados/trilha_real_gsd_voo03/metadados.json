@@ -1,0 +1,42 @@
+{
+  "video": "video03_regionB",
+  "fps": 29.97,
+  "width": 3840,
+  "height": 2160,
+  "tracks": 292,
+  "boxes": 13228,
+  "frame_step": 5,
+  "minimum_track_samples": 5,
+  "alignment": "frame/fps relative to first telemetry timestamp; no extra offset",
+  "yaw": "gimbalYawRaw / 10, degrees, unwrapped before interpolation",
+  "position": "WGS84 local north/east; origin at first telemetry position; H_e=0",
+  "interpolation": "linear; first sample retained at duplicate timestamps",
+  "center": "image center; bounding box center; coordinatewise track medians",
+  "origin_latitude_deg": -22.872419,
+  "origin_longitude_deg": -43.632628000000004,
+  "source_sha256": {
+    "data\\mbg_v2\\raw\\flight-mbg-v2-03-regionB\\ann\\video03_regionB.xml": "d4c64dc4d1c9697dfe74e148c705ff8dde493dc0a1fcc8efb122e4afaa7ef53b",
+    "data\\mbg_v2\\raw\\flight-mbg-v2-03-regionB\\log\\video03_regionB.csv": "ba33fadd5a352582c0972d2f477f46902ed82bc813f095d41a53a1f2c47af600"
+  },
+  "track_id": 96,
+  "label": "watertank",
+  "gsd_cm": 1.35,
+  "track_samples": 45,
+  "selected_frames": [
+    3735,
+    3845,
+    3955
+  ],
+  "selection": "watertank; net aircraft displacement >=15m; duration 3..12s; yaw range <=3 degrees; three samples unoccluded; dispersion closest to flight median (distance rounded to 1e-9 m); tie by track id",
+  "eligible_tracks": 191,
+  "plot_origin": "aircraft position at first sampled frame of selected track",
+  "plot_origin_flight_ne_m": [
+    51.82736357880361,
+    352.3923907373927
+  ],
+  "track_dispersion_m": 0.5476801768702834,
+  "duration_s": 7.340674007340681,
+  "aircraft_net_displacement_m": 30.85077780537193,
+  "image_net_displacement_px": 2112.1846956705754,
+  "projected_net_displacement_m": 2.790107464573622
+}

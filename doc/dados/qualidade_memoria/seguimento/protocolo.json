@@ -1,0 +1,18 @@
+{
+  "pergunta_primaria": "Nos novos trechos dos seis voos, passar de uma para duas faixas aumenta o recall por recipiente da memória adiada, com a demanda própria de cada meta?",
+  "criterio_primario": "Mais referências reconhecidas no total dos mesmos trechos com duas faixas do que com uma. Apresentar também o resultado por voo, inclusive empates e inversões.",
+  "voos": ["video09_regionE", "video10_regionE", "video15_regionH", "video16_regionH", "video23_regionL", "video24_regionL"],
+  "centros_fracao": [0.125, 0.5, 0.875],
+  "janela_s": 4,
+  "metas": [1, 2, 3, 4, 5],
+  "motor": "trt_fp16",
+  "fases": [0, 0.25, 0.5, 0.75],
+  "controle": "Para cada trecho e meta, manter todas as G propostas geográficas. Selecionar ceil(G/24) quadros temporalmente equiespaçados em cada fase. Se houver resto, distribuir o último grupo incompleto de recortes por uma permutação da grade independente do conteúdo, com quadro parcial e origem da permutação alternados entre trechos. Processar exatamente G recortes em cada fase.",
+  "sensibilidade_quadros_inteiros": "Orçamento comum B=24*floor(G/24) por trecho e meta. Comparar B/24 quadros inteiros em cada fase com B propostas geográficas retidas em posições uniformes da lista ordenada por quadro e recorte. Manter trechos com B zero.",
+  "orcamento_fixo_entre_metas": "Em cada trecho, usar 24*floor(min(G1,G2,G3,G4,G5)/24) recortes para todas as metas e para o controle temporal de quadros inteiros. Seleções geográficas subamostradas após o replay da política original.",
+  "controle_adicional_antes_da_pontuacao": "A inspeção das demandas geométricas mostrou que o arredondamento para quadros inteiros zera seis trechos no orçamento fixo. Por isso, também comparar todas as metas com o mínimo bruto min(G1,...,G5) em cada trecho, sem arredondá-lo. O controle temporal pode usar um quadro parcial. Esta sensibilidade foi acrescentada após o cálculo das máscaras, sem consultar previsões ou pontuações dos novos trechos.",
+  "contrastes_secundarios": "Medir memória menos temporal em recall para a mesma meta e a mudança desse contraste de uma para duas faixas. Usar a média das quatro fases com o mesmo peso e exibir sua amplitude. Informar precisão, falsos positivos e F1. As metas 3 a 5 são secundárias.",
+  "calibracao": "../protocolo.json",
+  "unidade": "Trilha anotada por trecho, nas seis classes do protocolo original. Agregar VP, FP e FN antes das razões. Identificar IDs de trilhas em comum com os trechos anteriores por vídeo e classe. Mesmos voos, sem inferência para outras regiões.",
+  "selecao": "Definido antes de pontuar novos trechos. Selecionar somente pela duração do vídeo. Reproduzir o estado da memória desde o primeiro quadro. Nenhuma escolha de trecho, fase, limiar ou meta pelo resultado."
+}

@@ -1,0 +1,290 @@
+ATUALIZAÇÃO: as correções autorizadas foram aplicadas ao manuscrito em 11/11/2026.
+Ver correcoes-formulas-aplicadas.txt para alterações, validação e pendências.
+O parecer abaixo preserva o diagnóstico anterior às correções.
+
+AUDITORIA CONSOLIDADA DAS FÓRMULAS DO TCC
+Data: 11/11/2026
+
+RESULTADO
+
+Três subagentes gpt-6.1-terra examinaram as fórmulas sob as perspectivas de
+aerodinâmica/desempenho, geometria/navegação e detecção/computação. O agente
+principal consolidou os pareceres, conferiu fontes adicionais e executou
+verificações algébricas e numéricas independentes.
+
+Foram inventariadas as 33 equações numeradas dos capítulos ativos, além das
+matrizes, derivações sem número, expressões no texto e exemplos associados.
+As identidades centrais de potência, geometria e balanço energético são
+consistentes nas hipóteses dos modelos. Ainda NÃO é possível considerar
+todas as fórmulas e atribuições prontas para a versão final: há correções de
+interpretação, condições omitidas e decisões de avaliação. Os dois PDFs que
+faltavam foram adicionados e conferidos em uma rodada complementar com dois
+subagentes Terra. A pendência de acesso foi encerrada, mas a leitura confirmou
+uma atribuição inadequada a Abeywickrama e ajustes bibliográficos necessários.
+
+Esta etapa foi uma auditoria: os arquivos .tex, .bib e o PDF do TCC não foram
+alterados. As propostas abaixo são concretas, mas não foram aplicadas.
+As páginas citadas são impressas, salvo quando identificadas como PDF físico.
+
+ACHADOS PRIORITÁRIOS
+
+1. AP: a descrição precisa corresponder ao protocolo citado/implementado.
+   Local: Cap. 2, Métricas de detecção, após (2.26).
+   Everingham et al. (2010), pp. 313–314, Eqs. (1)–(3), descrevem AP VOC2007
+   com média de precisão interpolada em 11 níveis de recall. O texto usa a
+   descrição genérica de área sob a curva, sem distinguir os procedimentos.
+   Escolher o protocolo; para VOC2007, escrever
+     AP_11 = (1/11) sum_{r in {0,0.1,...,1}} max_{r' >= r} P(r').
+   Para integração por todos os pontos ou outro protocolo, citar a fonte e
+   a implementação correspondentes. Não trocar o método apenas para caber
+   na referência. IoU e as razões de precisão/recall estão corretas.
+
+2. Recall de focos: a fórmula atual mede cobertura por proximidade.
+   Local: Eq. (2.27), eq_recall_focos.
+   Uma previsão pode satisfazer o critério para vários objetos reais. Exemplo:
+   dois objetos da mesma classe em 0 e 1 m, uma previsão em 0,5 m e dmax=1 m
+   produzem recall de 100% pela expressão atual; um pareamento um a um
+   permite no máximo 50%. A expressão é válida como cobertura, mas não
+   assegura contagem de detecções individuais. O próprio texto reconhece isso.
+   Definir um conjunto M de pares únicos válidos e usar R_f=|M|/N_reais se
+   esse for o protocolo escolhido; definir a regra de pareamento, classes,
+   dmax, casos sem objetos e falsos positivos. Trata-se de decisão de método,
+   não de inserir uma citação para tornar correta a métrica atual.
+
+3. EDF/RM: as garantias não valem sem as hipóteses do teorema.
+   Local: Eq. (2.28) e parágrafo seguinte.
+   Laplante pp. 95–97 sustenta o limite RM n(2^(1/n)-1) e o teste EDF para
+   tarefas periódicas independentes, preemptivas, em processador único,
+   com prazo relativo igual ao período, sem custos adicionais não modelados.
+   C_j deve representar a demanda de execução considerada na análise.
+   O limite RM é suficiente, não necessário. Acrescentar essas condições e
+   não apresentar o teorema como medição de r_max de CPU/GPU heterogêneas.
+
+4. Altura elipsoidal, AGL e altura de telemetria são grandezas diferentes.
+   Local: Eq. (2.23), eq_raios, e explicação posterior.
+   Kayton p. 25 usa dN=(R_M+H_e)dphi e
+   dE=(R_N+H_e)cos(phi)dlambda, com H_e acima do elipsoide, latitude geodésica
+   e ângulos em radianos. Os 40 m relativos à decolagem não fornecem H_e.
+   As expressões dos raios no TCC estão corretas; é a justificativa numérica
+   para desprezar a altura que deve ser corrigida. Definir plano e origem
+   local e quantificar a aproximação usando a altura pertinente.
+
+5. Velocidade de máximo alcance: curva mecânica não é curva elétrica total.
+   Local: figura da curva de potência; (2.12), (2.30) e H3.
+   A condição P'_el=P_el/V é correta para um ótimo interior, sem vento,
+   V>0 e mesma curva elétrica considerada no objetivo. A reta da figura
+   tangencia potência mecânica. Com eta constante e carga fixa P_av,
+   o ótimo elétrico satisfaz P'_mec=(P_mec+eta P_av)/V, enquanto o mecânico
+   satisfaz P'_mec=P_mec/V. Eles não precisam coincidir.
+   Identificar a velocidade da figura como ótima mecânica, ou refazer a
+   figura com as cargas elétricas explicitadas. Em H3, separar a restrição
+   r<=r_max da restrição de recall; uma não viola automaticamente a outra.
+
+6. Fração de área nova: explicitar domínio ou saturar a expressão.
+   Local: texto após (2.16), retomado no Cap. 3.
+   Para translação reta alinhada e sem rotação, a fração nova entre quadros
+   é min(1,V/(f_q L)). A forma V/(f_q L) exige V/f_q<=L. Se o deslocamento
+   ultrapassa L, a fração não ultrapassa 1 e surgem lacunas entre quadros.
+   Não foi identificado efeito dessa ressalva nos exemplos de voos usados,
+   cujas frações são pequenas. n_v=f_q L/V é estimativa contínua/esperada,
+   não contagem inteira exata para qualquer fase de amostragem.
+
+7. Há uma fonte disponível que pode sustentar diretamente o borrão.
+   Local: Eq. (2.21), eq_borrao.
+   O'Connor, Smith e James, manuscrito aceito local, PDF físico p. 20,
+   Eq. (6), apresenta b=v t/GSD. A fórmula do TCC está correta nas hipóteses
+   de translação, mas essa obra não consta no .bib e não é citada ali.
+   Acrescentar a referência e indicar Eq. (6), sem inventar página impressa
+   da edição final. Metadados editoriais: Progress in Physical Geography
+   41(3), 325–344 (2017), DOI 10.1177/0309133317703092. A Eq. (6) também é
+   compatível com a restrição de borrão em Di Franco, p. 448, Eq. (6).
+
+8. Abeywickrama: a fonte foi conferida e não apresenta a estrutura de (2.9).
+   Local: parágrafo posterior a eq_pel e entrada abeywickrama2018energy.
+   O artigo adota ajustes empíricos por etapas da missão; a Eq. (28),
+   p. 58392, soma energias dessas etapas. Não apresenta a decomposição
+   P_el=P_mec/eta_m+P_av. Retirar “seguem essa estrutura” e apresentar a
+   equação do TCC como balanço próprio, ou buscar fonte que a formule.
+   O efeito de velocidade estudado inclui decolagem e subida vertical;
+   não sustenta uma curva geral de potência versus velocidade horizontal.
+   A carga paga é estudada em pairado, p. 58391, Eqs. (24)–(26).
+   A primeira autora é Hasini Viranga Abeywickrama, e não Hassaan V.
+
+9. Glauert: suporte físico confirmado; edição e reimpressão são distintas.
+   Cap. XV, seção 15.2, pp. 201–203, sustenta o disco atuador ideal.
+   A p. 202 apresenta T=2 rho A(V+v)v e Omega Q=T(V+v); tomar V→0 com
+   v finito produz as fórmulas de pairado. A p. 204 explica a singularidade
+   de a=v/V nesse limite. Manter Leishman como fonte direta da notação de
+   pairado e usar Glauert como fundamento/derivação axial.
+   A página editorial identifica a 2ª edição em 1947 e a reimpressão de 1948;
+   o PDF fornecido traz dados editoriais posteriores. Identificar a edição
+   e a manifestação efetivamente consultadas, sem presumir exemplar de 1948.
+
+INVENTÁRIO COMPLETO DAS EQUAÇÕES NUMERADAS
+
+Legenda: A = álgebra/definição aprovada nas hipóteses descritas;
+C = correta como aproximação/modelo, mas condições precisam ser explicitadas;
+R = uso/interpretação/referência exige correção; P = suporte específico pendente.
+Uma marca C não significa que o cálculo esteja numericamente errado.
+Os pareceres por área detalham as condições de cada linha.
+
+Número | Rótulo              | Parecer e origem/evidência
+2.1 | eq_vh                 | A. Leishman p.63, Eqs.2.14–15; limite de Glauert p.202.
+2.2 | eq_ph                 | A. Leishman p.63, Eqs.2.16–17; limite de Glauert p.202.
+2.3 | eq_fm                 | A. Leishman p.70, Eqs.2.44–45; mérito aerodinâmico.
+2.4 | eq_dm                 | A. Taylor próprio de (2.2); primeira ordem, não potência total.
+2.5 | eq_glauert            | C. Leishman pp.93–95, Eq.2.122; sinal + confirmado visualmente.
+2.6 | eq_pv                 | C. Leishman pp.218–219,225, Eqs.5.23/5.29/5.47; somar rotores.
+2.7 | eq_equilibrio         | A. Projeções próprias; Etkin p.101, Eqs.4.5,4/6/7.
+2.8 | eq_fe                 | C. Álgebra de (2.7); V>0, vento/força no disco/ângulo limitam uso.
+2.9 | eq_pel                | A/R. Balanço por eficiência; Abeywickrama não apresenta essa forma.
+2.10| eq_energia            | A. E=integral UI dt; apoio Di Franco p.450, Eq.8 e medição UI.
+2.11| eq_aut                | C. Derivação própria; energia útil e potência constantes.
+2.12| eq_vrmax              | A/R. Derivada de P_el/V; Saarlas p.106 é contexto clássico.
+2.13| eq_e_area             | C. Derivação própria P/(Vw); Di Franco pp.450–451 é contexto.
+2.14| eq_gsd                | A. Triângulos semelhantes + pixel; Paine p.75, seção4.5.
+2.15| eq_pegada             | A. Geometria própria com mesma escala e eixos alinhados.
+2.16| eq_visibilidade       | C. tv=L/V; nv é aproximação contínua; fração no texto requer domínio.
+2.17| eq_e_h                | A. Substituição de (2.15) em (2.13), P e V fixos.
+2.18| eq_spx                | A. Escala própria; plano, dimensão e GSD correspondentes.
+2.19| eq_e_spx              | A. Eliminação correta de h entre (2.17) e (2.18).
+2.20| eq_hmax               | C. Isolamento de h; limiar spx,min precisa ser estabelecido.
+2.21| eq_borrao             | A. O'Connor PDF20 Eq.6; adicionar citação; te não é 1/fq.
+2.22| eq_georref            | C. Matriz/sinais corretos; Etkin p.99 Eq.4.4,3; validar montagem.
+2.23| eq_raios              | A/R. Kayton p.25 Eqs.2.2/2.3/2.5; corrigir argumento da altura.
+2.24| eq_recortes           | A. Contagem própria de grade; 24 correto; depende de passo/bordas.
+2.25| eq_iou                | A. Everingham p.314 Eq.3; áreas e união positiva.
+2.26| eq_pr                 | A. Everingham pp.313–314; definir pareamento e casos sem objetos.
+2.27| eq_recall_focos       | R. Definição própria de cobertura; não garante pares únicos.
+2.28| eq_utilizacao         | C/R. Laplante pp.10–11,95–97; condições EDF/RM faltam no texto.
+2.29| eq_pc                 | C. Modelo linear próprio; validar baseline, linearidade e DVFS.
+2.30| eq_coprojeto          | C. Síntese própria; coerente em J/m², sem duplas contagens.
+2.31| eq_otimizacao         | C. Formulação própria; definir domínio, detector e factibilidade.
+3.1 | eq_gsd_ajuste         | C. Estimador próprio; domínio/empates e incerteza; não prova exatidão.
+3.2 | eq_e_voo              | A. Definição E/área única; conferir unidades e integração dos dados.
+
+EXPRESSÕES SEM NÚMERO, NO TEXTO E EM LEGENDAS
+
+Potência/desempenho:
+- T=mg, P=C m^(3/2), razão exata e expansão de Taylor: aprovadas para disco
+  equivalente ou massa por rotor coerente; não inserir peso total em área de
+  um rotor individual. Para N rotores iguais, área equivalente é N A_rotor.
+- P_subida=mg Vc, CP=P/[rho A(Omega R)^3], mu=V cos(alpha)/(Omega R),
+  fe=CD S, D=rho V² fe/2 e P_par=DV: conferidas nas fontes/derivações.
+- kappa=1,15–1,25 e K=4,65/4,7: sustentados por Leishman p.219 para
+  estimativas preliminares; K é apresentado com faixa mu<0,5. Não são
+  parâmetros já calibrados para o multirrotor da base.
+- Equações vetoriais de forças, transformação Terra/corpo e componentes
+  da tração: consistentes com Etkin e com a convenção de sinais declarada.
+- Contrarrotação permite equilibrar torques; não garante equilíbrio por si
+  só, nem ausência de custo associado ao controle de guinada.
+
+Geometria/navegação e métodos:
+- FOV=2 arctan(Np/(2fc)), pegada, escala e relações de tamanho: corretas
+  na câmera ideal retificada e terreno/plano apropriado.
+- Matriz Euler corpo→Terra: sinais, ortogonalidade, determinante +1 e
+  redução ao yaw conferidos. O pitch -89,9 graus registrado no gimbal usa
+  outra convenção que theta_c=0 do referencial nadiral; falta explicação.
+- Projeção xproj=xaer+r(xobj-xaer), r=GSD/GSDreal, erro (1-r)(xaer-xobj),
+  três casos e comprimento |1-r|L: corretos no modelo ideal. Trilha parcial
+  ou orientação variável não obedece necessariamente ao comprimento L.
+- Mediana de distâncias L/4: correta para segmento uniforme completo.
+- sqrt(largura*altura): lado equivalente da CAIXA, não dimensão física
+  literal de qualquer objeto. A conversão exige escala pertinente ao objeto.
+- Densidade por hectare, união de pegadas, P=UI e integração trapezoidal:
+  definições coerentes; implementação/telemetria não foram reprocessadas.
+
+Computação/otimização:
+- C<=1/fq, limite RM e ln(2): corretos nas condições do parecer computacional.
+- r=nt fq e r=nt fq/k: corretos para todos os recortes e um quadro a cada k;
+  “quadro inteiro” no texto não pode ser confundido com uma única inferência.
+- At=(st GSD)^2, r≈nv* Vw/At: contabilidade ideal de área. Padding, sobreposição
+  e recortes descartados afetam o custo real; nv*<=nv não prova detecção.
+- Pc/(Vw)=Pc0/(Vw)+nv*Einf/At: álgebra correta no modelo; constância da parcela
+  variável vale fixando altura, E_inf e número de observações.
+- Passadas/km² = 10^6 r/(Vw). Energia com W, m e s sai em J/m²; para Wh/km²
+  multiplicar por 10^6/3600=277,7777778. Explicitar essa conversão no método.
+- H1–H3 são hipóteses experimentais, não resultados provados pelas fórmulas.
+  Em H2, a segunda comparação não decorre logicamente da primeira. Em H3,
+  distinguir limites de processamento, detecção e ótimo energético total.
+
+VERIFICAÇÕES REPRODUZÍVEIS
+
+Arquivo: auditoria-formulas-verificacoes.py (Python + SymPy).
+Saída: auditoria-formulas-verificacoes.txt.
+Foram verificadas identidades algébricas, matriz Euler e exemplos numéricos.
+Resultados: +10% de massa dá +15,369% de potência ideal, aproximado por 15%;
+o exemplo de potência total dá +8,357% assumindo rho=1,225 kg/m³, g=9,81 m/s²,
+RPM e kappa constantes. Essas condições devem acompanhar o exemplo/figura.
+Pegada 4K: 53,76 x 30,24 m; área nova por segundo a 4 m/s: 13,2275%; recorte
+640 com GSD=1,4 cm: 80,2816 m². Os arredondamentos do texto são coerentes.
+Essa reprodução não valida o código que gerou as figuras nem os 26 voos.
+
+PDFs RECEBIDOS E CONFERIDOS — PENDÊNCIA DE ACESSO ENCERRADA
+
+Abeywickrama et al. (2018), IEEE Access 6, 58383–58394,
+DOI 10.1109/ACCESS.2018.2875040: PDF integral de 12 páginas lido.
+A página física 1 corresponde à impressa 58383. Primeira página e biografias
+confirmam Hasini Viranga Abeywickrama e Beeshanga Abewardana Jayawickrama.
+O nome “Hassaan V.” está errado; “Beeshanga A.” é abreviação compatível.
+A p. 58385, Eq. (3), sustenta E=integral P dt; as Eqs. (1)–(2) descrevem
+leituras de corrente/tensão do circuito. A fonte não especifica a integração
+trapezoidal usada no TCC nem a decomposição de potência da Eq. (2.9).
+Ver item 8 e auditoria-abeywickrama-confirmacao.txt para correção proposta.
+
+Glauert, The Elements of Aerofoil and Airscrew Theory: PDF escaneado conferido
+visualmente. Folha de rosto/direitos nas páginas físicas 5–6; capítulo XV
+nas físicas 209–217 corresponde às impressas 199–207. Modelo ideal e limite
+de pairado confirmados, seção 15.2, pp. 201–204. Os dados editoriais registram
+2ª edição 1947; reimpressão 1948; reedição 1983, com dados posteriores até
+impressão digital 1999. Não é necessário outro PDF para verificar a teoria.
+Só seria necessário comprovar outra manifestação caso se queira manter a
+afirmação específica de consulta a um exemplar de 1948. Não identificar este
+livro automaticamente com os trabalhos de voo à frente de Glauert 1928/1935.
+Ver item 9 e auditoria-glauert-confirmacao.txt.
+
+Nenhum PDF adicional é necessário para encerrar estas duas verificações.
+As correções de redação, bibliografia e modelagem continuam propostas;
+o recebimento das fontes não as aplica ao manuscrito.
+
+Não é necessário baixar novamente, para esta auditoria:
+- Leishman, Etkin, Saarlas, Paine, Kayton, Laplante, Sky e O'Connor: locais.
+- Di Franco, Everingham, Redmon e Bewley: versões primárias lidas online.
+- Cabreira: texto editorial HTML acessível. PDF local é opcional para arquivo.
+Haykin/MAVBench são referências de contexto sem fórmula específica
+transcrita nos trechos auditados; sua ausência não bloqueou a conferência
+algébrica. Isto não equivale a uma auditoria integral de toda a bibliografia.
+
+FONTES ONLINE E RASTREABILIDADE
+
+Di Franco (PDF autor, pp.448,450–451):
+https://retis.santannapisa.it/~giorgio/paps/2016/JIRS16.pdf
+Everingham (PDF autores, pp.313–314):
+https://www.robots.ox.ac.uk/~vgg/publications/2010/Everingham10/everingham10.pdf
+Redmon (arXiv v5, 09/05/2016, pp.1–2):
+https://arxiv.org/pdf/1506.02640
+Bewley (versão autores arXiv; registrar diferença de versão frente aos anais):
+https://arxiv.org/pdf/1602.00763
+Cabreira (HTML editorial):
+https://www.mdpi.com/2504-446X/3/1/4
+Abeywickrama (metadados institucionais; texto integral agora conferido localmente):
+https://opus.lib.uts.edu.au/handle/10453/131279
+O'Connor (metadados institucionais da publicação):
+https://researchinnovation.kingston.ac.uk/en/publications/cameras-and-settings-for-aerial-surveys-in-the-geosciences-optimi-2/
+
+PARECERES COMPLEMENTARES
+
+auditoria-formulas-voo.txt: fontes, hipóteses e achados de aerodinâmica.
+auditoria-formulas-geometria.txt: câmera, referenciais, navegação e GSD.
+auditoria-formulas-computacao.txt: detecção, tempo real e otimização.
+auditoria-abeywickrama-confirmacao.txt: leitura integral e atribuição de (2.9).
+auditoria-glauert-confirmacao.txt: edição, disco atuador e limite de pairado.
+
+NOTA DE USO
+
+Uma derivação própria simples e demonstrada não precisa receber uma
+referência inventada. Deve ficar claro quais resultados vêm da literatura,
+quais são deduzidos neste trabalho e quais são modelos/definições propostos.
+Correção algébrica não valida estimativas empíricas, parâmetros, hardware,
+georreferenciamento ou desempenho de detecção. As pendências aqui indicadas
+devem ser resolvidas antes de afirmar validação completa do modelo.

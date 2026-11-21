@@ -1,0 +1,8 @@
+{
+  "engine_sha256": "ca1e6a1dc8eed66b00ae71ff2a0a8cba971ac37966ce9163e321b3d5fdd5e9a6",
+  "otimizacao": 1,
+  "camadas": 330,
+  "formatos": [
+    "Float"
+  ]
+}

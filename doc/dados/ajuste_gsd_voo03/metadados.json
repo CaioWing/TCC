@@ -1,0 +1,28 @@
+{
+  "video": "video03_regionB",
+  "fps": 29.97,
+  "width": 3840,
+  "height": 2160,
+  "tracks": 292,
+  "boxes": 13228,
+  "frame_step": 5,
+  "minimum_track_samples": 5,
+  "alignment": "frame/fps relative to first telemetry timestamp; no extra offset",
+  "yaw": "gimbalYawRaw / 10, degrees, unwrapped before interpolation",
+  "position": "WGS84 local north/east; origin at first telemetry position; H_e=0",
+  "interpolation": "linear; first sample retained at duplicate timestamps",
+  "center": "image center; bounding box center; coordinatewise track medians",
+  "origin_latitude_deg": -22.872419,
+  "origin_longitude_deg": -43.632628000000004,
+  "source_sha256": {
+    "data\\mbg_v2\\raw\\flight-mbg-v2-03-regionB\\ann\\video03_regionB.xml": "d4c64dc4d1c9697dfe74e148c705ff8dde493dc0a1fcc8efb122e4afaa7ef53b",
+    "data\\mbg_v2\\raw\\flight-mbg-v2-03-regionB\\log\\video03_regionB.csv": "ba33fadd5a352582c0972d2f477f46902ed82bc813f095d41a53a1f2c47af600"
+  },
+  "gsd_cm": 1.35,
+  "dispersion_m": 0.5475295261902644,
+  "coarse_step_cm": 0.05,
+  "fine_step_cm": 0.01,
+  "refinement": "within 0.05 cm/pixel of coarse minimum, clipped to search domain",
+  "tie_break": "smallest GSD among exact ties",
+  "zero_gsd_dispersion_m": 7.466615830663949
+}

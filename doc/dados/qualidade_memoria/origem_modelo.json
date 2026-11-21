@@ -1,0 +1,17 @@
+{
+  "epoca": 17,
+  "map50_95_validacao_12_classes": 0.21991,
+  "sha256": {
+    "runs/mbg_y11n_640_v1/weights/best.pt": "2e592d202d47e964767f883db7bc9bcd1d181648781f30023e536fd416313273",
+    "tmp/avaliacao_mbg/detector.pt": "2e592d202d47e964767f883db7bc9bcd1d181648781f30023e536fd416313273",
+    "tmp/avaliacao_mbg/detector.torchscript": "ae3d00b515fce19f431e51393c7ef1ef2f7d0459e8ad3d2ea4163671843e42fa",
+    "tmp/avaliacao_mbg/detector.onnx": "786b288fddbd55a67bc6b3be28773e3fe9bf2f54f4ced79c1e8a37909d14a318"
+  },
+  "entrada": [
+    1,
+    3,
+    640,
+    640
+  ],
+  "opset_onnx": 17
+}

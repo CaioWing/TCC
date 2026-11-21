@@ -37,7 +37,6 @@ em que $P_h$ é a potência efetivamente absorvida pelo rotor \cite[p.~70]{leish
   \fonte{Elaborado pelo autor, com base em \citeonline[p.~59--63]{leishman2006}. As setas indicam a velocidade induzida no disco, $v_h$, e na esteira, $2v_h$.}
 \end{figure}
 
-
 \subsection{Efeito da massa embarcada}
 \vspace{0.5\baselineskip}
 
@@ -202,14 +201,14 @@ O alcance máximo ocorre na velocidade que minimiza a razão $P_{el}/V$, que é 
 
 \subsection{Energia por área inspecionada}
 
-Em uma missão de inspeção, a distância percorrida precisa ser relacionada à largura da faixa imageada para determinar a área coberta. Em um trecho retilíneo de velocidade constante, se a câmera imageia uma faixa de largura $w$, alinhada à trajetória, sem lacunas entre quadros nem sobreposição com áreas já inspecionadas, a taxa de cobertura de área nova é $Vw$. A energia por unidade de área imageada é então
+Em voo retilíneo uniforme, a razão entre potência e velocidade fornece a energia por metro percorrido, como na análise de alcance de \citeonline{zeng2019energia}. Na inspeção, interessa a área nova vista pela câmera. Se $w$ é a largura da faixa perpendicular ao avanço e o trecho não contém lacunas nem revisitas, em um intervalo $\Delta t$ a aeronave percorre $V\Delta t$ e imageia $Vw\Delta t$. Dividir a energia consumida no intervalo por essa área fornece
 \begin{equation}
   e = \frac{P_{el,\mathrm{tot}}(V)}{V\,w},
   \label{eq_e_area}
 \end{equation}
 em que $P_{el,\mathrm{tot}}$ inclui a propulsão, os aviônicos e o computador de bordo. A interpretação da área imageada como área inspecionada pressupõe que seu processamento satisfaça o critério de qualidade adotado.
 
-Nas comparações experimentais, será usada a mesma área imageada de referência para todas as estratégias, com registro separado da área coberta pelos recortes efetivamente processados. Regiões sem processamento permanecem no denominador comum, e seus objetos anotados permanecem na avaliação de recall. Isso evita que uma estratégia pareça econômica apenas por deixar de analisar parte da região. A área imageada, a processada e aquela em que se demonstra desempenho suficiente são grandezas distintas.
+Nas comparações experimentais, usa-se a mesma área imageada de referência para todas as estratégias, com registro separado da área coberta pelos recortes efetivamente processados. Regiões sem processamento permanecem no denominador comum, e seus objetos anotados permanecem na avaliação de recall. Isso evita que uma estratégia pareça econômica apenas por deixar de analisar parte da região. A área imageada, a processada e aquela em que se demonstra desempenho suficiente são grandezas distintas.
 
 Na presença de vento, as duas velocidades da Equação~\eqref{eq_e_area} têm papéis distintos: a potência depende da velocidade em relação ao ar, enquanto a taxa de cobertura $Vw$ depende da velocidade em relação ao solo, que é a usada no denominador.
 
@@ -279,7 +278,6 @@ Pela Equação~\eqref{eq_visibilidade}, enquanto houver sobreposição entre qua
   \includegraphics[width=0.95\textwidth]{figuras/fig_geometria_imageamento.pdf}
   \fonte{Elaborado pelo autor, com $h = 40$~m, $GSD = 1{,}4$~cm/pixel, imagem de $3840 \times 2160$ pixels e $V = 4$~m/s. A faixa destacada é a área nova que entra no campo de visão a cada segundo; a grade indica recortes de 640 pixels.}
 \end{figure}
-
 
 \subsection{Compromisso entre altitude, energia e detecção}
 \label{sec_compromisso_altitude}
@@ -461,39 +459,39 @@ Para $N_x \times N_y = 3840 \times 2160$ e $s_t = 640$, são $6 \times 4 = 24$ p
 
 A sobreposição entre uma caixa prevista $B_p$ e uma caixa anotada $B_g$ é medida pela razão entre interseção e união,
 \begin{equation}
-  IoU = \frac{|B_p \cap B_g|}{|B_p \cup B_g|},
+  IoU = \frac{|B_p \cap B_g|}{|B_p \cup B_g|}\,.
   \label{eq_iou}
 \end{equation}
-Para considerar a detecção correta, exige-se a classe correta e uma associação única a uma caixa anotada com $IoU$ acima do limiar adotado, tipicamente 0,5 \cite{everingham2010voc}. A partir das contagens de verdadeiros positivos ($VP$), falsos positivos ($FP$) e falsos negativos ($FN$), definem-se a precisão, isto é, a fração das detecções que estão corretas, e a taxa de detecção (\textit{recall}), isto é, a fração dos objetos anotados que foram detectados:
+No teste por quadro, uma previsão conta como correta quando a classe coincide com a anotação e a IoU atinge o limiar escolhido. Cada caixa anotada pode ser associada a uma única previsão. A precisão indica a proporção de alertas corretos, enquanto o \textit{recall} indica a proporção de objetos anotados que foram encontrados. Em termos de verdadeiros positivos ($VP$), falsos positivos ($FP$) e falsos negativos ($FN$), obtém-se
 \begin{equation}
   \mathcal{P} = \frac{VP}{VP + FP}, \qquad \mathcal{R} = \frac{VP}{VP + FN}.
   \label{eq_pr}
 \end{equation}
-A precisão média (AP) resume a curva de precisão em função da taxa de detecção, construída ao variar o limiar de confiança. Seu valor depende da interpolação e da regra de integração adotadas. No protocolo VOC2007 descrito por \citeonline[p.~313--314]{everingham2010voc}, usam-se 11 níveis de taxa de detecção:
+O F1 é a média harmônica da precisão e do recall. Com ambas as métricas definidas e soma positiva, $F_1=2\mathcal{P}\mathcal{R}/(\mathcal{P}+\mathcal{R})$. O F1 descreve a operação em um limiar de confiança. A precisão média (AP) resume a curva de precisão em função do recall ao variar esse limiar. No protocolo VOC2007, \citeonline[p.~313--314]{everingham2010voc} usam 11 níveis de recall,
 \begin{equation*}
   AP_{11}=\frac{1}{11}\sum_{q\in\{0;\,0{,}1;\,\ldots;\,1\}}
   \mathcal{P}_{\mathrm{interp}}(q),
   \qquad
   \mathcal{P}_{\mathrm{interp}}(q)=\max_{\tilde q\geq q}\mathcal{P}(\tilde q).
 \end{equation*}
-Aqui, $q$ representa a taxa de detecção, e a precisão interpolada é tomada como zero quando o nível não é atingido. A mAP é a média da AP entre as classes avaliadas. O protocolo experimental deverá informar a implementação, a regra de integração, os limiares de $IoU$ e as classes incluídas; não se deve identificar automaticamente a AP de outra implementação com $AP_{11}$. No VOC, as previsões são avaliadas por confiança decrescente e detecções duplicadas de um mesmo objeto contam como falsos positivos.
+em que $q$ é o nível de recall e a precisão interpolada vale zero quando ele não é atingido. A mAP é a média das AP das classes avaliadas. A avaliação por quadro deste trabalho usa 101 níveis de recall e dez limiares de IoU entre 0,50 e 0,95 (Seção~\ref{sec_metodo_trechos}).
 
 \subsection{Dos quadros aos focos únicos}
 
 Métricas por quadro, como a mAP, contam o mesmo objeto tantas vezes quantas ele aparece no vídeo. Para a vigilância, o que importa é quantos potenciais criadouros distintos foram encontrados. Por isso, as detecções são associadas ao longo do tempo e do espaço para formar \textit{focos únicos}.
 
-A associação temporal pode ser feita por rastreadores que combinam um filtro de Kalman, para predizer a posição de cada objeto no quadro seguinte, com o algoritmo húngaro, para associar predições e novas detecções \cite{bewley2016sort}. A associação espacial agrupa as posições georreferenciadas (Seção~\ref{sec_georref}) de uma mesma classe que estejam a menos de uma distância limite.
+A associação temporal pode ser feita por rastreadores que combinam um filtro de Kalman, para predizer a posição de cada objeto no quadro seguinte, com o algoritmo húngaro, para associar predições e novas detecções \cite{bewley2016sort}. A associação espacial agrupa as posições georreferenciadas (Seção~\ref{sec_georref}) de uma mesma classe dentro de um raio de associação.
 
-Formar focos previstos e avaliá-los são etapas distintas. Depois da associação temporal e espacial, os focos previstos são comparados ao conjunto $\mathcal{G}$ de objetos anotados por um pareamento um a um. Cada par válido deve ter a mesma classe e distância menor que $d_{\max}$. Adota-se um conjunto de pares $\mathcal{M}$ com o maior número possível de associações válidas; entre soluções com a mesma cardinalidade, minimiza-se a soma das distâncias. A taxa de detecção, para $|\mathcal{G}|>0$, é
+Depois de reunir as vistas de um mesmo recipiente, comparam-se os focos previstos ao conjunto $\mathcal{G}$ de referências anotadas. Um par é válido se a classe coincidir e a distância no solo for de até $d_{\max}$. Cada previsão e cada referência entram em, no máximo, um par. Escolhe-se o conjunto $\mathcal{M}$ com o maior número de pares válidos e, em caso de empate, com a menor soma das distâncias. Para $|\mathcal{G}|>0$, o recall por foco é
 \begin{equation}
   \mathcal{R}_f = \frac{|\mathcal{M}|}{|\mathcal{G}|} = \frac{VP_f}{VP_f+FN_f},
   \label{eq_recall_focos}
 \end{equation}
 em que $VP_f=|\mathcal{M}|$, $FN_f=|\mathcal{G}|-|\mathcal{M}|$ e $FP_f$ é o número de focos previstos sem associação. A precisão correspondente é $\mathcal{P}_f=VP_f/(VP_f+FP_f)$ quando há previsões. Sem focos reais, o recall é indefinido; sem previsões, a precisão é indefinida. Esses casos devem ser informados, e as contagens podem ser agregadas antes do cálculo das razões.
 
-Essa definição de avaliação é adotada neste trabalho e impede que uma previsão seja contada para vários objetos. Os focos reais são os objetos visíveis anotados, sem confirmação de larvas nem inclusão de recipientes ocultos. Os identificadores de trilha devem ser verificados quanto a duplicações do mesmo objeto antes de compor $\mathcal{G}$. O limiar $d_{\max}$, o limiar de confiança e o critério de consolidação das trilhas serão escolhidos na validação e fixados antes do teste.
+Com esse pareamento, cada previsão pode corresponder a um único objeto. Os focos de referência são os recipientes visíveis anotados. A presença de larvas e os recipientes ocultos ficam fora do alcance das imagens. Aplicar a métrica requer verificar duplicações de um mesmo objeto entre as trilhas e definir na validação o raio $d_{\max}$, o limiar de confiança e o critério de consolidação das trilhas.
 
-O recall será acompanhado pela precisão por foco e pelo número de falsos positivos por quilômetro quadrado da mesma área de referência. Os resultados serão apresentados por classe e de forma agregada, com as contagens de objetos, para explicitar o efeito do desequilíbrio da base. A restrição de recall usada na otimização não estabelece, sozinha, qualidade operacional suficiente: uma recomendação deverá informar também a carga de alarmes falsos, sem reajustar o limiar de confiança no teste.
+Para interpretar o recall por foco, interessam também a precisão, o número de falsos alarmes por quilômetro quadrado e as contagens de objetos por classe. Na Seção~\ref{sec_qualidade_teste}, associam-se as detecções de quadros diferentes a um mesmo recipiente e contam-se os focos reconhecidos, os omitidos e os falsos alarmes nos trechos de teste.
 
 \section{Computação embarcada}
 \label{sec_embarcada}
@@ -506,45 +504,44 @@ Em um sistema de tempo real, cada tarefa precisa terminar dentro de um prazo \ci
   U_p = \sum_j \frac{C_j}{\tau_j},
   \label{eq_utilizacao}
 \end{equation}
-mede a fração do tempo em que o processador está ocupado \cite[p.~10--11]{laplante2004}.
+expressa a fração da capacidade de processamento requerida para os tempos de execução adotados \cite[p.~10--11]{laplante2004}.
 
-Para tarefas periódicas independentes, preemptivas, executadas em um único processador, com prazo relativo igual ao período e sem custos adicionais não modelados, $U_p\leq1$ é condição necessária e suficiente sob escalonamento por prazo mais próximo (EDF). Nessa análise, $C_j$ representa o pior tempo de execução considerado. Com prioridades fixas atribuídas pela taxa (RM), $U_p\leq n(2^{1/n}-1)$ é um limite suficiente, mas não necessário; ele tende a $\ln2\approx0{,}69$ para muitas tarefas \cite[p.~95--97]{laplante2004}.
+Para tarefas periódicas independentes e preemptivas em um único processador, com prazo igual ao período e sem sobrecarga, \citeonline{liu1973escalonamento} demonstraram que $U_p\leq1$ é condição necessária e suficiente sob escalonamento por prazo mais próximo (EDF). Aqui $C_j$ é o pior tempo de execução considerado. Com prioridades fixas atribuídas pela taxa (RM), $U_p\leq n(2^{1/n}-1)$ é uma condição suficiente para $n$ tarefas e tende a $\ln2\approx0{,}69$ quando $n$ cresce \cite[p.~95--97]{laplante2004}.
 
-Esses teoremas não determinam diretamente a capacidade de uma plataforma heterogênea com CPU e GPU. Neste trabalho, $r_{\max}$ será medido para cada estratégia, computador, modo de potência e configuração do detector, considerando o processamento completo: decodificação, transferência de dados, seleção dos recortes, inferência, pré e pós-processamento e associação geográfica. A condição $r\leq r_{\max}$ limitará a taxa média solicitada pela estratégia, mas não comprova o cumprimento dos prazos. Por isso, serão registradas latências e filas, e será definida uma regra de descarte em sobrecarga. O recall será avaliado na sequência efetivamente processada sob essa regra e poderá, portanto, depender do hardware.
+Para dimensionar a demanda da MBG-V2, considere o vídeo de $3840 \times 2160$ pixels a 29,97 quadros/s da Tabela~\ref{tab_campanhas}. Entre dois quadros decorrem 33,4~ms. Se todos os 24 recortes da Equação~\eqref{eq_recortes} forem processados em série nesse intervalo, restam apenas 1,39~ms por recorte, mesmo dedicando todo o prazo ao detector. Na Jetson, CPU e GPU compartilham o trabalho. A Seção~\ref{sec_metodo_jetson} mede a vazão de bancada $r_b$ a partir da imagem decodificada. A capacidade $r_{\max}$ do sistema completo depende ainda da decodificação, da seleção de recortes e da associação geográfica. Filas e chegadas em grupos podem causar atrasos mesmo quando a demanda média é inferior à vazão de referência.
 
 \subsection{Energia da computação}
 
 \subsubsection{Consumo fixo e consumo por inferência}
 
-A potência média do computador de bordo pode ser modelada como uma parcela fixa, consumida mesmo sem processamento, mais uma parcela proporcional à taxa de inferências:
+Em uma janela de duração $\Delta t$ que completa $N$ inferências, a placa consome a energia de repouso $P_{c0}\Delta t$ mais a energia adicional das chamadas. Se a energia incremental por chamada puder ser representada por $E_{\mathrm{inf}}$, a energia adicional é $N E_{\mathrm{inf}}$. Dividir o balanço por $\Delta t$ e usar $r_{\mathrm{exec}}=N/\Delta t$ fornece o modelo afim adotado neste trabalho,
 \begin{equation}
   P_c = P_{c0} + r_{\mathrm{exec}}\,E_{\mathrm{inf}},
   \label{eq_pc}
 \end{equation}
-em que $r_{\mathrm{exec}}$ é a taxa de passadas efetivamente concluídas e $E_{\mathrm{inf}}$ é a energia adicional média atribuída a cada passada, obtida da potência do conjunto computacional após descontar a parcela fixa. A taxa solicitada $r$ coincide com $r_{\mathrm{exec}}$ quando toda a demanda é concluída no intervalo considerado; filas e descarte podem fazê-las diferir.
+em que o produto de inferências por segundo e joules por inferência resulta em watts. A taxa solicitada $r$ coincide com $r_{\mathrm{exec}}$ quando toda a demanda é concluída no intervalo considerado.
 
 A versão de 8~GB do NVIDIA Jetson Orin Nano opera originalmente nos modos de 7 e 15~W; com a configuração introduzida no JetPack 6.2, os modos disponíveis passam a ser 15~W, 25~W e o modo sem limite MAXN SUPER \cite{nvidia2024orinnano,nvidia2025jetpack62}. Os parâmetros $P_{c0}$, $E_{\mathrm{inf}}$ e $r_{\max}$ dependem do modo escolhido.
 
-O ajuste afim da Equação~\eqref{eq_pc} será verificado para cada estratégia e modo de potência no intervalo de carga usado, mantendo fixa a configuração do detector. Aquecimento, concorrência, variações de frequência e custos de seleção e associação podem alterar $E_{\mathrm{inf}}$, que depende tanto do hardware quanto da estratégia. Se esses custos não forem bem representados pelo ajuste, será usada a potência total medida. As comparações incluirão todos os componentes necessários ao processamento, inclusive refrigeração; o modo de potência configurado no módulo não substituirá o consumo medido.
+A Equação~\eqref{eq_energia_bancada} estima $E_{\mathrm{inf}}$ descontando o repouso da potência medida na entrada da placa. No ensaio contínuo em TensorRT FP16, $(6{,}81-4{,}76)~\mathrm{W}/(44{,}87~\text{inferências/s})$ fornece cerca de 0,046~J por inferência (Tabela~\ref{tab_jetson_configuracoes}). Na própria janela de medição, a Equação~\eqref{eq_pc} recupera a potência média por construção. Aplicá-la em outra cadência pressupõe que a energia incremental por chamada permaneça semelhante. A frequência dinâmica do processador e o trabalho de seleção dos recortes podem alterar esse valor.
 
 \subsubsection{Taxa de inferências de cada estratégia}
 
-A taxa solicitada de inferências $r$ depende da estratégia de processamento. Antes das limitações de execução, as quatro estratégias têm as seguintes demandas:
+Se $f_q$ é a cadência da câmera em quadros/s e $n_t$ o número de recortes por quadro, a demanda $r$ é o número de inferências solicitadas por segundo. Para a grade de recortes usada na MBG-V2, as regras de seleção conduzem às seguintes expressões.
 \begin{itemize}
-    \item \textbf{quadro inteiro}: uma inferência por quadro, redimensionado para a entrada do detector, com $r=f_q$;
-    \item \textbf{amostragem temporal de quadros inteiros}: uma inferência para cada $k$ quadros redimensionados, com $r=f_q/k$;
-    \item \textbf{recortes fixos}: todos os $n_t$ recortes de cada quadro, com $r=n_t f_q$;
-    \item \textbf{memória geográfica}: $r\approx n_v^{\ast}Vw/A_t$, em que $A_t=(s_t\,GSD)^2$ é a área ideal de solo coberta por um recorte e $n_v^{\ast}\leq n_v$ é o número desejado de observações de cada ponto.
+    \item \textbf{Processamento integral.} Todos os $n_t$ recortes de todos os quadros seguem para o detector, com $r=n_t f_q$.
+    \item \textbf{Amostragem temporal.} A cada $k$ quadros, processa-se a grade inteira do quadro selecionado, com $r=n_t f_q/k$. O intervalo $k$ expressa o número de quadros entre duas seleções.
+    \item \textbf{Memória geográfica.} A seleção depende das observações anteriores de cada célula do solo. A demanda ideal é $r\approx n_v^{\ast} Vw/A_t$, em que $A_t=(s_t\,GSD)^2$ é a área de um recorte no solo e $n_v^{\ast}$ é a meta de vistas por ponto.
 \end{itemize}
-A amostragem temporal também pode ser aplicada à grade de recortes, caso em que $r=n_t f_q/k$. Essa variante deve ser identificada separadamente nas comparações. A estimativa da memória geográfica pressupõe recortes úteis sem desperdício de área; sobreposição e preenchimento nas bordas alteram a demanda efetiva de passadas, que será medida. O custo de seleção também entra na avaliação de capacidade e energia. O limite $n_v^{\ast}\leq n_v$ expressa a disponibilidade de observações, sem garantir a detecção.
+A título de comparação, reduzir o quadro inteiro à entrada do detector custaria uma inferência por imagem selecionada, com $r=f_q$ ou $r=f_q/k$. Esse cálculo altera a escala dos objetos na entrada. Na grade de recortes, a escala é mantida entre as estratégias. A demanda real da memória depende da sobreposição dos recortes e das bordas da imagem. O limite $n_v^{\ast}\leq n_v$ relaciona a meta à quantidade de vistas disponíveis.
 
-Para testar a contribuição da informação geográfica, a referência principal será a amostragem temporal da mesma grade de recortes, mantendo detector, resolução e orçamento de passadas por área. Sua cadência será ajustada à velocidade e ao comprimento da região imageada na direção do voo, com parâmetros escolhidos na validação. Como referência ideal, $n_v^{\ast}$ observações durante $L/V$ segundos correspondem a um intervalo de aproximadamente $L/(Vn_v^{\ast})$ entre quadros processados. Com $L=30{,}2$~m, $V=4$~m/s e $n_v^{\ast}=5$, são cerca de 1,51~s, ou 45 quadros a 30~quadros/s. Essa estimativa não garante cinco observações úteis de cada objeto; bordas, oclusões e variações do movimento serão consideradas pela contagem efetiva.
+Em uma passada ideal, distribuir $n_v^{\ast}$ observações durante os $L/V$ segundos de visibilidade corresponde a um intervalo aproximado de $L/(Vn_v^{\ast})$. Com $L=30{,}2$~m, $V=4$~m/s e uma meta de cinco vistas, o intervalo é de 1,51~s, ou cerca de 45 quadros a 30~quadros/s. No teste de H1, o passo temporal é calculado a partir da quantidade de recortes que a memória de fato solicita no voo (Seção~\ref{sec_metodo_trechos}). Isso permite comparar como as estratégias distribuem um volume semelhante de inferências.
 
 \subsubsection{Custo computacional por área inspecionada}
 
-Considere uma mesma altura, detector, estratégia e hardware, com cadência fixa de quadros processados. Se toda a demanda for executada, a taxa de inferências permanece fixa ao variar a velocidade. Nesse caso, a energia de computação por área, $P_c/(Vw)$, diminui com a velocidade, porque o mesmo consumo é diluído em mais área. Essa conclusão não se aplica diretamente à amostragem temporal cuja cadência é ajustada à velocidade, como na referência de comparação de H1.
+Considere uma mesma altura, detector, estratégia e hardware, com cadência fixa de quadros processados. Se toda a demanda for executada, a taxa de inferências permanece fixa ao variar a velocidade. Nesse caso, a energia de computação por área, $P_c/(Vw)$, diminui com a velocidade, porque o mesmo consumo é diluído em mais área. Na amostragem temporal pareada de H1, o intervalo é ajustado separadamente em cada voo para aproximar a demanda da memória geográfica. A taxa de inferências dessa estratégia pode, portanto, variar entre trajetórias.
 
-Com memória geográfica e execução de toda a demanda ideal, mantendo a altura, $n_v^{\ast}$ e $E_{\mathrm{inf}}$ fixos, a parcela proporcional às inferências fica constante, igual a $n_v^{\ast} E_{\mathrm{inf}}/A_t$, e só a parcela fixa $P_{c0}$ diminui com a velocidade.
+Para a memória geográfica ideal, substituir $r_{\mathrm{exec}}=n_v^{\ast}Vw/A_t$ na Equação~\eqref{eq_pc} dá um custo por área de $P_{c0}/(Vw)+n_v^{\ast}E_{\mathrm{inf}}/A_t$. Mantidas a altura, a energia por inferência e a meta de observações, aumentar a velocidade reduz o custo de repouso por unidade de área. O custo das inferências por unidade de área permanece constante, pois cada ponto requer o mesmo número de observações.
 
 A Figura~\ref{fig_passadas} ilustra a demanda ideal de passadas por área, calculada como $10^6 r/(Vw)$, para o processamento de todos os recortes, a amostragem dessa grade a cada seis quadros e a memória geográfica idealizada. As curvas antecedem as limitações do hardware e usam redundâncias diferentes; não demonstram superioridade da memória em uma comparação com orçamento e qualidade equivalentes. Essa comparação depende dos experimentos descritos acima.
 \begin{figure}[htb]
@@ -555,11 +552,14 @@ A Figura~\ref{fig_passadas} ilustra a demanda ideal de passadas por área, calcu
   \fonte{Elaborado pelo autor, a partir das Equações~\eqref{eq_visibilidade} e \eqref{eq_recortes}, com $n_t = 24$ recortes por quadro, $f_q = 30$ quadros/s, $w = 53{,}8$~m e $A_t = 80{,}3$~m$^2$. As duas curvas de amostragem processam a grade completa de 24 recortes; a memória usa a estimativa ideal de cinco observações por ponto. O exemplo não iguala o orçamento de inferências nem mede recall.}
 \end{figure}
 
-
 \section{Formulação do problema de co-projeto}
 \label{sec_coprojeto}
 
-A formulação integra o efeito da computação sobre a missão \cite{boroujerdian2018mavbench,krishnan2020sky} ao planejamento de cobertura com consciência energética \cite{difranco2016coverage}. Reunindo as Equações~\eqref{eq_pv}, \eqref{eq_pel}, \eqref{eq_e_area}, \eqref{eq_gsd} e \eqref{eq_pc}, a energia por área inspecionada é escrita como função da altitude $h$, da velocidade $V$, da estratégia de inferência $\pi$ e do hardware embarcado $H$:
+Em missões de comunicação, \citeonline{zeng2019energia} somam a energia de propulsão e a de comunicação para entregar um volume especificado de dados. Na fotogrametria, \citeonline{difranco2016coverage} relacionam o consumo de voo à trajetória necessária para cobrir uma região com a resolução desejada. Em aeronaves autônomas, a escolha do computador também pode afetar a energia total da missão \cite{boroujerdian2018mavbench} e a velocidade de voo compatível com o tempo de resposta da percepção \cite{krishnan2020sky}.
+
+Para a inspeção de criadouros, este trabalho reúne essas contribuições em um balanço de energia por área. Em uma passada retilínea, a Equação~\eqref{eq_pv} fornece a potência mecânica para a massa total, e a Equação~\eqref{eq_pel} fornece a potência elétrica da aeronave. Soma-se a potência do computador da Equação~\eqref{eq_pc} e divide-se o total pela taxa de cobertura da Equação~\eqref{eq_e_area}. A largura $w(h)=N_x\,GSD(h)$ vem da Equação~\eqref{eq_pegada}.
+
+Para a estratégia de inferência $\pi$ e o hardware $H$, o custo por área é
 \begin{equation}
   e(h, V, \pi, H) =
   \frac{
@@ -570,11 +570,11 @@ A formulação integra o efeito da computação sobre a missão \cite{boroujerdi
   }{\underbrace{V\, w(h)}_{\text{área coberta por segundo}}},
   \label{eq_coprojeto}
 \end{equation}
-em que $m_0$ é a massa da aeronave sem o computador e $m_H$ é a massa acrescentada pelo hardware. O numerador soma as potências elétricas: a propulsão depende da velocidade e da massa total, com a eficiência $\eta_m$ convertendo a potência mecânica em elétrica; os aviônicos e a computação em repouso compõem as cargas de base. O processamento acrescenta a taxa de inferências concluídas, $r_{\mathrm{exec}}=r_{\mathrm{exec}}(\pi,h,V,H)$, multiplicada pela energia incremental de cada passada. No denominador, $Vw(h)$ é a área coberta por segundo. A razão entre potência e taxa de cobertura resulta na energia por unidade de área.
+em que $m_0$ é a massa da aeronave sem o computador e $m_H$ inclui o conjunto embarcado. Transportá-lo eleva a potência de propulsão mesmo com a placa desligada. Ao energizá-la, acrescenta-se $P_{c0}(H)$. Executar o detector acrescenta $r_{\mathrm{exec}}E_{\mathrm{inf}}$, com $r_{\mathrm{exec}}$ igual ao número de inferências concluídas por segundo na configuração considerada. A eficiência $\eta_m$ converte a potência mecânica de propulsão em potência elétrica, e $P_{av}$ representa os demais aviônicos.
 
-A expressão pressupõe voo sem vento, de modo que a velocidade no modelo de potência e na taxa de cobertura seja a mesma. Cada comparação mantém fixos o detector, a resolução de entrada e a precisão numérica; $H$ inclui o modo de potência e $P_{av}$ exclui o consumo já contado em $P_c$. Modelos de detector diferentes exigem novas medições de energia, capacidade e recall.
+A Equação~\eqref{eq_coprojeto} pressupõe vento nulo e cobertura contínua de uma faixa nova. Para uma imagem de 3840 pixels de largura a 1,4~cm/pixel, como na Figura~\ref{fig_geometria}, a faixa mede 53,76~m. A 4,1~m/s, ela cobre 0,793~km$^2$/h. Nessas condições, cada watt de carga contínua acrescenta 1,26~Wh/km$^2$. A Seção~\ref{sec_exemplo_coprojeto} aplica o balanço ao voo~17 e compara a estimativa para uma passada com a energia por área da trajetória completa, que inclui revisitas.
 
-No modelo de otimização, uma configuração deve atingir a taxa de detecção exigida e manter sua demanda média dentro da capacidade medida do hardware. O cumprimento dos prazos será verificado pela análise de latências e filas da Seção~\ref{sec_tempo_real}. Sobre um conjunto admissível $\mathcal{D}$ de alturas $h>0$, velocidades $V>0$, estratégias e configurações de hardware, o ponto de operação ótimo resolve
+Para escolher um ponto de operação, é preciso considerar o efeito dessas variáveis na detecção. Aumentar a altura alarga a faixa e reduz o tamanho do objeto em pixels. A velocidade altera a potência de voo e o borrão de movimento. A estratégia $\pi$ determina a demanda de inferências, e $H$ inclui o modo de potência da placa. Para um conjunto admissível $\mathcal{D}$ de alturas $h>0$, velocidades $V>0$, estratégias e configurações de hardware, propõe-se minimizar o custo sujeito à qualidade e à capacidade de processamento,
 \begin{equation}
   \min_{(h,V,\pi,H)\in\mathcal{D}}\ e(h, V, \pi, H)
   \quad \text{sujeito a} \quad
@@ -582,8 +582,6 @@ No modelo de otimização, uma configuração deve atingir a taxa de detecção 
   \quad r(\pi, h, V) \leq r_{\max}(H,\pi),
   \label{eq_otimizacao}
 \end{equation}
-em que $\mathcal{R}_{\min}$ é a meta de taxa de detecção de focos únicos adotada no estudo. Essa meta e o conjunto $\mathcal{D}$ serão fixados antes dos experimentos, respeitando o domínio de validade dos modelos. Se nenhuma configuração satisfizer as duas restrições, o problema será declarado inviável no domínio avaliado.
+em que $\mathcal{R}_{\min}$ é a fração mínima de focos únicos que a inspeção deve detectar, conforme a Equação~\eqref{eq_recall_focos}. A segunda restrição compara a demanda média $r$ com a capacidade de execução $r_{\max}$. O cumprimento de prazos individuais também depende das latências e das filas discutidas na Seção~\ref{sec_tempo_real}.
 
-O ótimo dessa formulação é condicionado aos parâmetros adotados e à representação da detecção em cada cenário. A análise será repetida para conjuntos plausíveis de parâmetros de propulsão, massa e eficiência, com origem e intervalos documentados. Serão distinguidos os resultados medidos nas condições da base e os estimados por extrapolação. A recomendação poderá ser uma faixa de operação ou um conjunto de alternativas dependente do cenário; a coincidência do modelo com um ponto da telemetria não será tomada como validação de toda a curva.
-
-Na Equação~\eqref{eq_coprojeto}, a altitude aumenta $w$, mas reduz o tamanho dos objetos em pixels e pode reduzir $\mathcal{R}_f$. A velocidade altera a potência de voo e o borrão; a estratégia de inferência altera $r$. O hardware determina $P_{c0}$, $E_{\mathrm{inf}}$, $r_{\max}$ e a massa acrescentada, cujo efeito na propulsão é discutido na Seção~\ref{sec_momento}. O Capítulo 3 caracteriza a base MBG-V2 e os dados disponíveis para estimar parte desses termos; os procedimentos experimentais completarão a avaliação da detecção e da computação embarcada.
+O Capítulo~\ref{cap_resultados} usa a Equação~\eqref{eq_coprojeto} para estimar o custo das configurações avaliadas, com dados de telemetria e medições de bancada. A Equação~\eqref{eq_otimizacao} orienta duas perguntas para outros ensaios. Partindo de uma mesma missão, economiza-se mais energia por área ao mudar a altitude e a velocidade ou ao mudar a seleção de imagens? Essa comparação requer faixas de operação definidas e a mesma meta de detecção $\mathcal{R}_{\min}$. A segunda pergunta é se a velocidade mais econômica continua admissível quando se exigem detecção e processamento no prazo. Se continuar, permanece ótima. Se for excluída, é preciso avaliar as velocidades restantes para saber se alguma atende às exigências e a que custo. A MBG-V2 registra uma única altitude nominal e os dois regimes de velocidade pertencem a campanhas diferentes.

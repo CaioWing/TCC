@@ -1,0 +1,13 @@
+% Capítulo 5 - Conclusão
+\chapter{Conclusão}
+\label{cap_conclusao}
+
+Nos 24 voos das regiões B a M, a memória adiada cobriu todo o terreno imageado com 5,4 a 8,9 recortes/s, frente a cerca de 719 no processamento integral. Essa redução colocou a demanda média ao alcance da Jetson. A qualidade da inspeção, porém, dependeu de quais vistas de cada recipiente chegaram ao detector.
+
+Nos doze trechos de teste, o YOLO11n treinado na MBG-V2, executado em TensorRT FP16, reconheceu 105 das 137 referências no processamento integral, 59 na amostragem temporal pareada por voo e 37 na memória adiada com uma faixa. Nas nove configurações, a memória ficou de 15,3 a 17,5 pontos percentuais abaixo dessa amostragem em recall. A perda frente ao processamento integral também superou a margem de cinco pontos. As duas previsões de H1 foram contrariadas nesse protocolo.
+
+A segunda faixa elevou a contagem de 37 para 63 na análise exploratória. Nos 18 trechos adicionais, a memória passou de 84 para 120 das 253 referências, com 484 e 931 recortes. Esse ganho sustenta H3 nos mesmos seis voos. Fixado o orçamento em 484 recortes para ambas as metas, a contagem passou de 84 para 85. Com 931 recortes, a amostragem temporal encontrou de 159 a 165 referências e gerou de 103 a 111 falsos alarmes, frente aos 57 da memória. A escolha depende do custo de perder um recipiente e do trabalho de conferir um alerta.
+
+A curva de potência ajustada em 14 voos apresentou erro absoluto médio de 4,2~W em dez voos reservados a cerca de 4,1~m/s. Na campanha a 7,9~m/s, subestimou a potência em 3,0 e 6,6~W. Para o kit de referência de 174~g a 4,1~m/s, transportar a carga acrescentaria 19,25~W com rotação fixa e 36,22~W com rotação crescente. Os dois valores superam os 5,07~W projetados para a placa ativa com a memória adiada em FP16. O resultado sustenta H2 sob as duas condições de rotação. Sua verificação em voo exige comparar a aeronave com e sem o kit. Com a placa instalada, substituir a amostragem de um quadro por segundo pela memória adiada economizaria 1,05~Wh/km$^2$ na mediana das diferenças por voo.
+
+Na análise inicial, 68 referências tiveram uma vista elegível na memória com uma faixa apenas fora dos quatro segundos avaliados. Para medir o recall da missão, seria preciso acompanhar a aparição completa dos recipientes e registrar os prazos na Jetson com os pesos treinados. Com voos em altitudes e velocidades controladas, seria possível comparar a economia obtida ao mudar as condições de voo com a obtida ao selecionar as imagens, sob a mesma meta de recall. Esses voos também permitiriam verificar se as exigências de detecção e processamento deslocam a velocidade de menor energia por área.
