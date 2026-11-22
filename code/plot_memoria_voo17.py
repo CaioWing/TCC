@@ -62,7 +62,7 @@ def main():
     result = simulate(log, n, fps, w, h, GSD, skip_steps=(30, matched_step), on_deferred_tile=select_example)
     for policy in ("imediata", "adiada"):
         if result[policy]["recortes"] != saved[f"{policy}_recortes"]:
-            raise ValueError("A reexecução da memória diverge da simulação registrada.")
+            raise ValueError("A contagem de recortes diverge da simulação registrada.")
     (k, x, y, point), = example
     sample = project(east, north, yaw, k, point, w, h)[0]
     next_pose = project(east, north, yaw, k+1, corners, w, h)
@@ -142,22 +142,23 @@ def main():
         camera.axis("off")
 
         counts_ax.set_title("(c) Recortes selecionados no voo completo", loc="left", pad=8)
+        interval = f"Intervalo ajustado por voo\n(a cada {matched_step} quadros)"
         counts = {
-            "Todos os quadros": ntiles * n,
-            "Memória imediata": result["imediata"]["recortes"],
-            "1 a cada 30 quadros": len(range(0, n, 30)) * ntiles,
-            f"1 a cada {matched_step} quadros": len(range(0, n, matched_step)) * ntiles,
-            "Memória adiada": result["adiada"]["recortes"],
+            "Processamento integral": ntiles * n,
+            "Seleção na entrada": result["imediata"]["recortes"],
+            "A cada 30 quadros": len(range(0, n, 30)) * ntiles,
+            interval: len(range(0, n, matched_step)) * ntiles,
+            "Seleção na saída": result["adiada"]["recortes"],
         }
         coverage = {
-            "Todos os quadros": 1.0,  # A união de todos os quadros define a área imageada.
-            "Memória imediata": 1 - result["imediata"]["frac_nao_analisada"],
-            "1 a cada 30 quadros": 1 - result["skip_30"]["frac_nao_vista"],
-            f"1 a cada {matched_step} quadros": 1 - result[f"skip_{matched_step}"]["frac_nao_vista"],
-            "Memória adiada": 1 - result["adiada"]["frac_nao_analisada"],
+            "Processamento integral": 1.0,  # A união de todos os quadros define a área imageada.
+            "Seleção na entrada": 1 - result["imediata"]["frac_nao_analisada"],
+            "A cada 30 quadros": 1 - result["skip_30"]["frac_nao_vista"],
+            interval: 1 - result[f"skip_{matched_step}"]["frac_nao_vista"],
+            "Seleção na saída": 1 - result["adiada"]["frac_nao_analisada"],
         }
         for row, (name, count) in enumerate(counts.items()):
-            color = {"Memória imediata": BLUE, "Memória adiada": ORANGE}.get(name, ".44")
+            color = {"Seleção na entrada": BLUE, "Seleção na saída": ORANGE}.get(name, ".44")
             counts_ax.scatter(count, row, color=color, s=38, zorder=3)
             label = f"{count:,}".replace(",", ".")
             percent = f"{100*coverage[name]:.2f}".removesuffix(".00").replace(".", ",")

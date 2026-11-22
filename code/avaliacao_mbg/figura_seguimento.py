@@ -45,9 +45,9 @@ def desenhar():
             ls="--",
             marker="s",
             ms=4,
-            label="Temporal (média das fases)",
+            label="Controle por trecho (média das fases)",
         )
-        ax.plot(METAS, 100 * mem.recall, color=BLUE, marker="o", ms=4, label="Memória geográfica")
+        ax.plot(METAS, 100 * mem.recall, color=BLUE, marker="o", ms=4, label="Seleção na saída")
         ax.set_title(titulo, fontsize=9, loc="left")
         if regra == "natural":
             ax.set_xticks(

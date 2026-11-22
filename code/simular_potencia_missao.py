@@ -123,18 +123,19 @@ def campaign_rates(balance):
     all_crops = frames * memory.n_tiles
     matched_step = (all_crops / memory.adiada_recortes).round().astype(int)
     rates = pd.DataFrame({
-        "Vídeo completo": all_crops / duration,
-        "Memória imediata": memory.imediata_recortes / duration,
-        "1 em 30 quadros": ((frames - 1) // 30 + 1) * memory.n_tiles / duration,
-        "Amostragem pareada": ((frames - 1) // matched_step + 1) * memory.n_tiles / duration,
-        "Memória adiada": memory.adiada_recortes / duration,
+        "Processamento integral": all_crops / duration,
+        "Seleção na entrada": memory.imediata_recortes / duration,
+        "A cada 30 quadros": ((frames - 1) // 30 + 1) * memory.n_tiles / duration,
+        "Intervalo ajustado por voo": ((frames - 1) // matched_step + 1) * memory.n_tiles / duration,
+        "Seleção na saída": memory.adiada_recortes / duration,
     })
     return rates.median()
 
 
 ENGINES = {"trt": "TensorRT", "ort_trt": "ORT + TensorRT", "ort_cuda": "ORT + CUDA",
            "ort_cpu": "ORT + CPU", "torchscript": "TorchScript"}
-STRATEGIES = ["Memória adiada", "Amostragem pareada", "1 em 30 quadros", "Memória imediata", "Vídeo completo"]
+STRATEGIES = ["Seleção na saída", "Intervalo ajustado por voo", "A cada 30 quadros",
+              "Seleção na entrada", "Processamento integral"]
 
 
 def decimal(value):
@@ -274,7 +275,7 @@ def main():
     plt.rcParams.update({"font.size":9.5, "axes.spines.top":False, "axes.spines.right":False,
                          "pdf.fonttype":42, "axes.axisbelow":True})
     rates = campaign_rates(balance)
-    median_rate = rates["Memória adiada"]
+    median_rate = rates["Seleção na saída"]
     plot_curve(flights,eta)
     plot_payload(eta, idle, benchmark, rates)
     print(f"eta={eta:.8f}; P_ocioso={idle:.5f}; P_inferencia_adiada={median_rate*joules:.5f}")

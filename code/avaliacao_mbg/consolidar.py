@@ -19,11 +19,11 @@ MOTORS = {
     "torchscript_fp16": "TorchScript FP16",
 }
 SELECTION = {
-    "todos": "Todos os recortes",
-    "imediata": "Memória imediata",
-    "cada30": "Um quadro a cada 30",
-    "pareada": "Amostragem pareada",
-    "adiada": "Memória adiada",
+    "todos": "Processamento integral",
+    "imediata": "Seleção na entrada",
+    "cada30": "A cada 30 quadros",
+    "pareada": "Intervalo ajustado por voo",
+    "adiada": "Seleção na saída",
 }
 
 

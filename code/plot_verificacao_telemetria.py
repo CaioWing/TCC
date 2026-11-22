@@ -118,9 +118,9 @@ def render(errors):
         coverage.set_title("(d) Área que fica sem análise", loc="left")
         lo, mid, hi = np.min(missed, axis=0), np.median(missed, axis=0), np.max(missed, axis=0)
         coverage.fill_between(steps, lo, hi, facecolor=BLUE, alpha=.15)
-        coverage.plot(steps, mid, color=BLUE, lw=1.7, marker="o", ms=3.7, label="Amostragem no tempo")
+        coverage.plot(steps, mid, color=BLUE, lw=1.7, marker="o", ms=3.7, label="Amostragem temporal")
         zero = 100 * memory.adiada_frac_nao_analisada.max()
-        coverage.axhline(zero, color=GREEN, lw=1.5, ls="--", label=f"Memória adiada ({zero:g}%)")
+        coverage.axhline(zero, color=GREEN, lw=1.5, ls="--", label=f"Seleção na saída ({zero:g}%)")
         coverage.set(xlim=(24, 246), xticks=[30, 60, 120, 180, 240], ylim=(-1, np.ceil(hi.max())+1),
                      xlabel="Intervalo da amostragem (quadros)", ylabel="Área sem análise (%)")
         coverage.grid(axis="y", color=".89", lw=.6)

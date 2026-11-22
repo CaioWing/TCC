@@ -1,4 +1,14 @@
-# Avaliação pareada do detector treinado na MBG-V2
+# Comparação das estratégias de seleção na MBG-V2
+
+| Nome usado no TCC | Identificador na avaliação inicial |
+|---|---|
+| Processamento integral | `todos` |
+| A cada 30 quadros | `cada30` |
+| Intervalo ajustado por voo | `pareada` |
+| Seleção na entrada | `imediata` |
+| Seleção na saída | `adiada` |
+
+Nos arquivos de multivistas, `geo` identifica a seleção na saída e `tempo`, a amostragem com intervalo ajustado por voo. O arquivo `controle_fases_fp16.csv` registra o controle por trecho nos 12 trechos iniciais, com arredondamento para quadros inteiros. Nos arquivos de seguimento, `memoria` identifica a seleção na saída e `temporal` identifica o controle por trecho, com a mesma quantidade de recortes por trecho para as duas estratégias em cada comparação.
 
 Execute os comandos na raiz do TCC. O protocolo usa dois trechos de quatro segundos por voo, a um e dois terços do vídeo, e a mesma grade de recortes para todos os ambientes. A calibração geográfica vem do voo 3 do treino. As regiões F e I definem os parâmetros da associação. As regiões E, H e L fornecem o teste. O diretório `tmp/avaliacao_mbg` guarda exportações, máscaras, caches e previsões intermediárias. Os resultados numéricos ficam em `doc/dados/qualidade_memoria`.
 

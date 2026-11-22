@@ -29,16 +29,16 @@ def desenhar():
     quality.set_ylim(0,121)
     quality.set_yticks([0,25,50,75,100])
     quality.axhline(full.vp,color="#55595c",ls="--",lw=.8)
-    quality.text(.8,full.vp+2.4,f"Todos os recortes ({int(full.vp)})",fontsize=7,color="#424649")
-    for method,label,color,marker,shift in (("geo","Memória",BLUE,"o",-10),
-                                            ("tempo","Temporal pareada",ORANGE,"s",4)):
+    quality.text(.8,full.vp+2.4,f"Processamento integral ({int(full.vp)})",fontsize=7,color="#424649")
+    for method,label,color,marker,shift in (("geo","Seleção na saída",BLUE,"o",-10),
+                                            ("tempo","Intervalo ajustado por voo",ORANGE,"s",4)):
         g = q[q.metodo==method].sort_values("k")
         quality.plot(g.k,g.vp,marker=marker,color=color,label=label,lw=1.45,ms=4)
         for x,y in zip(g.k,g.vp):
             quality.annotate(str(y),(x,y),xytext=(0,shift),textcoords="offset points",
                              ha="center",color=color,fontsize=6.8)
     quality.legend(loc="lower right",frameon=False,fontsize=6.7)
-    capacity.set_title("(b) Demanda da memória nos seis voos",fontsize=8.5)
+    capacity.set_title("(b) Demanda da seleção na saída",fontsize=8.5)
     capacity.set_ylabel("Recortes por segundo")
     capacity.set_ylim(0,52)
     capacity.set_yticks([0,10,20,30,40,50])

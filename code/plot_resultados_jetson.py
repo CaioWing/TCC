@@ -42,7 +42,7 @@ raw=[stats(bm,'adiada_recortes_s'),stats(a,'adiada_recortes_s'),(24,24,24),stats
 print('Demanda mínima, mediana, máxima (passadas/s):',raw)
 cap=float(get('trt_fp16')['fps']); print('Capacidade FP16:',cap)
 fig,ax=plt.subplots(figsize=(5.9,3.0));y=np.arange(5)
-labels=['Memória adiada (B–M)','Memória adiada (A)','Amostragem: 1 quadro/s (B–M)','Memória imediata (B–M)','Todos os quadros (B–M)']
+labels=['Seleção na saída (B–M)','Seleção na saída (A)','A cada 30 quadros (B–M)\n1 quadro/s nominal','Seleção na entrada (B–M)','Processamento integral (B–M)']
 for yi,(lo,med,hi),color in zip(y,raw,[BLUE,BLUE,ORANGE,GREEN,RED]):
  ax.plot([lo/cap,hi/cap],[yi,yi],color=color,lw=2.5,zorder=2);ax.scatter(med/cap,yi,color=color,edgecolor='#343b40',s=35,linewidth=.5,zorder=3)
 ax.set_yticks(y,labels);ax.invert_yaxis();ax.set_xscale('log');ax.set_xlim(.09,25);ax.axvline(1,color='#343b40',lw=1,ls='--');ax.set_xlabel('Demanda / capacidade FP16 (vezes)')

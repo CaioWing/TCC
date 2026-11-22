@@ -22,9 +22,9 @@ def main():
         ax.plot(velocity, sampled_tiles, color=GREEN, lw=2)
         ax.axhline(geographic, color=ORANGE, lw=2)
         for y, label, color in [
-            (all_tiles[-1], "24 recortes por quadro\n(30 quadros/s)", BLUE),
-            (sampled_tiles[-1], "24 recortes por amostra\n(1 quadro a cada 6)", GREEN),
-            (geographic, "Memória geográfica ideal\n(5 observações por ponto)", ORANGE),
+            (all_tiles[-1], "Processamento integral\n24 recortes por quadro\n(30 quadros/s)", BLUE),
+            (sampled_tiles[-1], "Amostragem temporal\n1 quadro a cada 6,\n24 recortes por amostra", GREEN),
+            (geographic, "Seleção geográfica ideal\n(5 observações por ponto)", ORANGE),
         ]:
             ax.text(15.2, y, label, color=color, va="center", fontsize=10)
         ax.set(xlim=(1, 15), ylim=(5e4, 2e7), yscale="log",
