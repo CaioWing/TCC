@@ -43,10 +43,9 @@ def load_pose(log_csv, nfr, fps):
     return E, N, yaw
 
 
-def simulate(log_csv, nfr, fps, W, H, gsd_m, skip_steps=(), on_deferred_tile=None,
-             on_selected=None, on_deferred_frame=None):
+def grade_projecao(log_csv, nfr, fps, W, H, gsd_m, *, centros_na_origem=False):
+    """Grade comum do voo e projeção dos centros das células em cada quadro."""
     E0, N0, yaw = load_pose(log_csv, nfr, fps)
-    tiles = tiles_grid(W, H)
 
     def img2ground(k, u, v):
         c, s = np.cos(yaw[k]), np.sin(yaw[k]); a = -(v - H / 2); b = u - W / 2
@@ -59,21 +58,35 @@ def simulate(log_csv, nfr, fps, W, H, gsd_m, skip_steps=(), on_deferred_tile=Non
 
     cu = np.array([0, W, W, 0]); cv = np.array([0, 0, H, H])
     foot = np.array([np.column_stack(img2ground(k, cu, cv)) for k in range(nfr)])
-    ge = np.arange(foot[..., 0].min() - 2, foot[..., 0].max() + 2, CELL) + CELL / 2
-    gn = np.arange(foot[..., 1].min() - 2, foot[..., 1].max() + 2, CELL) + CELL / 2
+    def eixo(coordenadas):
+        if centros_na_origem:
+            # A política de cobertura usa centros em múltiplos de CELL nos eixos locais.
+            return CELL * np.arange(np.floor(coordenadas.min()/CELL) - 1,
+                                    np.ceil(coordenadas.max()/CELL) + 2)
+        return np.arange(coordenadas.min() - 2, coordenadas.max() + 2, CELL) + CELL / 2
+
+    ge, gn = eixo(foot[..., 0]), eixo(foot[..., 1])
+    extremo = "right" if centros_na_origem else "left"
 
     def raster(k):
         bb = foot[k]
-        i0, i1 = np.searchsorted(ge, bb[:, 0].min()), np.searchsorted(ge, bb[:, 0].max())
-        j0, j1 = np.searchsorted(gn, bb[:, 1].min()), np.searchsorted(gn, bb[:, 1].max())
+        i0, i1 = np.searchsorted(ge, bb[:, 0].min()), np.searchsorted(ge, bb[:, 0].max(), side=extremo)
+        j0, j1 = np.searchsorted(gn, bb[:, 1].min()), np.searchsorted(gn, bb[:, 1].max(), side=extremo)
         EE, NN = np.meshgrid(ge[i0:i1], gn[j0:j1])
         u, v = ground2img(k, EE, NN)
         return j0, j1, i0, i1, (u >= 0) & (u < W) & (v >= 0) & (v < H), u, v
 
+    return (len(gn), len(ge)), raster
+
+
+def simulate(log_csv, nfr, fps, W, H, gsd_m, skip_steps=(), on_deferred_tile=None,
+             on_selected=None, on_deferred_frame=None):
+    shape, raster = grade_projecao(log_csv, nfr, fps, W, H, gsd_m)
+    tiles = tiles_grid(W, H)
     out = {}
-    imaged = np.zeros((len(gn), len(ge)), bool)
+    imaged = np.zeros(shape, bool)
     for pol in ('imediata', 'adiada'):
-        vis = np.zeros((len(gn), len(ge)), np.int32); nt = np.zeros(nfr, np.int32)
+        vis = np.zeros(shape, np.int32); nt = np.zeros(nfr, np.int32)
         nxt = raster(0)
         for k in range(nfr):
             current = nxt

@@ -11,7 +11,7 @@ from dados import CACHE, SPLITS, folder
 from motores import ENGINES, blob, postprocess, runner, setup
 
 
-def infer_video(video, engine, run, *, cache=CACHE, sparse=False):
+def infer_video(video, engine, run, *, cache=CACHE, sparse=False, leitura_continua=False):
     dst = cache / engine / f"{video}.npz"
     if dst.exists():
         return
@@ -21,11 +21,18 @@ def infer_video(video, engine, run, *, cache=CACHE, sparse=False):
         requested = info["requested"] if sparse else None
     source, = (folder(video) / "avi").glob("*.avi")
     cam = cv2.VideoCapture(str(source))
+    codec = int(cam.get(cv2.CAP_PROP_FOURCC)).to_bytes(4, "little")
+    sequencial = leitura_continua and codec != b"MJPG"
     predictions, offsets = [], [0]
     t = time.monotonic()
     try:
         for i, frame in enumerate(frames):
-            if i == 0 or frame != frames[i-1]+1:
+            if sequencial:
+                anterior = frames[i-1] if i else -1
+                for _ in range(anterior + 1, frame):
+                    if not cam.grab():
+                        raise IOError(f"Vídeo interrompido antes do quadro {frame}: {video}")
+            elif i == 0 or frame != frames[i-1]+1:
                 cam.set(cv2.CAP_PROP_POS_FRAMES, int(frame))
             ok, image = cam.read()
             if not ok or round(cam.get(cv2.CAP_PROP_POS_FRAMES)) != frame+1:

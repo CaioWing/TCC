@@ -3,6 +3,7 @@
 Executar após balanco_telemetria.py. Requer NumPy, pandas e Matplotlib.
 """
 import json
+from dataclasses import dataclass
 
 import matplotlib
 matplotlib.use("Agg")
@@ -59,27 +60,62 @@ def samples(flight, region, end):
     return tt, {name: np.interp(tt, t, vals) for name, vals in channels.items()}
 
 
-def steady_windows(t, data):
-    """Janelas contíguas de 5 s. Testa a regularidade sobre todas as amostras originais."""
+@dataclass(frozen=True)
+class LimitesCruzeiro:
+    duracao_s: int = 5
+    lacuna_s: float = 1.0
+    altitude_m: float = 2.0
+    vertical_ms: float = 0.3
+    horizontal_ms: float = 0.5
+    campanha_ms: float = 0.6
+
+    def regulares(self, janelas):
+        """Todas as tolerâncias precisam ser atendidas em toda a janela."""
+        return ((janelas.lacuna_s <= self.lacuna_s)
+                & (janelas.desvio_altitude_m <= self.altitude_m)
+                & (janelas.vertical_max_ms <= self.vertical_ms)
+                & (janelas.desvio_horizontal_ms <= self.horizontal_ms))
+
+    def na_faixa_da_campanha(self, velocidades, regiao):
+        referencia = 7.9 if regiao == "A" else 4.1
+        return np.abs(velocidades - referencia) <= self.campanha_ms
+
+
+CRUZEIRO = LimitesCruzeiro()
+
+
+def estatisticas_janelas(t, data, duracao_s):
+    """Mede as variações antes da seleção, incluindo as amostras nas bordas."""
     windows = []
-    for start in np.arange(0, t[-1]-5+1e-9, 5):
-        stop = start + 5
+    for start in np.arange(0, t[-1]-duracao_s+1e-9, duracao_s):
+        stop = start + duracao_s
         left = max(0, t.searchsorted(start, side="right")-1)
         right = min(len(t), t.searchsorted(stop) + 1)
-        if np.diff(t[left:right]).max() > 1:
-            continue
+        gap = np.diff(t[left:right]).max()
         inner = t[(t > start) & (t < stop)]
         times = np.r_[start, inner, stop]
         vals = {key: np.interp(times, t, col) for key, col in data.items()}
         vx, vy = vals["vx"], vals["vy"]
         # Médias no tempo, sem dar peso maior a trechos com telemetria mais frequente.
-        mean_x = np.trapezoid(vx, times) / 5
-        mean_y = np.trapezoid(vy, times) / 5
-        if (np.hypot(vx-mean_x, vy-mean_y).max() > 0.5 or np.abs(vals["vz"]).max() > 0.3
-                or np.abs(vals["altitude"]-40).max() > 2):
-            continue
-        windows.append((np.trapezoid(np.hypot(vx, vy), times)/5, np.trapezoid(vals["power"], times)/5))
-    return np.array(windows).reshape(-1, 2)
+        mean_x = np.trapezoid(vx, times) / duracao_s
+        mean_y = np.trapezoid(vy, times) / duracao_s
+        windows.append((start, gap, np.abs(vals["altitude"] - 40).max(),
+                        np.abs(vals["vz"]).max(), np.hypot(vx-mean_x, vy-mean_y).max(),
+                        np.trapezoid(np.hypot(vx, vy), times) / duracao_s,
+                        np.trapezoid(vals["power"], times) / duracao_s))
+    return pd.DataFrame(windows, columns=["inicio_s", "lacuna_s", "desvio_altitude_m",
+                        "vertical_max_ms", "desvio_horizontal_ms", "velocidade_ms", "potencia_W"])
+
+
+def steady_windows(t, data):
+    """Velocidade e potência das janelas regulares do cenário de referência."""
+    windows = estatisticas_janelas(t, data, CRUZEIRO.duracao_s)
+    return windows.loc[CRUZEIRO.regulares(windows), ["velocidade_ms", "potencia_W"]].to_numpy(dtype=float)
+
+
+def eficiencia_ajustada(flights):
+    calibration = flights.loc[flights.grupo == "ajuste"]
+    return np.median(calibration.mecanica_W / calibration.bateria_W)
 
 
 def plot_curve(flights, eta):
@@ -124,18 +160,18 @@ def campaign_rates(balance):
     matched_step = (all_crops / memory.adiada_recortes).round().astype(int)
     rates = pd.DataFrame({
         "Processamento integral": all_crops / duration,
-        "Seleção na entrada": memory.imediata_recortes / duration,
-        "A cada 30 quadros": ((frames - 1) // 30 + 1) * memory.n_tiles / duration,
-        "Intervalo ajustado por voo": ((frames - 1) // matched_step + 1) * memory.n_tiles / duration,
-        "Seleção na saída": memory.adiada_recortes / duration,
+        "Entrada da célula": memory.imediata_recortes / duration,
+        "Um quadro a cada 30": ((frames - 1) // 30 + 1) * memory.n_tiles / duration,
+        "Intervalo por voo": ((frames - 1) // matched_step + 1) * memory.n_tiles / duration,
+        "Saída da célula": memory.adiada_recortes / duration,
     })
     return rates.median()
 
 
 ENGINES = {"trt": "TensorRT", "ort_trt": "ORT + TensorRT", "ort_cuda": "ORT + CUDA",
            "ort_cpu": "ORT + CPU", "torchscript": "TorchScript"}
-STRATEGIES = ["Seleção na saída", "Intervalo ajustado por voo", "A cada 30 quadros",
-              "Seleção na entrada", "Processamento integral"]
+STRATEGIES = ["Saída da célula", "Intervalo por voo", "Um quadro a cada 30",
+              "Entrada da célula", "Processamento integral"]
 
 
 def decimal(value):
@@ -216,6 +252,11 @@ def plot_payload(eta, idle, benchmark, rates):
              ha="left", va="bottom", fontsize=11)
     fig.text((bounds.x0 + bounds.x1)/2, bounds.y0 - .065, "Recortes solicitados por segundo (escala logarítmica)",
              ha="center", va="top", fontsize=9.5)
+    grupos = {}
+    for estrategia, taxa in rates.items():
+        grupos.setdefault(round(taxa), []).append(estrategia)
+    rotulos = [f"≈{taxa} — {' e '.join(nomes)}" for taxa, nomes in grupos.items()]
+    fig.text(.5, .089, "     ".join(rotulos), ha="center", va="center", fontsize=8.2)
     legend = [plt.Line2D([], [], marker=marker, color=color, ls="none", label=fmt.upper())
               for fmt, color, marker in FORMATS]
     legend.extend([plt.Line2D([], [], color=".3", label="Até a taxa medida"),
@@ -238,8 +279,7 @@ def main():
         t, data = samples(row.voo, row.regiao, row.trecho_s)
         routes[row.voo] = (t, np.hypot(data["vx"], data["vy"]))
         windows = steady_windows(t, data)
-        target = 7.9 if row.regiao == "A" else 4.1
-        cruise = windows[np.abs(windows[:,0]-target) <= 0.6]
+        cruise = windows[CRUZEIRO.na_faixa_da_campanha(windows[:,0], row.regiao)]
         if not len(cruise):
             raise ValueError(f"Sem janela de cruzeiro no voo {row.voo}")
         v, p = np.median(cruise, axis=0)
@@ -248,8 +288,7 @@ def main():
                             janelas_regulares=len(windows), janelas_cruzeiro=len(cruise),
                             velocidade_ms=v, bateria_W=p, mecanica_W=mechanical(v,BASE_KG)))
     flights = pd.DataFrame(records)
-    calibration = flights.loc[flights.grupo=="ajuste"]
-    eta = np.median(calibration.mecanica_W/calibration.bateria_W)
+    eta = eficiencia_ajustada(flights)
     flights["referencia_W"] = flights.mecanica_W/NOMINAL_ETA
     flights["ajustada_W"] = flights.mecanica_W/eta
     flights["erro_ajustado_W"] = flights.ajustada_W-flights.bateria_W
@@ -275,7 +314,7 @@ def main():
     plt.rcParams.update({"font.size":9.5, "axes.spines.top":False, "axes.spines.right":False,
                          "pdf.fonttype":42, "axes.axisbelow":True})
     rates = campaign_rates(balance)
-    median_rate = rates["Seleção na saída"]
+    median_rate = rates["Saída da célula"]
     plot_curve(flights,eta)
     plot_payload(eta, idle, benchmark, rates)
     print(f"eta={eta:.8f}; P_ocioso={idle:.5f}; P_inferencia_adiada={median_rate*joules:.5f}")

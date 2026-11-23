@@ -1,0 +1,3 @@
+metodo,vp,fp,fn,referencias,precisao,recall,f1,recortes,quadros_enviados,duracao_s,confirmados_imagem,sem_confirmacao,confirmados_ate_1s,mediana_s,p90_s,confirmados_comuns,mediana_comuns_s
+cobertura,1220,2903,704,1924,0.29590104,0.63409563,0.40350587,37776,2362,1573.23990657,1350,574,989,0.53386720,1.97197197,1335,0.50050050
+intervalo,1263,3118,661,1924,0.28829034,0.65644491,0.40063442,37776,1574,1573.23990657,1358,566,1073,0.63396730,2.00200200,1335,0.60060060

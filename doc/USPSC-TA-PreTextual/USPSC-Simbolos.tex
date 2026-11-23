@@ -7,9 +7,7 @@
   \item[$a$]                       Semieixo maior do elipsoide WGS-84
   \item[$b$]                       Borrão de movimento, em pixels
   \item[$C$]                       Tempo de computação por quadro
-  \item[$C_P$]                     Coeficiente de potência do rotor, $P_r/[\rho A(\Omega R)^{3}]$
   \item[$C_{d0}$]                  Coeficiente de arrasto de perfil médio das pás
-  \item[$C_j$]                     Pior tempo de execução considerado para a tarefa $j$
   \item[$c_x, c_y$]                Coordenadas do ponto principal da imagem, em pixels
   \item[$D$]                       Arrasto da aeronave
   \item[$d_{\max}$]                Distância limite para associar um foco previsto a um foco real
@@ -17,8 +15,6 @@
   \item[$E_b$]                     Energia útil da bateria
   \item[$E_{\mathrm{inf}}$]        Energia adicional por passada da rede neural
   \item[$e$]                       Energia por unidade de área inspecionada
-  \item[$FM$]                      Figura de mérito do rotor
-  \item[$\mathbf{F}$]              Resultante das forças aerodinâmicas e propulsivas
   \item[$f_c$]                     Distância focal da câmera
   \item[$f_e$]                     Área equivalente de placa plana
   \item[$f_q$]                     Taxa de quadros do vídeo
@@ -31,28 +27,23 @@
   \item[$h_{\max}$]                Altura máxima que preserva a detecção
   \item[$I$]                       Corrente da bateria
   \item[$K$]                       Constante de aumento da potência de perfil em voo à frente
-  \item[$k$]                       Passo da estratégia de pular quadros
+  \item[$k$]                       Intervalo entre quadros selecionados na amostragem temporal
   \item[$L$]                       Comprimento da região imageada no solo, na direção do voo
-  \item[$\mathbf{L}_{EB}, \mathbf{L}_{BE}$] Matrizes de transformação dos eixos do corpo para os da Terra e vice-versa
   \item[$\mathcal{M}$]             Conjunto de pares válidos na avaliação de focos
   \item[$m$]                       Massa da aeronave
   \item[$m_0$]                     Massa da aeronave sem o computador de bordo
   \item[$m_H$]                     Massa acrescentada pelo hardware embarcado
   \item[$N$]                       Número de rotores
   \item[$N_x, N_y$]                Número de pixels da imagem, transversal e longitudinal ao voo
-  \item[$n$]                       Número de tarefas periódicas
   \item[$n_t$]                     Número de recortes por quadro
   \item[$n_v$]                     Número de quadros em que um ponto do solo é visto
-  \item[$n_v^{\ast}$]              Número desejado de observações de cada ponto do solo
   \item[$P$]                       Potência mecânica requerida
   \item[$P_{av}$]                  Potência dos aviônicos e demais cargas fixas
   \item[$P_c$]                     Potência do computador de bordo
-  \item[$P_{c0}$]                  Parcela fixa da potência do computador de bordo
+  \item[$P_{c0}$]                  Potência do computador de bordo em repouso
   \item[$P_{el}$]                  Potência elétrica retirada da bateria
   \item[$P_{el,\mathrm{tot}}$]     Potência elétrica total, incluindo o computador de bordo
-  \item[$P_r$]                     Potência de um rotor
-  \item[$P_h$]                     Potência de pairado
-  \item[$P_{h,\mathrm{ideal}}$]    Potência ideal de pairado
+  \item[$P_{h,\mathrm{ideal}}$]     Potência ideal de pairado
   \item[$\mathcal{P}$]             Precisão da detecção
   \item[$p$]                       Tamanho do pixel no sensor
   \item[$R$]                       Alcance; em $\Omega R$, raio do rotor
@@ -61,6 +52,7 @@
   \item[$\mathcal{R}_f$]           Taxa de detecção de focos únicos
   \item[$\mathcal{R}_{\min}$]      Taxa de detecção de focos únicos exigida
   \item[$r$]                       Taxa de passadas da rede neural solicitadas pela estratégia
+  \item[$r_b$]                     Vazão de bancada, em recortes por segundo
   \item[$r_{\mathrm{exec}}$]       Taxa de passadas da rede neural efetivamente concluídas
   \item[$r_{\max}$]                Capacidade média de processamento da estratégia no hardware
   \item[$s$]                       Dimensão característica de um objeto no solo
@@ -73,10 +65,8 @@
   \item[$t_e$]                     Tempo de exposição
   \item[$t_v$]                     Tempo em que um ponto do solo permanece no campo de visão
   \item[$U$]                       Tensão da bateria
-  \item[$U_p$]                     Utilização do processador
   \item[$u, v$]                    Coordenadas de um pixel na imagem
   \item[$V$]                       Velocidade de voo
-  \item[$\mathbf{V}$]              Vetor velocidade do centro de massa em relação à Terra
   \item[$V_c$]                     Velocidade vertical de subida
   \item[$V_{Pmin}$]                Velocidade de potência mínima
   \item[$V_{Rmax}$]                Velocidade de máximo alcance
@@ -87,19 +77,17 @@
   \item[$\beta_x, \beta_y$]        Ângulos de campo de visão da câmera
   \item[$\Delta N, \Delta E$]      Deslocamentos nas direções norte e leste
   \item[$\epsilon$]                Excentricidade do elipsoide WGS-84
+  \item[$\eta$]                    Fator efetivo de conversão ajustado à potência da bateria
   \item[$\eta_m$]                  Eficiência combinada de motores e controladores
-  \item[$\theta$]                  Ângulo de arfagem
-  \item[$\theta_c$]                Ângulo de arfagem da câmera
+  \item[$\theta$]                  Inclinação da tração em cruzeiro, positiva para a frente
   \item[$\kappa$]                  Fator de correção da potência induzida
   \item[$\lambda$]                 Longitude
   \item[$\mu$]                     Razão de avanço
-  \item[$\pi$]                     Estratégia de inferência
+  \item[$\pi$]                     Estratégia de seleção dos recortes
   \item[$\rho$]                    Densidade do ar
+  \item[$\rho_b$]                  Demanda de recortes em relação à vazão de bancada, $r/r_b$
   \item[$\sigma$]                  Solidez do rotor
-  \item[$\tau_j$]                  Período da tarefa $j$
   \item[$\phi$]                    Latitude
-  \item[$\phi_c$]                  Ângulo de rolamento da câmera
   \item[$\psi$]                    Ângulo de guinada da câmera
-  \item[$\boldsymbol{\omega}$]      Vetor velocidade angular da aeronave
   \item[$\Omega R$]                Velocidade de ponta da pá
 \end{simbolos}

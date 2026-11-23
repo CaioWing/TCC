@@ -81,6 +81,15 @@ def selected(clip, strategy):
     return selected_tiles(clip, clip["masks"][:,:,index])
 
 
+def indices_nms_quadro(caixas):
+    """Índices de caixas em coordenadas do quadro, após NMS por classe."""
+    boxes = caixas[:, :4].copy()
+    boxes[:, 2:] -= boxes[:, :2]
+    ix = cv2.dnn.NMSBoxesBatched(boxes.tolist(), caixas[:, 4].tolist(),
+                                 caixas[:, 5].astype(int).tolist(), .001, .7)
+    return np.asarray(ix, dtype=int).ravel()
+
+
 def selected_tiles(clip, masks):
     if len(masks) != len(clip["tiles"]):
         raise ValueError("A seleção e as previsões precisam usar os mesmos quadros.")
@@ -91,10 +100,7 @@ def selected_tiles(clip, masks):
             frames.append(np.empty((0,6),np.float32))
             continue
         a = np.concatenate(parts)
-        boxes = a[:,:4].copy()
-        boxes[:,2:] -= boxes[:,:2]
-        ix = cv2.dnn.NMSBoxesBatched(boxes.tolist(),a[:,4].tolist(),a[:,5].astype(int).tolist(),.001,.7)
-        frames.append(a[np.asarray(ix,dtype=int).ravel()])
+        frames.append(a[indices_nms_quadro(a)])
     return frames
 
 
@@ -116,6 +122,20 @@ def projected(clip, frames):
     return result
 
 
+def associate_observations(centers, counts, xy, radius):
+    """Atualiza a memória de uma classe e devolve o índice de cada observação nela."""
+    indices = np.full(len(xy), -1, dtype=int)
+    for i, j in pairs(centers, xy, radius):
+        counts[i] += 1
+        centers[i] += (xy[j] - centers[i]) / counts[i]
+        indices[j] = i
+    new = indices < 0
+    indices[new] = len(centers) + np.arange(new.sum())
+    centers = np.concatenate([centers, xy[new]])
+    counts = np.r_[counts, np.ones(new.sum(), dtype=int)]
+    return centers, counts, indices
+
+
 def focus_counts(clip, projections, conf, radius, dmax, *, return_matches=False):
     result = []
     matched = set()
@@ -126,13 +146,7 @@ def focus_counts(clip, projections, conf, radius, dmax, *, return_matches=False)
             xy = proj[(proj[:,3]==cls)&(proj[:,2]>=conf),:2]
             if not len(xy):
                 continue
-            used = np.zeros(len(xy),dtype=bool)
-            for i,j in pairs(centers,xy,radius):
-                counts[i] += 1
-                centers[i] += (xy[j]-centers[i])/counts[i]
-                used[j] = True
-            centers = np.concatenate([centers,xy[~used]])
-            counts = np.r_[counts,np.ones((~used).sum(),dtype=int)]
+            centers, counts, _ = associate_observations(centers, counts, xy, radius)
         ids = [k for k in clip["centers"] if k[0]==cls]
         assignment = pairs(centers,[clip["centers"][k] for k in ids],dmax)
         matched.update(ids[j] for _,j in assignment)

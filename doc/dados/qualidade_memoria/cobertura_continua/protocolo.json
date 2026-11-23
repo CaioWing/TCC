@@ -1,0 +1,21 @@
+{
+  "motor": "trt_fp16",
+  "pesos_sha256": "2e592d202d47e964767f883db7bc9bcd1d181648781f30023e536fd416313273",
+  "voos": [
+    "video09_regionE",
+    "video10_regionE",
+    "video15_regionH",
+    "video16_regionH",
+    "video23_regionL",
+    "video24_regionL"
+  ],
+  "fase": 0,
+  "referencias": "Todas as trilhas das seis classes com caixa presente em algum quadro do vídeo.",
+  "intervalo": "24 recortes em cada quadro múltiplo de 30, desde zero.",
+  "cobertura": "Malha de 0,5 m, prioridade à área ainda sem vista. Sem reinício durante o voo. Uma seleção a cada 20 quadros. Em blocos completos de 60, 16 recortes por seleção. No bloco final distribui-se a cota real do intervalo pelos instantes disponíveis. Empates seguem a rotação original em passo de sete, iniciada em zero.",
+  "foco": "Mesma NMS, projeção, associação e métricas do ensaio por cobertura. Mediana das posições anotadas em todo o voo para cada trilha, uma associação por foco.",
+  "confianca": 0.5,
+  "raio_associacao_m": 1.5,
+  "distancia_referencia_m": 1.0,
+  "atraso": "Tempo de vídeo da primeira caixa presente até a primeira previsão no mesmo quadro com classe correta, confiança >=0,5 e IoU >=0,5, com pareamento único por quadro. Mediana e p90 condicionais à confirmação. Ausência de alerta = campo vazio. Primeiro alerta do voo contado desde o quadro zero. Sem latência computacional."
+}

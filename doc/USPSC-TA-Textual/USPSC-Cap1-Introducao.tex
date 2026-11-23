@@ -3,70 +3,26 @@
 \chapter[Introdução]{Introdução}
 \label{cap_introducao}
 
-A dengue é hoje um dos problemas de saúde pública mais graves do Brasil. Em 2025, o país registrou cerca de 1,7 milhão de casos prováveis da doença, depois de um pico de 6,6 milhões em 2024 \cite{brasil2026dengue}. A principal forma de combate à dengue, assim como à zika e à chikungunya, é impedir a reprodução do vetor, o mosquito \textit{Aedes aegypti}, localizando e eliminando seus criadouros \cite{passos2022mbg}. O mosquito se reproduz em recipientes que acumulam água, como pneus, garrafas e caixas d'água \cite{passos2018dissertacao}.
+Em 2025, o Brasil registrou cerca de 1,7 milhão de casos prováveis de dengue, depois de um pico de 6,6 milhões em 2024 \cite{brasil2026dengue}. O controle do \textit{Aedes aegypti} inclui localizar e eliminar recipientes que acumulam água. Nas visitas a imóveis, agentes de combate às endemias procuram larvas em vasos, reservatórios e pneus, entre outros locais \cite{brasil2026liraa,passos2018dissertacao}. Em lajes e telhados, imagens obtidas por veículos aéreos não tripulados (VANTs) podem revelar recipientes que escapam à inspeção feita do chão \cite{hahm2026dar}. Neste trabalho, um \textit{foco} é um recipiente visível com potencial para acumular água. Confirmar a presença de larvas exige inspeção em campo.
 
-O instrumento oficial de acompanhamento desses criadouros no país é o Levantamento Rápido de Índices para \textit{Aedes aegypti} (LIRAa), no qual agentes de combate às endemias visitam imóveis à procura de larvas. No segundo ciclo de 2026, 49,2\% dos 3.732 municípios que enviaram dados ficaram em situação de alerta ou de risco. Vasos e pratos de plantas, garrafas e recipientes semelhantes responderam por 42,3\% dos criadouros identificados, seguidos pelos reservatórios de água, como caixas d'água e tonéis (26,1\%), e por pneus e resíduos sólidos (23\%) \cite{brasil2026liraa}. Em lajes, telhados e quintais, parte desses recipientes escapa à inspeção feita do chão. Pneus sobre telhados, por exemplo, podem ser identificados em imagens aéreas \cite{hahm2026dar}.
+\citeonline{passos2022mbg} mostraram que é possível reconhecer pneus e caixas d'água em vídeos aéreos gravados no Rio de Janeiro. A segunda versão de sua base, a \textit{Mosquito Breeding Grounds} (MBG-V2), reúne imagens e telemetria dos mesmos 26 voos \cite{smt2024mbgv2}. Essa combinação permite estimar tanto a posição dos recipientes reconhecidos quanto a energia gasta para cobrir a região.
 
-Veículos Aéreos Não Tripulados (VANTs) equipados com câmeras e associados a técnicas de visão computacional oferecem uma alternativa. \citeonline{passos2022mbg} introduziram a base \textit{Mosquito Breeding Grounds} (MBG), com vídeos aéreos em 4K gravados no Rio de Janeiro, e obtiveram valores de F$_1$ de 0,65 e 0,77 na detecção de pneus e de caixas d'água, respectivamente. A segunda versão da base, MBG-V2, amplia o conjunto para 26 vídeos e acrescenta a telemetria de voo associada ao vídeo \cite{smt2024mbgv2}. Em Dar es Salaam, na Tanzânia, \citeonline{hahm2026dar} anotaram 4,6~km$^2$ de imagens de drone com resolução de 3 a 5~cm, treinaram uma rede U-Net e mapearam mais de 135 mil recipientes em 27,27~km$^2$. A acurácia obtida foi de 75\% para caixas d'água, 72\% para pneus e 54\% para baldes.
+Processar as imagens a bordo permite sinalizar um achado durante o voo mesmo quando o enlace não comporta a transmissão contínua de vídeo em 4K. Em um sistema de busca aérea, \citeonline{li2022uavsearch} enviaram à estação em solo a imagem do objeto detectado e sua posição para conferência. Na vigilância de criadouros, a equipe poderia receber o recorte de um pneu sobre uma laje e sua localização para orientar a visita de campo. Se o enlace estiver indisponível, os achados podem ser registrados a bordo e enviados depois. Em contrapartida, transportar e alimentar o computador consome energia da bateria, e a velocidade do voo limita o tempo disponível para analisar cada região \cite{difranco2016coverage,boroujerdian2018mavbench,krishnan2020sky}.
 
-Esses trabalhos tratam o problema principalmente como uma questão de qualidade da detecção, avaliada em imagens ou ortomosaicos processados em solo depois do voo. Quando a detecção é feita a bordo, durante o voo, o VANT passa a ser um sistema ciberfísico em que computação e voo interagem. O computador embarcado está sujeito a restrições de tamanho, peso e potência (SWaP, do inglês \textit{Size, Weight and Power}): consome energia da mesma bateria que alimenta os motores e acrescenta massa à aeronave. \citeonline{boroujerdian2018mavbench} mostraram que o desempenho da computação embarcada afeta a velocidade possível do veículo e, por consequência, o tempo e a energia total da missão. \citeonline{krishnan2020sky} propuseram um modelo do tipo \textit{roofline} que relaciona a taxa de quadros do sensor, o desempenho computacional e a dinâmica do veículo.
+\section{Problema de pesquisa e delimitação}
 
-O planejamento de cobertura com consciência energética busca minimizar a energia de voo sob restrições de cobertura e resolução da imagem \cite{difranco2016coverage}, enquanto modelos empíricos estimam o consumo de multirrotores por etapa da missão \cite{abeywickrama2018energy}. Na bibliografia consultada, não foi identificado um trabalho que reúna energia de voo, energia da computação embarcada e quantidade de potenciais criadouros detectados na inspeção aérea de focos do \textit{Aedes aegypti}.
+\textit{Com a mesma quantidade de recortes, reconhecemos mais recipientes ao analisar quadros inteiros em intervalos regulares ou ao escolher partes de vários quadros pela posição do terreno?} Um pneu pode aparecer pela borda da imagem e tornar-se visível por inteiro à medida que o drone avança. A amostragem temporal preserva o quadro inteiro em alguns instantes. A memória por cobertura distribui as inferências entre mais quadros e prioriza os recortes que mostram terreno ainda sem vista. Com o mesmo detector, medem-se os recipientes reconhecidos e os falsos alarmes. A demanda de recortes por segundo entra na estimativa de energia por quilômetro quadrado.
 
-\section{Contexto e delimitação do tema}
+Os voos da MBG-V2 cobrem 13 regiões urbanas do Rio de Janeiro e foram realizados à altitude nominal de 40~m. A maioria dos voos ocorreu a cerca de 4,1~m/s e dois, de outra campanha, a cerca de 7,9~m/s. A tensão e a corrente da bateria dão a energia do voo de referência. O modelo permite estimar o que mudaria com o computador a bordo. O efeito da altitude sobre a cobertura e o tamanho aparente dos objetos é tratado na modelagem.
 
-O problema de co-projeto consiste em escolher as condições de voo e de processamento que minimizam a energia por área para uma taxa mínima de detecção. Nos experimentos, medem-se a energia por quilômetro quadrado imageado e a fração de recipientes anotados que o detector reconhece (\textit{recall}). Quatro escolhas influenciam essas medidas.
-
-\begin{itemize}
-    \item a \textbf{altitude de voo}, que define a resolução espacial no solo (GSD, do inglês \textit{Ground Sample Distance}) e a largura da faixa imageada;
-    \item a \textbf{velocidade de cruzeiro}, que define a taxa de cobertura de área e a potência de propulsão, e que, a partir de certo ponto, degrada a imagem por borrão de movimento;
-    \item a \textbf{estratégia de seleção das imagens}, que determina quais recortes chegam ao detector. O processamento integral envia todos. A amostragem temporal escolhe quadros pelo intervalo entre eles. Na seleção geográfica, as decisões se apoiam na \emph{memória geográfica}, o mapa que registra, para cada célula do terreno, as vistas já cobertas pelos recortes escolhidos;
-    \item a \textbf{configuração de execução}, que combina o ambiente de software, o processador e a precisão numérica. A referência de consumo é a NVIDIA Jetson Orin Nano de 8~GB no modo de 25~W \cite{nvidia2024orinnano,nvidia2025jetpack62}.
-\end{itemize}
-
-Neste trabalho, um \textit{foco} é um recipiente visível que pode acumular água. O cenário de interesse é sua identificação a bordo, sem transmitir o vídeo ao solo. A confirmação da presença de água ou de larvas exige inspeção em campo. A transmissão de alertas e o redirecionamento da aeronave são etapas posteriores.
-
-O estudo abrange multirrotores elétricos que filmam em 4K com a câmera voltada verticalmente para baixo (nadir). A MBG-V2 cobre 13 regiões urbanas do Rio de Janeiro \cite{smt2024mbgv2}. Todos os voos ocorreram à altitude nominal de 40~m, a maioria a cerca de 4,1~m/s e dois a cerca de 7,9~m/s em outra campanha.
-
-A telemetria de tensão e corrente fornece a energia dos voos registrados e situa a curva de potência nos dois regimes de cruzeiro. Como a altitude nominal é a mesma, seu efeito sobre o tamanho aparente dos objetos e a área coberta é tratado na modelagem. A seleção de imagens é avaliada nos vídeos com o YOLO11n treinado na MBG-V2, executado em uma estação de trabalho. Um ensaio separado na Jetson, com um YOLO11n de referência, mede a vazão e a energia por recorte usadas para projetar o consumo a bordo.
-
-\section{Justificativa}
-
-Os estudos de detecção em imagens aéreas mostram que é possível reconhecer potenciais criadouros \cite{passos2022mbg,hahm2026dar}. A precisão média descreve a qualidade das detecções nas imagens, e a vazão informa se o computador acompanha a câmera. Para planejar a missão, interessa saber quanta área a bateria permite cobrir e quantos recipientes distintos são encontrados nesse percurso.
-
-O computador de bordo afeta a missão por três vias. A placa recebe alimentação da bateria, sua massa aumenta a potência necessária para sustentar a aeronave e sua capacidade de processamento limita o número de recortes analisados por segundo. Nos 24 voos das regiões B a M, a potência típica da aeronave foi de 182~W, tomando o valor central das potências medianas de cada voo (Seção~\ref{sec_base_energia}). A parcela de propulsão devida à placa persiste mesmo quando ela está desligada. Em pairado, a potência induzida cresce com a massa elevada a $3/2$ (Seção~\ref{sec_momento}).
-
-A sobreposição entre imagens permite poupar processamento. A 40~m de altitude, com resolução de cerca de 1,4~cm por pixel, cada quadro 4K cobre aproximadamente 54~m por 30~m de solo. Voando a 4~m/s, apenas cerca de 13\% dessa área é nova a cada segundo, e cada objeto permanece visível por vários segundos. Sob as hipóteses geométricas da Seção~\ref{sec_georref}, a telemetria permite estimar a posição no solo correspondente a cada pixel. Essa informação pode orientar o processamento das áreas com menos observações do que o desejado e reduzir a carga computacional, abrindo margem para voos mais altos ou mais rápidos, ou para um hardware menor e mais leve.
-
-\section{Problema de pesquisa}
-
-\textit{Quanto se economiza ao selecionar as imagens durante o voo e quantos recipientes deixam de ser reconhecidos?} Para responder nas condições da MBG-V2, comparam-se a seleção geográfica, a amostragem temporal e o processamento integral nas mesmas trajetórias. A questão mais ampla consiste em escolher a altitude e a velocidade de menor energia por área inspecionada para uma meta operacional de detecção. O modelo descreve essa escolha e permite explicitar quais dados ela exige.
-
-\section{Hipóteses}
-
-Duas regras consultam a mesma memória geográfica. A \emph{seleção na entrada} envia o recorte ao detector assim que ele mostra uma célula que ainda precisa de uma vista. A \emph{seleção na saída} o envia no último quadro em que essa célula está visível naquela passagem.
-
-\begin{enumerate}
-    \item[H1.] \textbf{Detecção com a seleção na saída.} Com a meta de uma vista por célula, a seleção na saída mantém o recall por recipiente próximo ao do processamento integral. Para quantidades semelhantes de recortes no mesmo voo, ela reconhece tantos ou mais recipientes que a amostragem com intervalo ajustado por voo.
-    \item[H2.] \textbf{Custo de transportar o computador.} Em cruzeiro, o acréscimo de potência elétrica da propulsão para transportar o kit de referência é pelo menos igual à potência total consumida pela Jetson ao executar o detector com a seleção na saída. Essa potência da placa inclui o repouso e a inferência.
-\end{enumerate}
-
-Para testar H1, aplicou-se o mesmo detector aos mesmos trechos de voo. Adotou-se uma perda de até cinco pontos percentuais de recall frente ao processamento integral como margem descritiva de proximidade. No \emph{intervalo ajustado por voo}, escolhe-se um quadro a cada $k$ quadros. O passo $k$ é fixado por vídeo para aproximar o total de recortes da seleção na saída, embora as contagens possam diferir por trecho. Para H2, simulou-se o transporte de um kit de 174~g a 4,1~m/s e estimou-se o consumo da placa pelo ensaio de bancada em TensorRT FP16.
-
-A comparação inicial motivou uma hipótese de seguimento, formulada antes de avaliar outros trechos dos mesmos voos. \textbf{H3 (ganho com a segunda vista).} Com a demanda de recortes própria de cada configuração, a seleção na saída reconhece uma fração maior dos recipientes ao buscar duas vistas por célula em vez de uma. Para interpretar esse ganho, usa-se um controle por trecho, no qual a amostragem temporal recebe o mesmo número de recortes que a seleção na saída em cada trecho. Examina-se também o que ocorre quando a quantidade disponível fica fixa entre as metas de vistas.
+O YOLO11n treinado na MBG-V2 recebe recortes de $640\times640$~pixels extraídos na resolução original dos quadros 4K. Seu desempenho na detecção de recipientes é avaliado na estação de trabalho. Um ensaio separado na Jetson Orin Nano de 8~GB, em modo de 25~W, mede a vazão e a energia por recorte de um YOLO11n com pesos COCO, usadas na projeção de consumo a bordo. A transmissão dos alertas e o tempo até seu recebimento pela equipe permanecem para um ensaio em campo.
 
 \section{Objetivos}
 
-O objetivo geral é avaliar o compromisso entre a energia da inspeção aérea e o reconhecimento de recipientes potencialmente favoráveis à reprodução do \textit{Aedes aegypti}.
+O objetivo geral é avaliar o compromisso entre energia por área imageada e reconhecimento de potenciais criadouros. Os objetivos específicos são os seguintes.
 
 \begin{itemize}
-    \item relacionar a potência de propulsão à velocidade e à massa embarcada, confrontando a curva com os registros de bateria em cruzeiro;
-    \item treinar um detector para as imagens da MBG-V2 e associar as detecções de um mesmo recipiente entre quadros;
-    \item comparar o processamento integral, a amostragem temporal e as duas regras de seleção geográfica quanto à demanda de recortes, à cobertura do terreno e à detecção por recipiente;
-    \item medir a vazão e a energia por inferência na Jetson e estimar, por voo, o custo de transportar e alimentar a placa;
-    \item explicitar as condições necessárias para escolher a altitude e a velocidade de menor energia por área sob uma exigência de detecção.
+    \item confrontar a curva de potência com a telemetria de cruzeiro e estimar o custo de transportar o computador;
+    \item comparar, nos seis voos de teste completos, os recipientes localizados, os falsos alarmes e o tempo até a primeira detecção correta com a mesma cota de recortes para a memória por cobertura e a amostragem temporal;
+    \item combinar a energia de voo com o consumo da Jetson para estimar o gasto de cada estratégia e identificar quais medidas ainda são necessárias para escolher altitude e velocidade sob uma meta de detecção.
 \end{itemize}
-
-\section{Organização do trabalho}
-
-O Capítulo~\ref{cap_fundamentacao} relaciona potência, cobertura e detecção. O Capítulo~\ref{cap_metodos} descreve os dados, a seleção dos recortes e os ensaios. O Capítulo~\ref{cap_resultados} confronta o modelo com a telemetria e compara o custo e a qualidade das estratégias. O Capítulo~\ref{cap_conclusao} retoma as hipóteses à luz dessas comparações.

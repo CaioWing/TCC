@@ -1,0 +1,45 @@
+{
+  "quadros_candidatos": [
+    3,
+    4,
+    6
+  ],
+  "pesos_segunda_vista": [
+    0.0,
+    1.5
+  ],
+  "quadros_escolhidos": 6,
+  "peso_escolhido": 0.0,
+  "fases": [
+    0,
+    0.25,
+    0.5,
+    0.75
+  ],
+  "escolha": "Maior F1 agregado em F/I, depois maior recall, menos quadros e menor peso.",
+  "recortes_por_trecho_validacao": 48,
+  "duracao_s": 4,
+  "deslocamento_segunda_vista_m": 2.0,
+  "celula_m": 0.5,
+  "velocidade_nominal_m_s": 4.1,
+  "motor_validacao": "torchscript_fp32",
+  "motor_teste": "trt_fp16",
+  "pesos_sha256": "2e592d202d47e964767f883db7bc9bcd1d181648781f30023e536fd416313273",
+  "voos_validacao": [
+    "video11_regionF",
+    "video12_regionF",
+    "video17_regionI",
+    "video18_regionI"
+  ],
+  "voos_teste": [
+    "video09_regionE",
+    "video10_regionE",
+    "video15_regionH",
+    "video16_regionH",
+    "video23_regionL",
+    "video24_regionL"
+  ],
+  "origem_orcamentos_teste": "../adaptativa/por_trecho.csv",
+  "sensibilidade": "Depois da leitura principal, manter o peso calibrado e usar quatro quadros ou a mesma contagem da amostragem temporal em cada trecho.",
+  "estado_inicial": "Grade vazia no início de cada trecho, nas duas regras de recortes."
+}
