@@ -7,7 +7,6 @@ import numpy as np
 import pandas as pd
 from matplotlib.lines import Line2D
 from matplotlib.patches import Polygon, Rectangle
-from matplotlib.ticker import FuncFormatter
 
 from dados import OUT, ROOT, folder
 from figura_altitude_quadrantes import CLASSES
@@ -33,40 +32,36 @@ def salvar(figura, nome):
     plt.close(figura)
 
 
-def curva(eixo, valores, cor, estilo, legenda):
-    valores = np.sort(valores)
-    if not len(valores) or not np.isfinite(valores).all():
-        raise ValueError(f"Amostra inválida para {legenda}")
-    positivos = valores[valores > 0]
-    zeros = len(valores) - len(positivos)
-    x = np.r_[0, positivos, 1]
-    y = np.r_[zeros, np.arange(zeros + 1, len(valores) + 1), len(valores)] * 100 / len(valores)
-    eixo.step(x, y, where="post", color=cor, linestyle=estilo, lw=2, label=legenda)
-
-
-def distribuicoes(pares, trilhas, registros, alinhadas):
-    fig, (a, b) = plt.subplots(1, 2, figsize=(7.15, 3.05), layout="constrained")
-    a.set_title("(a) Projeção no terreno", loc="left")
-    b.set_title("(b) Conferência pelas imagens", loc="left")
-    curva(a, pares.iou_recortes, "#383838", ":", "Recortes")
-    curva(a, trilhas.iou_deteccoes, CORES[0], "-", "Caixas previstas")
-    curva(a, trilhas.iou_anotacoes, CORES[1], "--", "Caixas anotadas")
-    a.set(ylim=(0, 102), yticks=np.arange(0, 101, 25), ylabel="Fração acumulada dos pares (%)")
-    a.legend(loc="upper center", bbox_to_anchor=(.5, -.25), ncol=2, fontsize=8, frameon=False)
-    b.plot([0, 1], [0, 1], color="#8b8b8b", lw=1, ls="--", zorder=0)
-    b.scatter(registros.iou_gsd, registros.iou_visual, s=20, facecolors="none", edgecolors="#484848",
-              lw=.9, label="Recortes")
-    caixas = alinhadas.dropna(subset=["iou_visual_deteccoes"])
-    b.scatter(caixas.iou_gsd_deteccoes, caixas.iou_visual_deteccoes, marker="x", s=28, color=CORES[0],
-              lw=1.25, label="Caixas previstas", clip_on=False)
-    b.set(ylim=(-.015, 1.015), yticks=np.linspace(0, 1, 6), ylabel="IoU após alinhar as imagens")
-    b.yaxis.set_major_formatter(FuncFormatter(lambda v, _: decimal(v, 1)))
-    b.legend(loc="upper center", bbox_to_anchor=(.5, -.25), ncol=2, fontsize=8, frameon=False)
-    for eixo in (a, b):
-        eixo.set(xlim=(-.015, 1.01), xticks=np.linspace(0, 1, 6), xlabel="IoU no terreno")
-        eixo.xaxis.set_major_formatter(FuncFormatter(lambda v, _: decimal(v, 1)))
-        eixo.grid(axis="both", color="#dedede", lw=.55)
-        eixo.set_axisbelow(True)
+def distribuicoes(pares, trilhas):
+    fig, eixo = plt.subplots(figsize=(5.7, 2.55), layout="constrained")
+    limites = [0, .25, .5, .75, 1]
+    faixas = ["0 (sem interseção)", "0 < IoU ≤ 0,25", "0,25 < IoU ≤ 0,50",
+              "0,50 < IoU ≤ 0,75", "0,75 < IoU ≤ 1"]
+    colunas = {"Recortes inteiros": pares.iou_recortes, "Caixas previstas": trilhas.iou_deteccoes,
+               "Caixas anotadas": trilhas.iou_anotacoes}
+    percentuais, rotulos = [], []
+    for nome, serie in colunas.items():
+        if serie.empty or not serie.between(0, 1).all():
+            raise ValueError(f"IoU ausente ou fora do intervalo em {nome}")
+        grupos = np.searchsorted(limites, serie, side="left")
+        percentuais.append(100 * np.bincount(grupos, minlength=len(limites)) / len(serie))
+        amostra = f"{len(serie):,}".replace(",", ".")
+        rotulos.append(f"{nome}\n(n = {amostra})")
+    valores = np.array(percentuais).T
+    eixo.imshow(valores, vmin=0, vmax=100, cmap="Blues", aspect="auto", interpolation="nearest")
+    for (linha, coluna), valor in np.ndenumerate(valores):
+        eixo.text(coluna, linha, f"{decimal(valor, 1)}%", ha="center", va="center",
+                  fontsize=8.6, color="white" if valor > 60 else "#172c38")
+    eixo.set_xticks(range(len(rotulos)), rotulos, fontsize=8.1)
+    eixo.set_yticks(range(len(faixas)), faixas, fontsize=8)
+    eixo.xaxis.tick_top()
+    eixo.tick_params(length=0, pad=4)
+    for pos in np.arange(.5, len(faixas) - 1):
+        eixo.axhline(pos, color="white", lw=1.5)
+    for pos in np.arange(.5, len(colunas) - 1):
+        eixo.axvline(pos, color="white", lw=1.5)
+    eixo.spines[:].set_visible(False)
+    eixo.set_ylabel("IoU no terreno", fontsize=8.5)
     salvar(fig, "fig_sobreposicao_distribuicao")
 
 
@@ -196,9 +191,9 @@ if __name__ == "__main__":
     trilhas = trilhas.dropna(subset=["iou_deteccoes", "iou_anotacoes"])
     with plt.rc_context({"font.size": 9, "axes.titlesize": 10, "axes.spines.top": False,
                          "axes.spines.right": False, "pdf.fonttype": 42}):
+        distribuicoes(pares, trilhas)
         registros = pd.read_csv(PASTA / "amostra_registro_visual.csv").query("aceito == 1")
         alinhadas = pd.read_csv(PASTA / "trilhas_registro_visual.csv")
-        distribuicoes(pares, trilhas, registros, alinhadas)
         registros = registros.set_index(CHAVE)
         assert registros.index.is_unique
         exemplos(trilhas, registros, alinhadas)

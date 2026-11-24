@@ -88,7 +88,7 @@ A razão entre as componentes horizontal e vertical elimina $T$ e permite estima
   f_e = \frac{2 m g \tan\theta}{\rho V^{2}}.
   \label{eq_fe}
 \end{equation}
-A Equação~\eqref{eq_fe} pressupõe que a inclinação seja inteiramente explicada pelo arrasto parasita. Na prática, os rotores também produzem força no plano do disco. O vento altera a velocidade relativa ao ar e a montagem dos sensores pode introduzir um desvio na atitude registrada. Por isso, a comparação usa a inclinação nas pernas de ida e de volta para examinar a relação com a velocidade (Seção~\ref{sec_curva_potencia_voos}). A exigência de equilíbrio também explica a seleção de janelas com poucas variações de altura, velocidade e direção.
+A Equação~\eqref{eq_fe} atribui toda a inclinação ao arrasto parasita. Na prática, os rotores também produzem força no plano do disco, o vento altera a velocidade relativa ao ar e a montagem dos sensores pode introduzir um desvio na atitude registrada. Para examinar a relação entre inclinação e velocidade, comparam-se as pernas de ida e de volta em janelas com pouca variação de altura, velocidade e direção, nas quais a condição de equilíbrio é mais plausível (Seção~\ref{sec_curva_potencia_voos}).
 
 \subsection{Da potência mecânica à potência elétrica}
 
@@ -172,7 +172,7 @@ Em translação retilínea ao longo do comprimento $L$ da região imageada, sem 
   n_{v} \approx \frac{f_q\,L}{V} = \frac{f_q\,N_y\,p}{f_c}\,\frac{h}{V}\ \text{quadros}.
   \label{eq_visibilidade}
 \end{equation}
-O número inteiro de quadros depende dos instantes de captura. Entre dois quadros, o avanço é $\Delta x=V/f_q$. Em linha reta, sem revisitas, a fração nova da imagem é $\min\{1,\Delta x/L\}$. Quando há sobreposição, essa fração é aproximadamente $1/n_v$. Quando o avanço supera $L$, ficam lacunas entre os quadros. A Figura~\ref{fig_geometria} destaca a faixa que entra no campo de visão após um segundo de voo.
+O número inteiro de quadros em que um ponto aparece depende dos instantes de captura. Em um trecho reto e sem revisitas, a aeronave avança $\Delta x=V/f_q$ entre dois quadros consecutivos, de modo que a fração de área nova na imagem é $\min\{1,\Delta x/L\}$. Enquanto há sobreposição, essa fração é aproximadamente $1/n_v$. Se o avanço supera $L$, fica uma faixa de terreno sem imagem entre os dois quadros. A Figura~\ref{fig_geometria} destaca a faixa que entra no campo de visão após um segundo de voo.
 \begin{figure}[htb]
   \centering
   \caption{Geometria do imageamento com visada vertical nas condições dos voos da base MBG-V2}
@@ -244,7 +244,7 @@ A guinada da câmera, $\psi$, é medida a partir do norte em direção ao leste.
   \begin{bmatrix} -(v - c_y) \\ u - c_x \end{bmatrix}.
   \label{eq_georref}
 \end{equation}
-Com $\psi=0$, a frente da câmera aponta para o norte e sua direita para o leste. A Figura~\ref{fig_guinada_deslocamentos} mostra como a guinada muda essas direções para um mesmo ponto da imagem. Aplicada aos cantos do quadro, a Equação~\eqref{eq_georref} delimita a área visível para seleção dos recortes (Seção~\ref{sec_sim_estrategias}). Aplicada ao centro do retângulo que delimita o recipiente na imagem (a caixa), ela estima a posição do recipiente em relação à câmera.
+Com $\psi=0$, a frente da câmera aponta para o norte e sua direita, para o leste. A Figura~\ref{fig_guinada_deslocamentos} mostra como a guinada altera essas direções para um mesmo ponto da imagem. A projeção dos cantos do quadro pela Equação~\eqref{eq_georref} delimita a área visível para a seleção dos recortes (Seção~\ref{sec_sim_estrategias}). Já a projeção do centro da caixa, o retângulo que delimita o recipiente na imagem, estima a posição desse recipiente em relação à câmera.
 \begin{figure}[htb]
   \centering
   \caption{Efeito da guinada na conversão dos deslocamentos da câmera para norte e leste}
@@ -253,7 +253,7 @@ Com $\psi=0$, a frente da câmera aponta para o norte e sua direita para o leste
   \fonte{Elaborado pelo autor. Os painéis mantêm $x_c=0{,}7$~m e $y_c=1{,}4$~m, variando apenas a guinada, com eixos em metros e escalas iguais. As setas azul e verde representam, respectivamente, os deslocamentos para frente e para a direita, somados em sequência; a seta laranja representa sua soma. $\Delta N$ e $\Delta E$ são as componentes dessa soma no mapa, relativas à câmera; valores negativos indicam sul e oeste, respectivamente.}
 \end{figure}
 
-A transformação usa a guinada da câmera no instante do quadro. Usar a da aeronave exige conhecer o alinhamento entre ambas. A arfagem do \textit{gimbal} próxima de $-90^\circ$ nos registros corresponde à visada vertical. Para uma câmera inclinada, seria preciso projetar cada raio de visada até sua interseção com o terreno.
+A transformação depende da guinada da câmera no instante do quadro. Para usar a guinada da aeronave em seu lugar, é preciso conhecer o alinhamento entre ambas. Nos registros, a arfagem do \textit{gimbal} próxima de $-90^\circ$ corresponde à visada vertical. Se a câmera estivesse inclinada, seria preciso projetar cada raio de visada até sua interseção com o terreno.
 
 \subsubsection{Da posição da aeronave à posição do objeto}
 
@@ -282,7 +282,7 @@ A precisão da posição obtida depende da escala adotada, da orientação da c�
 
 \subsection{Detecção por recortes}
 
-Em uma única execução, o YOLO prevê as caixas dos objetos. Para cada caixa, indica a classe mais provável e uma pontuação de confiança. O limiar de confiança é a pontuação mínima para aceitar a detecção \cite{redmon2016yolo,jocher2024yolo11}. Para preservar o detalhe dos objetos pequenos na entrada do detector, extrai-se da imagem original uma grade de recortes quadrados de lado $s_t$ pixels. Cada recorte requer uma inferência. Para analisar o quadro inteiro, são necessárias
+Em uma única execução, o YOLO prevê as caixas dos objetos e indica, para cada uma, a classe mais provável e uma pontuação de confiança. O limiar de confiança define a pontuação mínima para aceitar uma detecção \cite{redmon2016yolo,jocher2024yolo11}. Para preservar os detalhes dos objetos pequenos, a imagem original é dividida em uma grade de recortes quadrados de lado $s_t$ pixels. Como cada recorte requer uma inferência, a análise do quadro inteiro exige
 \begin{equation}
   n_t = \left\lceil \frac{N_x}{s_t} \right\rceil \left\lceil \frac{N_y}{s_t} \right\rceil.
   \label{eq_recortes}
@@ -296,20 +296,20 @@ A sobreposição entre uma caixa prevista $B_p$ e uma caixa anotada $B_g$ é med
   IoU = \frac{|B_p \cap B_g|}{|B_p \cup B_g|}\,.
   \label{eq_iou}
 \end{equation}
-No teste por quadro, uma previsão conta como correta quando a classe coincide com a anotação e a IoU atinge o limiar escolhido. Cada caixa anotada pode formar um único par com uma previsão. Um par válido é um verdadeiro positivo ($VP$), uma previsão sem par é um falso positivo ($FP$) e uma caixa anotada sem par é um falso negativo ($FN$). A precisão mede a fração das caixas previstas que estão corretas. O \textit{recall} mede a fração das caixas anotadas encontradas pelo detector. Essas duas proporções são dadas por
+No teste por quadro, uma previsão só pode formar par com uma caixa anotada da mesma classe se a IoU atingir o limiar escolhido. Cada anotação pode entrar em um único par. Os pares válidos contam como verdadeiros positivos ($VP$), as previsões sem par como falsos positivos ($FP$) e as anotações sem par como falsos negativos ($FN$). A precisão indica que fração das caixas previstas está correta, enquanto o \textit{recall} indica que fração das caixas anotadas o detector encontrou. Calculam-se essas proporções por
 \begin{equation}
   \mathcal{P} = \frac{VP}{VP + FP}, \qquad \mathcal{R} = \frac{VP}{VP + FN}.
   \label{eq_pr}
 \end{equation}
-O F1 é a média harmônica da precisão e do recall. Com ambas as métricas definidas e soma positiva, $F_1=2\mathcal{P}\mathcal{R}/(\mathcal{P}+\mathcal{R})$. O F1 descreve a operação em um limiar de confiança. A precisão média (AP) resume a curva de precisão em função do recall ao variar esse limiar. Para cada classe e limiar de IoU, a AP pode ser calculada pela precisão interpolada em 101 níveis de recall,
+Para um dado limiar de confiança, o F1 expressa a média harmônica da precisão e do recall. Quando ambas as métricas estão definidas e sua soma é positiva, $F_1=2\mathcal{P}\mathcal{R}/(\mathcal{P}+\mathcal{R})$. Ao variar o limiar de confiança, obtém-se uma curva de precisão em função do recall, que a precisão média (AP) resume em um único valor. Para cada classe e limiar de IoU, pode-se calcular a AP pela precisão interpolada em 101 níveis de recall,
 \begin{equation*}
   AP = \frac{1}{101}\sum_{j=0}^{100}\mathcal{P}_{\mathrm{interp}}(j/100).
 \end{equation*}
-Em cada nível, toma-se a maior precisão obtida com recall igual ou superior àquele nível, ou zero se ele não foi atingido. Esse princípio de interpolação também aparece no protocolo VOC2007 \cite[p.~313--314]{everingham2010voc}. A mAP$_{50}$ reúne as AP das classes avaliadas com IoU de 0,50. A mAP$_{50\text{--}95}$ faz a média também sobre dez limiares de IoU, de 0,50 a 0,95.
+Em cada nível, toma-se a maior precisão obtida com recall igual ou superior ao valor considerado, ou zero quando esse nível não é atingido. Esse princípio de interpolação também aparece no protocolo VOC2007 \cite[p.~313--314]{everingham2010voc}. A mAP$_{50}$ é a média das AP das classes para o limiar de IoU de 0,50, enquanto a mAP$_{50\text{--}95}$ inclui na média dez limiares de IoU, de 0,50 a 0,95.
 
 \subsection{Dos quadros aos focos únicos}
 
-As caixas anotadas para um mesmo recipiente ao longo do vídeo formam uma \emph{trilha}. Cada uma dessas caixas entra na avaliação por imagem. Para contar recipientes distintos no mapa, agrupam-se as detecções da mesma classe que a projeção situa próximas no solo (Seção~\ref{sec_georref}). Cada grupo gera um ponto no mapa, o \emph{foco previsto}. As trilhas anotadas fornecem o conjunto $\mathcal{G}$ de posições de referência, uma por recipiente em cada voo. Cada par exige a mesma classe e uma distância de até $d_{\max}$ no terreno. Cada foco e cada referência podem entrar em um único par. Escolhe-se o conjunto $\mathcal{M}$ com mais pares e, em caso de empate, com a menor soma de distâncias. Para $|\mathcal{G}|>0$, o recall por foco é
+Uma \emph{trilha} reúne as caixas que identificam o mesmo recipiente ao longo do vídeo. Na avaliação por imagem, cada caixa anotada entra na contagem. Para contar recipientes distintos no mapa, agrupam-se as detecções da mesma classe cujas projeções no solo estão próximas (Seção~\ref{sec_georref}). Cada grupo dá origem a um \emph{foco previsto}, e as trilhas anotadas fornecem o conjunto $\mathcal{G}$ das posições de referência, uma por recipiente em cada voo. Um foco e uma referência podem formar um par se forem da mesma classe e estiverem a até $d_{\max}$ de distância no terreno. Como cada ponto só pode participar de um par, escolhe-se o conjunto $\mathcal{M}$ com o maior número de pares e, em caso de empate, com a menor soma das distâncias. Para $|\mathcal{G}|>0$, o recall por foco é
 \begin{equation}
   \mathcal{R}_f = \frac{|\mathcal{M}|}{|\mathcal{G}|} = \frac{VP_f}{VP_f+FN_f},
   \label{eq_recall_focos}
@@ -343,7 +343,7 @@ A demanda $r$ é o número de recortes enviados ao detector por segundo. Para um
 
 \subsubsection{Custo computacional por área inspecionada}
 
-Na mesma trajetória e com a mesma energia por inferência, as duas estratégias têm a mesma parcela de energia atribuída aos recortes quando completam a mesma cota. O modelo calcula essa parcela pelo produto do número de recortes por $E_{\mathrm{inf}}$. A energia adicional para selecionar e associar as detecções depende da implementação a bordo.
+O modelo estima a energia das inferências multiplicando o número de recortes por $E_{\mathrm{inf}}$. Se o detector e a energia por inferência se mantêm constantes, processar a mesma quantidade de recortes ao longo de um percurso leva ao mesmo consumo estimado nessa etapa. O gasto adicional com a seleção dos recortes e a associação das detecções depende da implementação a bordo.
 
 \section{Formulação do problema de co-projeto}
 \label{sec_coprojeto}
@@ -371,7 +371,7 @@ A escolha da missão depende também dos recipientes reconhecidos e da capacidad
 \end{equation}
 em que $\mathcal{R}_{\min}$ é a fração mínima de focos que a inspeção deve detectar (Equação~\eqref{eq_recall_focos}). O recall de cada estratégia $\pi$ é medido sobre as trilhas anotadas dos mesmos voos. A segunda restrição trata da vazão média. O cumprimento de prazos individuais depende também das latências e das filas (Seção~\ref{sec_tempo_real}).
 
-A Tabela~\ref{tab_relacoes_analise} indica onde cada relação é usada. A MBG-V2 permite comparar estratégias na mesma trajetória. Para determinar uma altura e uma velocidade ótimas, seria preciso variar ambas na mesma campanha e estabelecer a fração de omissões que a inspeção de campo tolera.
+A Tabela~\ref{tab_relacoes_analise} indica onde cada relação é usada na análise. A MBG-V2 permite comparar as estratégias na mesma trajetória. A escolha de uma altura e de uma velocidade ótimas exigiria variar ambas na mesma campanha e estabelecer a fração de omissões que a inspeção de campo tolera.
 
 \begin{table}[!htbp]
   \centering

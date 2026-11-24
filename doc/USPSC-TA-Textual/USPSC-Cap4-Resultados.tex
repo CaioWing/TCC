@@ -4,7 +4,7 @@
 \chapter{Resultados e discussão}
 \label{cap_resultados}
 
-Nos seis voos completos de teste, compararam-se duas formas de distribuir a mesma quantidade de recortes. A memória por quadrantes acompanha a passagem de pontos do terreno pela imagem. O intervalo distribui a cota de cada voo em quadros regularmente espaçados. A inferência integral fornece a referência para as imagens originais a 40~m. O capítulo examina quantos recipientes cada método localizou no mapa, quantas marcações ficaram sem correspondência e em que momento surgiu a primeira detecção correta na imagem. A telemetria dos 26 voos e as medições na Jetson permitem estimar a demanda de processamento e o custo de transportar e operar a placa.
+Nos seis voos completos de teste, compararam-se a memória por quadrantes, que solicita recortes à medida que os pontos do terreno passam pela imagem, e a amostragem por intervalo, que distribui o total enviado pela memória em quadros regularmente espaçados de cada voo. A inferência integral serve como referência nas imagens originais a 40~m. Avaliam-se tanto os resultados no mapa, pelo número de recipientes localizados e de marcações sem correspondência, quanto o tempo até a primeira detecção correta na imagem. A telemetria dos 26 voos e as medições na Jetson permitem estimar a demanda de processamento e o custo de transportar e operar a placa.
 
 \section{Desempenho do detector nos recortes de validação}
 \label{sec_res_detector}
@@ -44,7 +44,7 @@ Caixas d'água e bueiros tiveram as maiores AP$_{50}$ entre as seis classes prin
 
 \subsection{Comparação com trabalhos na mesma base}
 
-Em cinco divisões da MBG-V2 por região, o Faster R-CNN de \citeonline{demelo2024robust} obteve F1 médio de 0,83 para caixas d'água e 0,16 para pneus, segundo \citeonline{souza2025aedes}. Para pneus nos mesmos quatro voos de validação deste trabalho, \citeonline[Tabelas 3.1 e A.7]{souza2025aedes} reporta F1 de cerca de 0,59 com YOLOv8s, frente a 0,47 com YOLO11n. Os protocolos diferem também nos dados de treino. O primeiro detector foi treinado para uma classe em 22 voos, e o segundo, para doze classes em 14 voos.
+Em cinco divisões da MBG-V2 por região, o Faster R-CNN de \citeonline{demelo2024robust} obteve F1 médio de 0,83 para caixas d'água e de 0,16 para pneus, segundo \citeonline{souza2025aedes}. Nos mesmos quatro voos usados aqui para a validação, \citeonline[Tabelas 3.1 e A.7]{souza2025aedes} obteve F1 de cerca de 0,59 para pneus com YOLOv8s, frente a 0,47 com o YOLO11n deste trabalho. A comparação envolve também uma diferença no treinamento. O YOLOv8s foi treinado para uma classe em 22 voos, e o YOLO11n, para doze classes em 14 voos.
 
 \section{Detecção nos seis voos de teste}
 \label{sec_qualidade_teste}
@@ -52,9 +52,9 @@ Em cinco divisões da MBG-V2 por região, o Faster R-CNN de \citeonline{demelo20
 \subsection{Recipientes localizados e falsos alarmes}
 \label{sec_resultados_quadrantes}
 
-Nos seis voos a 40~m, as seis classes avaliadas reuniam 1.924 recipientes anotados. Para localizá-los, a memória por quadrantes solicitou 8.796 recortes, uma média de 5,59~recortes/s. O intervalo recebeu a mesma cota em cada voo (Seção~\ref{sec_metodo_quadrantes}). A memória localizou 1.079 recipientes e o intervalo, 1.054. Com a memória, o recall geográfico aumentou 1,30~ponto percentual e 435 marcações a menos ficaram sem correspondência no mapa (Tabela~\ref{tab_resultados_quadrantes}).
+Nos seis voos a 40~m, havia 1.924 recipientes anotados nas seis classes avaliadas. A memória por quadrantes solicitou 8.796 recortes, em média 5,59~recortes/s, e localizou 1.079 desses recipientes. O intervalo, ajustado para enviar tantos recortes quanto a memória em cada voo (Seção~\ref{sec_metodo_quadrantes}), localizou 1.054. Com a memória, o recall geográfico foi 1,30~ponto percentual maior e houve 435 falsos alarmes a menos no mapa (Tabela~\ref{tab_resultados_quadrantes}).
 
-A distribuição por voo mostra de onde veio a diferença (Figura~\ref{fig_resultados_quadrantes}a, b). Nos voos 16 e 23, a memória localizou 11 recipientes a mais em cada um. Nos demais, a diferença variou de zero a dois. Os falsos alarmes diminuíram nos seis voos.
+A diferença se concentrou nos voos 16 e 23, em cada um dos quais a memória localizou 11 recipientes a mais que o intervalo. Nos demais, a diferença variou de zero a dois. Já a redução dos falsos alarmes ocorreu nos seis voos (Figura~\ref{fig_resultados_quadrantes}a, b).
 
 \begin{table}[!htbp]
   \centering
@@ -81,7 +81,7 @@ A distribuição por voo mostra de onde veio a diferença (Figura~\ref{fig_resul
   \fonte{Elaborado pelo autor. Cada recipiente conta uma vez por voo. A precisão no mapa é a fração dos focos previstos que correspondem a um recipiente anotado da mesma classe a até 1,0~m. Os demais focos previstos contam como falsos alarmes. A fração com alerta em até 1~s considera os 1.924 recipientes. A mediana e o percentil 90 consideram as trilhas que cada método confirmou na imagem.}
 \end{table}
 
-O intervalo mostrou ao detector 98,17\% do terreno filmado e a memória, 94,49\%, segundo a contagem das células de 0,5~m cujo centro apareceu em pelo menos um recorte. O intervalo cobriu mais terreno e localizou menos recipientes. No cálculo da área, uma célula vista em um único quadro tem o mesmo peso que outra vista várias vezes. Para localizar um recipiente, pelo menos uma vista precisa permitir seu reconhecimento e sua posição estimada no mapa precisa ficar dentro da tolerância de 1,0~m da referência.
+Pela contagem das células de 0,5~m cujo centro apareceu em pelo menos um recorte, o intervalo mostrou ao detector 98,17\% do terreno filmado e a memória, 94,49\%. Embora tenha coberto mais terreno, o intervalo localizou menos recipientes. No cálculo da área, basta que uma célula apareça uma vez, por mais breve que seja a vista. Já a localização exige que ao menos uma vista permita reconhecer o recipiente e que a posição estimada fique a até 1,0~m da referência no mapa.
 
 A inferência integral examinou os 24 recortes de todos os quadros. Com cerca de 129 vezes o número de recortes da memória, localizou mais 321 recipientes e gerou mais 4.601 falsos alarmes. Mesmo examinando o vídeo inteiro, 524 recipientes ficaram sem localização correta no mapa.
 
@@ -90,17 +90,17 @@ A inferência integral examinou os 24 recortes de todos os quadros. Com cerca de
   \caption{Diferenças de localização por voo e tempo até o primeiro alerta a 40~m}
   \label{fig_resultados_quadrantes}
   \includegraphics[width=\textwidth]{figuras/fig_resultados_quadrantes.pdf}
-  \fonte{Elaborado pelo autor. Em (a) e (b), subtrai-se o resultado do intervalo do obtido pelos quadrantes. Em (c), as curvas mostram, a cada instante, a fração das 1.924 trilhas anotadas que já receberam confirmação visual. Em (d), contam-se apenas as 1.035 trilhas que ambas as estratégias de mesma cota confirmaram.}
+  \fonte{Elaborado pelo autor. Em (a) e (b), subtrai-se o resultado do intervalo do obtido pelos quadrantes. Em (c), as curvas mostram, a cada instante, a fração das 1.924 trilhas anotadas que já receberam confirmação visual. Em (d), contam-se apenas as 1.035 trilhas que tanto a memória quanto o intervalo confirmaram.}
 \end{figure}
 
 \subsection{Tempo até o primeiro alerta correto}
 \label{sec_primeiro_alerta}
 
-Na imagem, mediu-se o tempo entre a primeira aparição anotada e o primeiro quadro com uma detecção da mesma classe, confiança de pelo menos 0,5 e IoU de pelo menos 0,5. No primeiro segundo, a memória confirmou 416 recipientes e o intervalo, 228 (Figura~\ref{fig_resultados_quadrantes}c). A memória envia poucos recortes em muitos instantes do voo. O intervalo concentra a mesma quantidade em quadros mais espaçados, o que aumenta o tempo de espera quando um recipiente aparece logo após um envio.
+Na imagem, o primeiro alerta corresponde ao primeiro quadro com detecção da classe anotada, confiança de pelo menos 0,5 e IoU de pelo menos 0,5. No primeiro segundo após a aparição anotada, a memória confirmou 416 recipientes e o intervalo, 228 (Figura~\ref{fig_resultados_quadrantes}c). A memória envia poucos recortes por vez em muitos instantes do voo, enquanto o intervalo concentra o mesmo total em quadros mais espaçados. Assim, quando um recipiente aparece logo após um envio por intervalo, a espera até a próxima oportunidade de detectá-lo é maior.
 
-Entre as 1.035 trilhas confirmadas pelas duas estratégias, a memória emitiu o primeiro alerta em 691 casos e o intervalo, em 306. Houve 38 empates (Figura~\ref{fig_resultados_quadrantes}d). Para essas mesmas trilhas, as medianas foram de 1,33~s para a memória e 2,37~s para o intervalo. Os tempos usam o relógio do vídeo. A fila e a execução no computador de bordo são avaliadas na Seção~\ref{sec_res_jetson_memoria}.
+Entre as 1.035 trilhas confirmadas por ambas as estratégias, o primeiro alerta veio da memória em 691 casos e do intervalo em 306, com 38 empates (Figura~\ref{fig_resultados_quadrantes}d). Para essas mesmas trilhas, o tempo mediano até o alerta foi de 1,33~s com a memória e de 2,37~s com o intervalo. Esses tempos são contados pelo relógio do vídeo. O efeito da fila e do tempo de execução no computador de bordo é avaliado na Seção~\ref{sec_res_jetson_memoria}.
 
-Para examinar o efeito das mudanças de velocidade e direção, compararam-se as confirmações nos cinco segundos após a primeira aparição (Figura~\ref{fig_alertas_por_movimento}). Nas 216 trilhas com maior variação do movimento, os quadrantes confirmaram 110 no prazo e o intervalo, 115. Nas 1.685 com menor variação, os quadrantes confirmaram 970 e o intervalo, 920. Assim, o ganho agregado nesse prazo concentrou-se nas janelas de menor variação. As passagens em curva motivam o uso da posição da câmera, mas os resultados desse grupo de voos não demonstram vantagem durante manobras.
+Nos cinco segundos após a primeira aparição, o resultado dependeu do grupo de trilhas considerado (Figura~\ref{fig_alertas_por_movimento}). Entre as 216 com maior variação do movimento da aeronave, os quadrantes confirmaram 110 recipientes no prazo e o intervalo, 115. Entre as 1.685 com menor variação, foram 970 com os quadrantes e 920 com o intervalo. Foi nesse segundo grupo que se concentrou o ganho observado no conjunto dos voos. Embora as passagens em curva motivem o uso da posição da câmera, os dados desses voos não demonstram vantagem dos quadrantes durante as manobras.
 
 \begin{figure}[!htbp]
   \centering
@@ -123,11 +123,11 @@ Ao passar de 40 para 80~m de altura equivalente, o mesmo recipiente ocupa metade
   \fonte{Elaborado pelo autor. O eixo de recall tem escala própria em cada classe. O cabeçalho indica o total anotado e o recall da integral a 40~m. As barras mostram o lado médio das caixas em pixels e usam a mesma escala nos três painéis de cada linha. Para cada recipiente, usa-se a mediana de $\sqrt{\text{largura}\times\text{altura}}$ de suas caixas anotadas a 40~m e aplica-se o fator $40/h$ à altura $h$.}
 \end{figure}
 
-Os baldes tinham as menores caixas, com lado médio de 29,3~pixels a 40~m. Mesmo na inferência integral, somente 16 dos 105 baldes foram localizados nessa altura. A partir de 60~m, nenhum dos dois métodos de seleção localizou um balde. Nos pneus, o lado médio caiu de 36,6 para 18,3~pixels entre 40 e 80~m. Dos 108 pneus, os quadrantes passaram de 19 localizados para um, e o intervalo, de 22 para três.
+Os baldes tinham as menores caixas, com lado médio de 29,3~pixels a 40~m. Nessa altura, mesmo a inferência integral localizou apenas 16 dos 105 baldes. A partir de 60~m, nenhum dos dois métodos de seleção localizou um balde. Também houve perdas entre os 108 pneus, cujo lado médio caiu de 36,6 para 18,3~pixels entre 40 e 80~m. Nesse intervalo de alturas, o número de pneus localizados caiu de 19 para um com os quadrantes e de 22 para três com o intervalo.
 
-O tamanho das caixas explica parte das perdas. Entre as caixas d'água localizadas pelos quadrantes a 40~m, as que continuaram localizadas a 80~m tinham lado mediano de 113~pixels na imagem original. As que deixaram de ser localizadas tinham 88~pixels. A comparação entre classes mostra o limite dessa relação. Na escala de 80~m, bueiros e vasos de planta tinham lados médios próximos, de 21,7 e 20,5~pixels. Ainda assim, os quadrantes localizaram 57,0\% dos bueiros e 8,2\% dos vasos.
+Entre as caixas d'água localizadas pelos quadrantes a 40~m, as que continuaram localizadas a 80~m já eram maiores na imagem original. O lado mediano era de 113~pixels nesse grupo e de 88~pixels entre as que deixaram de ser localizadas. Entre classes distintas, porém, tamanhos semelhantes nem sempre corresponderam a resultados próximos. A 80~m, bueiros e vasos de planta tinham lados médios de 21,7 e 20,5~pixels, respectivamente, mas os quadrantes localizaram 57,0\% dos bueiros e apenas 8,2\% dos vasos.
 
-No conjunto dos seis voos, elevar a altura equivalente de 40 para 80~m reduziu o recall dos quadrantes de 56,08\% para 46,15\% e o do intervalo de 54,78\% para 45,95\% (Figura~\ref{fig_deteccao_escala}). A vantagem inicial de 25 recipientes localizados pelos quadrantes caiu para quatro a 80~m. A 60~m, o intervalo chegou a localizar dois a mais. A proximidade dos resultados agregados encobre diferenças por classe. A 80~m, por exemplo, os quadrantes localizaram 20 caixas d'água a mais e o intervalo localizou 11 piscinas a mais.
+No conjunto dos seis voos, elevar a altura equivalente de 40 para 80~m reduziu o recall dos quadrantes de 56,08\% para 46,15\% e o do intervalo de 54,78\% para 45,95\% (Figura~\ref{fig_deteccao_escala}). A vantagem dos quadrantes, de 25 recipientes na altura original, caiu para quatro a 80~m. A 60~m, o intervalo chegou a localizar dois a mais. Esses totais próximos encobrem diferenças por classe. A 80~m, por exemplo, os quadrantes localizaram 20 caixas d'água a mais, enquanto o intervalo localizou 11 piscinas a mais.
 
 \begin{figure}[!htbp]
   \centering
@@ -142,21 +142,21 @@ Os quadrantes produziram menos falsos alarmes e confirmaram mais recipientes no 
 \subsection{Quanto da primeira vista se repete ao cruzar um quadrante?}
 \label{sec_sobreposicao_passagens}
 
-Nos seis voos a 40~m, a memória por quadrantes produziu 4.042 pares em que foi possível acompanhar um ponto desde a entrada na imagem até a primeira mudança de quadrante. A mediana do intervalo entre as vistas foi de 3,50~s. Nesse intervalo, o segundo recorte voltou a cobrir, em média, 83,3\% da área projetada do primeiro. Quando se usa a união das duas áreas como denominador, a IoU média dos recortes é 0,737 (Figura~\ref{fig_sobreposicao_distribuicao}a).
+Nos seis voos a 40~m, foi possível comparar 4.042 pares de recortes enviados pela memória na entrada de um ponto na imagem e na primeira mudança de quadrante desse ponto. O intervalo mediano entre as duas vistas foi de 3,50~s, e o segundo recorte voltou a cobrir, em média, 83,3\% da área projetada do primeiro. Ao dividir a área comum pela união das áreas dos dois recortes, obtém-se a IoU. Sua média foi de 0,737, e 75,1\% dos pares tiveram IoU acima de 0,75 (Figura~\ref{fig_sobreposicao_distribuicao}).
 
-Em 953 desses pares, ao menos um recipiente anotado apareceu nos dois recortes. Contando cada recipiente em cada par, houve 1.401 oportunidades de reconhecê-lo em duas vistas. O detector o reconheceu em ambas em 648 casos, apenas na entrada em 136 e apenas na travessia em 140. Nesses últimos casos, a mudança de quadrante deu ao detector uma segunda oportunidade de reconhecer um recipiente já presente na primeira imagem.
+Em 953 desses pares, ao menos um recipiente anotado apareceu nas duas vistas. Como um par podia conter mais de um recipiente, houve 1.401 oportunidades de reconhecer o mesmo objeto em ambas as imagens. O detector o reconheceu nas duas em 648 casos, somente na entrada em 136 e somente na travessia em 140. Nesses últimos casos, foi a mudança de quadrante que permitiu reconhecer um recipiente já presente na primeira imagem.
 
 \begin{figure}[!htbp]
   \centering
-  \caption{Sobreposição entre as vistas de entrada e de travessia pela projeção no terreno e pelo alinhamento das imagens}
+  \caption{Sobreposição no terreno entre a entrada e a primeira mudança de quadrante nos seis voos}
   \label{fig_sobreposicao_distribuicao}
-  \includegraphics[width=\textwidth]{figuras/fig_sobreposicao_distribuicao.pdf}
-  \fonte{Elaborado pelo autor. Em (a), as curvas mostram a porcentagem de observações com IoU até o valor indicado. São 4.042 pares de recortes e 648 pares de caixas do mesmo recipiente, previstas ou anotadas. Em (b), cada círculo representa um dos 49 pares de recortes alinhados pelas imagens e cada cruz, um dos seis casos com duas detecções nesses pares. A diagonal indica concordância entre as duas medidas.}
+  \includegraphics[width=.82\textwidth]{figuras/fig_sobreposicao_distribuicao.pdf}
+  \fonte{Elaborado pelo autor. Cada par entra em uma única faixa de IoU. A primeira coluna reúne os 4.042 pares de recortes. As outras duas usam os mesmos 648 casos em que o detector reconheceu o recipiente nas duas vistas. Para cada caso, compara-se o par de caixas previstas e, separadamente, o par de caixas anotadas. As porcentagens são calculadas dentro de cada coluna.}
 \end{figure}
 
-A posição estimada de um recipiente variou entre as vistas. Nos 648 casos com duas detecções, a IoU média das caixas no terreno foi 0,180 e a distância mediana entre os centros foi 1,36~m. Em 285 casos (44,0\%), as caixas projetadas ficaram sem interseção. Ao repetir a projeção com as caixas anotadas nas mesmas imagens, obtiveram-se IoU média de 0,184 e distância mediana de 1,33~m (Figura~\ref{fig_sobreposicao_distribuicao}a). A discrepância persiste, portanto, mesmo com a marcação manual.
+Nos 648 casos em que o detector reconheceu o recipiente nas duas vistas, as caixas previstas se sobrepuseram pouco ao serem projetadas no terreno. A distância mediana entre os centros foi de 1,36~m e a IoU média, de 0,180. Em 285 casos (44,0\%), as caixas ficaram sem nenhuma área em comum. A projeção das caixas anotadas nas mesmas imagens produziu resultados próximos, com IoU média de 0,184 e distância mediana de 1,33~m. A diferença de posição entre as vistas, portanto, também aparece quando se usa a marcação manual.
 
-Dos 180 pares amostrados para a verificação pelas imagens, 49 atenderam aos critérios de alinhamento. Nesses mesmos pares, a IoU média dos recortes foi 0,767 pela projeção no terreno e 0,672 ao alinhar os pixels (Figura~\ref{fig_sobreposicao_distribuicao}b). Em seis casos, o detector reconheceu o mesmo recipiente nas duas vistas. Todos os seis tiveram IoU zero entre as caixas projetadas, embora a IoU média das caixas após o alinhamento visual tenha sido de 0,723. O confronto confirma que duas detecções do mesmo recipiente podem ficar separadas no mapa. A amostra com alinhamento aceito não permite estimar a frequência desse efeito nos seis voos nem separar as contribuições do GSD, do relevo e da pose da câmera.
+Dos 180 pares de recortes amostrados para verificar a sobreposição diretamente nas imagens, 49 atenderam aos critérios de alinhamento pelos pixels. Em seis desses pares, o detector reconheceu um recipiente nas duas vistas, como no exemplo do bueiro da Figura~\ref{fig_sobreposicao_pares}.
 
 \begin{figure}[!htbp]
   \centering
@@ -173,7 +173,7 @@ Fixar a origem da malha na primeira posição válida do GPS de cada voo produzi
 \subsection{Mapa final dos recipientes}
 \label{sec_mapa_final_quadrantes}
 
-A Figura~\ref{fig_mapa_final_quadrantes} compara o mapa produzido pela memória por quadrantes ao fim de cada voo com a posição de referência dos recipientes anotados. A malha de 8,64~m orienta a escolha dos recortes. Já a posição de cada foco vem das caixas detectadas e pode ficar entre os pontos da malha. Para obter a referência, projetaram-se no terreno os centros das caixas anotadas de cada trilha e tomou-se a mediana. Como as duas projeções usam o mesmo GSD e a mesma telemetria, a distância entre elas mede a concordância com as anotações projetadas. A base utilizada não fornece uma posição de cada recipiente medida em campo.
+A Figura~\ref{fig_mapa_final_quadrantes} compara o mapa que a memória por quadrantes produziu ao fim de cada voo com as posições de referência dos recipientes anotados. A malha de 8,64~m orienta a escolha dos recortes, mas os focos podem ficar entre seus pontos, pois a posição de cada foco vem das caixas detectadas. A referência é a mediana dos centros das caixas anotadas de cada trilha após a projeção no terreno. Como a base não fornece posições medidas em campo e as duas projeções usam o mesmo GSD e a mesma telemetria, a distância entre um foco e sua referência indica a concordância com as anotações projetadas.
 
 Nos seis voos, dos 2.370 focos previstos, 1.079 corresponderam a recipientes anotados e 1.291 ficaram sem par. Entre as 1.924 referências, 845 ficaram sem foco correspondente. Nos 1.079 pares aceitos, a distância mediana foi de 0,33~m e o percentil 90 foi de 0,81~m. Essas distâncias descrevem apenas os acertos dentro do raio de avaliação de 1,0~m.
 
@@ -196,7 +196,7 @@ A curva da Figura~\ref{fig_curva_potencia} prevê menor potência a 8~m/s do que
 
 Para o quadrirrotor de 1,4~kg da Figura~\ref{fig_curva_potencia}, o arrasto $D$ e o peso determinam a tração $T=\sqrt{(mg)^2+D^2}$ e a inclinação $\alpha_d=\arctan[D/(mg)]$. Com a tração dividida entre quatro rotores, calcula-se $v_h$ pela Equação~\eqref{eq_vh} e resolve-se a Equação~\eqref{eq_glauert} para a velocidade induzida positiva. A Equação~\eqref{eq_pv} reúne as parcelas induzida, de perfil e parasita na potência mecânica $P(V;m)$. Como a base não mede o vento, a simulação assume vento nulo e iguala a velocidade horizontal relativa ao ar à registrada em relação ao solo.
 
-Como a curva prevê a potência necessária para manter o voo retilíneo e nivelado, a comparação com a bateria usou trechos em que a altitude, a velocidade e a direção permaneceram quase constantes. A altitude nominal era de 40~m em relação à decolagem. Entre os percentis 5 e 95, a telemetria registrou de 39,8 a 40,1~m. As velocidades de referência de 4,1~m/s para as regiões B a M e de 7,9~m/s para a região A representam as medianas observadas em cada campanha (Tabela~\ref{tab_campanhas}).
+Como a curva prevê a potência necessária para manter o voo retilíneo e nivelado, a comparação com a bateria considerou trechos em que a altitude, a velocidade e a direção permaneceram quase constantes. Para uma altitude nominal de 40~m em relação à decolagem, os percentis 5 e 95 da altitude registrada foram de 39,8 e 40,1~m. Adotaram-se como velocidades de referência as medianas observadas nas campanhas, de 4,1~m/s nas regiões B a M e de 7,9~m/s na região A (Tabela~\ref{tab_campanhas}).
 
 A seleção principal reteve 1.103 das 1.303 janelas consecutivas de cinco segundos (84,7\%). Cada janela precisava atender aos seis critérios da Figura~\ref{fig_sensibilidade_cruzeiro}. O limite entre registros restringe a interpolação, e o limite vertical exclui subidas e descidas mesmo quando a altitude ainda está próxima da referência.
 
@@ -235,7 +235,7 @@ A aeronave inclinou-se mais do que o modelo previa nas duas campanhas. A 4,1~m/s
 \par
 \end{samepage}
 
-Entre as campanhas, a velocidade aumentou por um fator de 1,93. Pela relação quadrática, $\tan\theta$ deveria ter aumentado por um fator de 3,73. A razão observada entre as tangentes foi de 1,85, próxima à razão entre as velocidades (Figura~\ref{fig_verificacao_telemetria}c). Com apenas dois regimes e sem medição do vento, essa proximidade é insuficiente para estabelecer uma lei linear de arrasto. A estimativa do custo de transportar a placa (Seção~\ref{sec_balanco_por_voo}) se apoia na curva ajustada à potência total da bateria na faixa de velocidades observada.
+A razão entre as velocidades de cruzeiro das duas campanhas foi de 1,93. Pela relação quadrática, essa diferença multiplicaria $\tan\theta$ por 3,73, mas a razão observada entre as tangentes foi de 1,85, próxima à razão entre as velocidades (Figura~\ref{fig_verificacao_telemetria}c). Como só há dois regimes e o vento não foi medido, essa proximidade é insuficiente para estabelecer uma lei linear de arrasto. Para estimar o custo de transportar a placa, usa-se a curva ajustada à potência total da bateria na faixa de velocidades observada (Seção~\ref{sec_balanco_por_voo}).
 
 \section{Área imageada e duração das aparições}
 \label{sec_res_telemetria}
@@ -261,7 +261,7 @@ em que $\bar{P}_{el}=E/t_{\mathrm{voo}}$ e $\bar{V}=s/t_{\mathrm{voo}}$ são as 
   \fonte{Elaborado pelo autor a partir da MBG-V2 \cite{smt2024mbgv2}. Em (a) e (b), cada ponto é um voo e cada letra no eixo comum agrupa os dois voos da mesma região. A linha de zero indica que a energia por área em (a) ou o tempo de visibilidade em (b) coincide com a respectiva previsão (Equações~\eqref{eq_e_area} e~\eqref{eq_visibilidade}). A faixa cinza marca diferenças de até 10\% em ambos os sentidos. Em (c), a razão observada de $\tan\theta$ entre campanhas é comparada às esperadas para crescimento com $V$ ou $V^2$.}
 \end{figure}
 
-Nos 23 voos de B a M com distância e energia disponíveis para o mesmo intervalo, os fatores de potência e velocidade ficaram entre 0,94 e 1,03. Quanto maior a sobreposição, maior o gasto por área em relação à previsão retilínea. A correlação entre o fator de revisitas e a razão entre medida e previsão foi de 0,98. As duas grandezas usam a mesma área reconstruída, e o fator de revisitas integra a própria razão. Essa correlação descreve como o gasto estimado se distribui entre os fatores. O voo~14 ficou fora apenas dessa decomposição. Seu balanço de energia usa o intervalo comum (Seção~\ref{sec_base_integridade}).
+Nos 23 voos de B a M com distância e energia disponíveis para o mesmo intervalo, os fatores de potência e velocidade ficaram entre 0,94 e 1,03. Quanto maior a sobreposição, maior o gasto por área em relação à previsão retilínea. A correlação de 0,98 entre o fator de revisitas e a razão entre medida e previsão descreve como o gasto estimado se distribui entre os fatores, pois as duas grandezas usam a mesma área reconstruída e o fator de revisitas faz parte da própria razão. A exclusão do voo~14 se restringe a essa decomposição. Seu balanço de energia considera o intervalo comum (Seção~\ref{sec_base_integridade}).
 
 Na região A, a energia por área supera a previsão em 32\% no voo~01 e em 12\% no voo~02. Nesses dois voos a 7,9~m/s, acelerações e curvas ocupam uma fração maior do trecho. A velocidade usada na estimativa ficou 27\% acima da média do trajeto no voo~01 e 7\% acima no voo~02. O fator de revisitas é de apenas 1,03.
 
@@ -279,7 +279,7 @@ A Figura~\ref{fig_visibilidade_por_classe} mostra a distribuição das duraçõe
   \fonte{Elaborado pelo autor a partir das 8.441 trilhas da MBG-V2 \cite{smt2024mbgv2}. A duração anotada vai do primeiro ao último quadro com o recipiente na imagem, incluindo ambos, à taxa de quadros do vídeo. Os símbolos indicam a mediana e os segmentos vão do percentil 10 ao 90. Cada trilha conta uma vez. A coluna $n$ informa quantas trilhas há em cada grupo.}
 \end{figure}
 
-Nas regiões B a M, a previsão mediana foi semelhante para baldes e piscinas (7,34 e 7,55~s). Nas anotações, as medianas foram de 6,32 e 8,07~s, respectivamente. A diferença também aparece nas trilhas mais breves. O percentil 10 foi de 3,50~s para baldes e de 6,51~s para piscinas. Para a seleção dos recortes, essas aparições curtas importam porque um recipiente pode entrar e sair da imagem entre dois envios ao detector.
+Nas regiões B a M, a previsão mediana foi semelhante para baldes e piscinas (7,34 e 7,55~s), mas os baldes ficaram visíveis por menos tempo nas anotações. As durações medianas foram de 6,32~s para baldes e de 8,07~s para piscinas. A diferença também aparece no percentil 10 da duração, de 3,50~s para baldes e de 6,51~s para piscinas. Para a seleção dos recortes, essas diferenças importam porque um recipiente que permanece pouco tempo visível pode entrar e sair da imagem entre dois envios ao detector.
 
 \section{Desempenho e consumo do computador de bordo}
 \label{sec_res_jetson}
@@ -297,11 +297,11 @@ Na Jetson Orin Nano em modo de 25~W, a vazão do YOLO11n variou de 7,3 a 50,3~in
   \fonte{Elaborado pelo autor a partir dos ensaios da Seção~\ref{sec_metodo_jetson}, com lote unitário e pesos COCO. Os círculos e seus rótulos mostram o processamento desde a imagem em memória até as detecções. Os losangos mostram a execução desde o tensor preparado até a saída bruta. Os dois eixos horizontais são logarítmicos. A energia total inclui a alimentação da placa em repouso.}
 \end{figure}
 
-A vazão medida depende de quais etapas entram na cronometragem. No TensorRT nativo em FP16, a bancada processou 174,5~tensores/s quando a entrada já estava preparada, mas entregou 44,9~resultados/s a partir das imagens. Em FP16, o ONNX Runtime com provedor TensorRT entregou 42,5~resultados/s a partir das mesmas imagens. O controle automático de frequência variou entre rodadas. Em FP32 nativo, por exemplo, o ensaio preliminar registrou 30,0~resultados/s e a rodada principal, 36,6. Isso limita a interpretação de diferenças pequenas entre motores.
+A vazão medida depende das etapas incluídas na cronometragem. Em TensorRT nativo com FP16, a bancada processou 174,5~tensores/s quando a entrada já estava preparada, mas entregou 44,9~resultados/s a partir das imagens. Com as mesmas imagens e a mesma precisão numérica, o ONNX Runtime com provedor TensorRT entregou 42,5~resultados/s. Diferenças pequenas entre motores devem ser interpretadas à luz da variação automática da frequência entre rodadas. No TensorRT nativo em FP32, por exemplo, o ensaio preliminar registrou 30,0~resultados/s e a rodada principal, 36,6.
 
 Os tempos da Figura~\ref{fig_bancada_vazao_energia} correspondem à operação após o aquecimento. No ensaio preliminar, a primeira sessão do ONNX Runtime com provedor TensorRT levou 175~s em FP32 e 526~s em FP16 para construir o motor. Na rodada principal, reutilizar o motor em \textit{cache} reduziu o carregamento para cerca de 3~s em ambas as precisões. Esse custo inicial de tempo pode ser distribuído entre os recortes processados durante a sessão.
 
-No TensorRT nativo, FP32 e FP16 obtiveram a mesma mAP$_{50\text{--}95}$ a uma casa decimal (41,2\%) nas 500 imagens COCO avaliadas. Em FP16, a energia por inferência acima do repouso caiu de 80,5 para 45,7~mJ. Em INT8, a energia caiu para 32,2~mJ e a vazão subiu para 50,3~inferências/s, com perda de 5,3 pontos percentuais de mAP frente a FP16 (Figura~\ref{fig_bancada_precisao_coco}). O resultado em FP16 combina a redução de consumo frente a FP32 com a qualidade observada nesse conjunto. A Tabela~\ref{tab_jetson_configuracoes} reúne os valores usados para projetar a execução dos recortes de voo.
+No TensorRT nativo, FP32 e FP16 alcançaram a mesma mAP$_{50\text{--}95}$ nas 500 imagens do COCO (41,2\%, a uma casa decimal). A diferença apareceu no ensaio de bancada com 95 imagens, em que a energia por inferência acima do repouso caiu de 80,5~mJ em FP32 para 45,7~mJ em FP16. Com INT8, a energia caiu para 32,2~mJ e a vazão chegou a 50,3~inferências/s, mas a mAP no COCO ficou 5,3 pontos percentuais abaixo da obtida em FP16 (Figura~\ref{fig_bancada_precisao_coco}). A Tabela~\ref{tab_jetson_configuracoes} reúne os valores de bancada usados para projetar a execução dos recortes de voo.
 
 \begin{figure}[!htbp]
   \centering
@@ -333,11 +333,11 @@ No TensorRT nativo, FP32 e FP16 obtiveram a mesma mAP$_{50\text{--}95}$ a uma ca
 \subsection{Capacidade da Jetson para as estratégias de seleção}
 \label{sec_res_jetson_memoria}
 
-Nos vídeos a 29,97 quadros/s, os quadrantes e o intervalo enviaram, em média, 5,59 recortes/s ao detector. Essa demanda representa 12,5\% da vazão de bancada. A inferência integral exigiria 719,28 recortes/s para acompanhar a câmera, cerca de 16 vezes a vazão medida (Figura~\ref{fig_jetson_demanda}a).
+Nos vídeos a 29,97 quadros/s, os quadrantes e o intervalo solicitaram em média 5,59 recortes/s, o equivalente a 12,5\% da vazão de bancada. Para acompanhar a mesma câmera, a inferência integral exigiria 719,28 recortes/s, cerca de 16 vezes a vazão medida (Figura~\ref{fig_jetson_demanda}a).
 
-A mesma média corresponde a dois padrões de envio (Figura~\ref{fig_jetson_demanda}b). A memória enviou recortes de 8.435 quadros, dos quais 8.191 contribuíram com apenas um recorte. O intervalo concentrou a cota em 368 quadros, quase sempre com 24 recortes por envio. Ao reproduzir esses horários com a latência média de bancada, o tempo mediano desde a chegada do quadro até o término de seu último recorte foi de 22~ms nos quadrantes e 535~ms no intervalo.
+Apesar da mesma demanda média, os recortes chegam ao detector em ritmos distintos (Figura~\ref{fig_jetson_demanda}b). Dos 8.435 quadros em que a memória enviou recortes, 8.191 contribuíram com apenas um. Já o intervalo concentrou os envios em 368 quadros, quase sempre com 24 recortes por vez. Na simulação com esses horários e a latência média de bancada, a mediana do tempo entre a chegada do quadro e o término do seu último recorte foi de 22~ms nos quadrantes e de 535~ms no intervalo.
 
-Nos quadrantes, 14 envios encontraram o detector ocupado, com espera máxima de 357~ms até o início do processamento. No intervalo, todos começaram assim que o quadro chegou. Nas duas estratégias o detector terminou os recortes antes do fim de cada voo, inclusive ao se atribuir a cada recorte os 23,30~ms do percentil 99 de bancada. A viabilidade da cadeia completa depende também do tempo de captura e decodificação em 4K, da seleção e da associação das detecções no mapa, com os pesos treinados na MBG-V2.
+Nos quadrantes, 14 envios encontraram o detector ocupado, com espera máxima de 357~ms até o início do processamento. No intervalo, o detector estava livre na chegada de todos os quadros selecionados. Ambas as estratégias concluíram o processamento dos recortes antes do fim de cada voo, inclusive quando se atribuiu a cada recorte a latência de 23,30~ms correspondente ao percentil 99 de bancada. Para avaliar a cadeia completa a bordo, é preciso medir também a captura e a decodificação em 4K, a seleção dos recortes e a associação das detecções no mapa, com os pesos treinados na MBG-V2.
 
 \begin{figure}[!htbp]
   \centering
@@ -384,7 +384,7 @@ Ao longo dos seis voos, transportar o kit acrescentaria em média 19,27~W à pro
   \fonte{Elaborado pelo autor para uma Jetson com o kit de 174~g. Quadrantes e intervalo compartilham as barras porque as estimativas coincidem a uma casa decimal nas nove configurações. Na integral, a placa trabalha continuamente e a barra inclui apenas o processamento realizado durante o voo. ORT designa o ONNX Runtime. O PyTorch foi executado com TorchScript.}
 \end{figure}
 
-Em TensorRT FP16, os quadrantes e o intervalo concluiriam a mesma cota de 8.796 recortes. Transportar o kit e executar qualquer uma das duas estratégias consumiria 10,61~Wh adicionais nos 26,2~min de voo, o que corresponde a um acréscimo médio de 24,3~W. Na integral, a potência adicional chegaria a 26,1~W, mas a placa concluiria apenas 6,2\% dos 1.131.600 recortes até o fim dos vídeos. Mesmo a configuração mais rápida, TensorRT INT8, alcançaria 7,0\% da demanda integral.
+Em TensorRT FP16, os quadrantes e o intervalo concluiriam o processamento dos 8.796 recortes de cada estratégia. Transportar o kit e executar qualquer uma das duas estratégias consumiria 10,61~Wh adicionais nos 26,2~min de voo, o que corresponde a um acréscimo médio de 24,3~W. Na integral, a potência adicional chegaria a 26,1~W, mas a placa concluiria apenas 6,2\% dos 1.131.600 recortes até o fim dos vídeos. Mesmo a configuração mais rápida, TensorRT INT8, alcançaria 7,0\% da demanda integral.
 
 \subsection{Consequência para a energia por área imageada}
 \label{sec_exemplo_coprojeto}
@@ -399,7 +399,7 @@ Nos seis voos de teste, a bateria forneceu 80,08~Wh. A energia $E_i$ vem das med
   \right].
   \label{eq_placa_por_area}
 \end{equation}
-A parcela de alimentação se anula com a placa desligada. Em repouso, $r_i=0$ e permanece $P_{c0}$. Para a placa ativa, usaram-se o TensorRT FP16 e a cota de recortes comum aos quadrantes e ao intervalo em cada voo.
+A parcela de alimentação se anula com a placa desligada. Em repouso, $r_i=0$ e permanece $P_{c0}$. Para a placa ativa, usaram-se o TensorRT FP16 e o número de recortes enviados em cada voo, igual para os quadrantes e o intervalo.
 
 \begin{table}[!htbp]
   \centering
@@ -418,14 +418,14 @@ A parcela de alimentação se anula com a placa desligada. Em repouso, $r_i=0$ e
   \fonte{Elaborado pelo autor. A primeira linha usa a energia medida e a área reconstruída pela telemetria. Nas demais, somaram-se os custos estimados em cada voo antes de calcular a mediana dos seis.}
 \end{table}
 
-A mediana da energia por área passaria de 239,0 para 270,3~Wh/km$^2$ com o kit de 174~g ativo, um aumento de 13,1\% (Tabela~\ref{tab_balanco_telemetria}). A Figura~\ref{fig_energia_por_area} mostra por que esse custo varia entre os percursos. Nos voos 10 e 15, o kit acrescentaria cerca de 24,3~W em ambos. O voo~10 cobriu 1,13~ha por minuto, a um custo adicional de 35,7~Wh/km$^2$. O voo~15 cobriu mais terreno no mesmo tempo, 1,37~ha por minuto, o que reduziu o acréscimo para 29,5~Wh/km$^2$.
+Com o kit de 174~g ativo, a mediana da energia por área passaria de 239,0 para 270,3~Wh/km$^2$, um aumento de 13,1\% (Tabela~\ref{tab_balanco_telemetria}). Os voos 10 e 15 mostram por que um acréscimo de potência semelhante, de cerca de 24,3~W, tem custos diferentes por unidade de área (Figura~\ref{fig_energia_por_area}). O voo~10 cobriu 1,13~ha por minuto, a um custo adicional de 35,7~Wh/km$^2$. Como o voo~15 cobriu mais terreno no mesmo tempo, 1,37~ha por minuto, o acréscimo foi menor, de 29,5~Wh/km$^2$.
 
 \begin{figure}[!htbp]
   \centering
   \caption{Energia total por área imageada em cada voo, sem o kit e com a Jetson em TensorRT FP16}
   \label{fig_energia_por_area}
   \includegraphics[width=.80\textwidth]{figuras/fig_energia_por_area.pdf}
-  \fonte{Elaborado pelo autor com a telemetria da MBG-V2 e a Equação~\eqref{eq_placa_por_area}. Em cada linha, o círculo usa a energia medida na bateria e o quadrado inclui a energia estimada para transportar e alimentar o kit com a cota dos quadrantes e do intervalo. Ambos usam a mesma área imageada no voo.}
+  \fonte{Elaborado pelo autor com a telemetria da MBG-V2 e a Equação~\eqref{eq_placa_por_area}. Em cada linha, o círculo usa a energia medida na bateria e o quadrado inclui a energia estimada para transportar e alimentar o kit com o número de recortes observado nas duas estratégias. Ambos usam a mesma área imageada no voo.}
 \end{figure}
 
 Com o detector ativo em FP16, variar a massa do kit de 100 para 250~g elevaria a mediana de 259,6 para 281,6~Wh/km$^2$. Para o kit de 174~g, o transporte respondeu por 24,8~Wh/km$^2$ adicionais na mediana. A inferência em FP16 acrescentaria 0,33~Wh/km$^2$ acima do repouso, dos quais a troca para INT8 pouparia cerca de 0,10~Wh/km$^2$.
@@ -440,7 +440,7 @@ Com o detector ativo em FP16, variar a massa do kit de 100 para 250~g elevaria a
   \fonte{Elaborado pelo autor com as trajetórias da MBG-V2 e a energia estimada para o kit de 174~g ativo. A linha vertical marca a altura nominal de aquisição (40~m). Para cada altura, a faixa sombreada vai do menor ao maior gasto por área entre os seis voos.}
 \end{figure}
 
-Ao reprojetar os seis percursos como descrito na Seção~\ref{sec_base_energia}, a mediana estimada caiu de 270,3~Wh/km$^2$ a 40~m para 172,3~Wh/km$^2$ a 80~m, uma redução de 36,3\% (Figura~\ref{fig_altura_percursos}). Na passada retilínea da Equação~\eqref{eq_e_h}, dobrar a altura reduziria esse custo à metade. A estimativa mantém a quantidade de recortes e a energia de cada percurso ao variar a altura. Nos percursos registrados, parte da faixa ampliada voltou a cobrir terreno já imageado. A estimativa de energia por área inclui o terreno novo da faixa projetada. A análise de detecção da Seção~\ref{sec_resultados_escala} acompanha apenas os recipientes anotados no vídeo original.
+Ao reprojetar os seis percursos como descrito na Seção~\ref{sec_base_energia}, a mediana estimada caiu de 270,3~Wh/km$^2$ a 40~m para 172,3~Wh/km$^2$ a 80~m, uma redução de 36,3\% (Figura~\ref{fig_altura_percursos}). Na passada retilínea da Equação~\eqref{eq_e_h}, dobrar a altura reduziria esse custo à metade. Nos percursos registrados, a estimativa mantém o número de recortes e a energia de cada voo, mas parte da faixa ampliada volta a cobrir terreno já filmado. O terreno novo que passa a integrar a faixa projetada entra no cálculo da energia por área, enquanto a análise de detecção da Seção~\ref{sec_resultados_escala} acompanha apenas os recipientes anotados no vídeo original.
 
 \subsubsection*{Sobreposição entre passadas paralelas}
 
@@ -451,7 +451,7 @@ Em um levantamento com passadas paralelas longas, a separação entre as linhas 
   \caption{Energia por área projetada ao variar a altura e a sobreposição lateral entre passadas}
   \label{fig_altura_sobreposicao}
   \includegraphics[width=.82\textwidth]{figuras/fig_altura_sobreposicao.pdf}
-  \fonte{Elaborado pelo autor com as Equações~\eqref{eq_pegada} e~\eqref{eq_coprojeto}. Cada célula representa um plano de voo com o lado longo da imagem perpendicular ao deslocamento, o kit de 174~g ativo e a cota média de 5,59~recortes/s.}
+  \fonte{Elaborado pelo autor com as Equações~\eqref{eq_pegada} e~\eqref{eq_coprojeto}. Cada célula representa um plano de voo com o lado longo da imagem perpendicular ao deslocamento, o kit de 174~g ativo e a taxa média observada de 5,59~recortes/s.}
 \end{figure}
 
-A 40~m, aumentar a sobreposição lateral de zero para 25\% eleva o custo de 248 para 331~Wh/km$^2$ (Figura~\ref{fig_altura_sobreposicao}). Dois planos também podem ter o mesmo custo e produzir imagens diferentes. A 80~m com 50\% de sobreposição, as linhas ficam separadas pelos mesmos 56,1~m que a 40~m sem sobreposição. Nos dois casos, o modelo prevê 248~Wh/km$^2$. No voo mais alto, as faixas vizinhas compartilham metade da largura e o lado de um mesmo recipiente ocupa metade dos pixels.
+A 40~m, elevar a sobreposição lateral de zero para 25\% faz o custo passar de 248 para 331~Wh/km$^2$ (Figura~\ref{fig_altura_sobreposicao}). Planos de mesmo custo também podem produzir imagens diferentes. Na altura de 80~m com 50\% de sobreposição, as linhas ficam separadas pelos mesmos 56,1~m que a 40~m sem sobreposição, e ambos os planos custam 248~Wh/km$^2$ no modelo. No voo mais alto, porém, as faixas vizinhas compartilham metade da largura e o lado de um mesmo recipiente ocupa metade dos pixels.
