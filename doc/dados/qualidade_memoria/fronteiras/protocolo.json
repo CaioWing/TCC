@@ -1,0 +1,16 @@
+{
+  "margem_px": 4,
+  "alinhamento_minimo": 0.7,
+  "razao_lados_minima": 0.6,
+  "ios_minima": 0.6,
+  "escore_minimo_parte": 0.15,
+  "escore_minimo_uniao": 0.5,
+  "iou_identidade_fragmento": 0.5,
+  "origem_parametros": "Exploratórios, fixados antes da auditoria.",
+  "estrategia": "Integral",
+  "motor_validacao": "torchscript_fp32",
+  "motor_teste": "trt_fp16",
+  "criterio": "NMS global por classe antes e depois da união. Arestas ambíguas permanecem separadas. Escore da união igual ao maior dos dois.",
+  "identidade": "IoU da caixa de cada fragmento com a anotação recortada à área de origem. IDs CVAT usados exclusivamente na auditoria.",
+  "sha256": "2e592d202d47e964767f883db7bc9bcd1d181648781f30023e536fd416313273"
+}

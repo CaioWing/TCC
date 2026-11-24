@@ -1,6 +1,5 @@
 from pathlib import Path
 import csv,sys
-import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -9,6 +8,7 @@ from matplotlib.lines import Line2D
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'code'))
 from paleta_tcc import BLUE,ORANGE,GREEN,PURPLE,RED,GRAY
+from plot_demanda_jetson import figura_demanda
 with (ROOT/'data/yolo11n-jetson24-20261116/summary.csv').open(encoding='utf-8',newline='') as f: rows=list(csv.DictReader(f))
 def get(c,m='e2e'): return next(r for r in rows if r['config']==c and r['mode']==m)
 plt.rcParams.update({'font.family':'DejaVu Sans','font.size':8,'axes.labelsize':8,'xtick.labelsize':7,'ytick.labelsize':7,'axes.spines.top':False,'axes.spines.right':False,'pdf.fonttype':42,'savefig.bbox':'tight'})
@@ -34,17 +34,4 @@ for ax,vals in zip(axes,[[100*float(get(c)['mAP50_95']) for c in ids],[float(get
 axes[0].set_title('(a) Qualidade da detecção',fontsize=8.5)
 axes[1].set_title('(b) Custo por inferência',fontsize=8.5)
 axes[0].set_ylabel('mAP50–95 do benchmark (%)');axes[1].set_ylabel('Energia total e2e (mJ/inferência)');fig.tight_layout(w_pad=2);save(fig,'fig_jetson_precisao')
-with (ROOT/'data/mbg_v2/splits/memoria_sim_26voos.csv').open(encoding='utf-8',newline='') as f: flights=list(csv.DictReader(f))
-bm=[r for r in flights if r['region'] != 'A']; a=[r for r in flights if r['region']=='A']
-def stats(group,key):
- v=np.array([float(r[key]) for r in group]);return float(v.min()),float(np.median(v)),float(v.max())
-raw=[stats(bm,'adiada_recortes_s'),stats(a,'adiada_recortes_s'),(24,24,24),stats(bm,'imediata_recortes_s'),(719,719,719)]
-print('Demanda mínima, mediana, máxima (passadas/s):',raw)
-cap=float(get('trt_fp16')['fps']); print('Capacidade FP16:',cap)
-fig,ax=plt.subplots(figsize=(5.9,3.0));y=np.arange(5)
-labels=['Seleção na saída (B–M)','Seleção na saída (A)','A cada 30 quadros (B–M)\n1 quadro/s nominal','Seleção na entrada (B–M)','Processamento integral (B–M)']
-for yi,(lo,med,hi),color in zip(y,raw,[BLUE,BLUE,ORANGE,GREEN,RED]):
- ax.plot([lo/cap,hi/cap],[yi,yi],color=color,lw=2.5,zorder=2);ax.scatter(med/cap,yi,color=color,edgecolor='#343b40',s=35,linewidth=.5,zorder=3)
-ax.set_yticks(y,labels);ax.invert_yaxis();ax.set_xscale('log');ax.set_xlim(.09,25);ax.axvline(1,color='#343b40',lw=1,ls='--');ax.set_xlabel('Demanda / capacidade FP16 (vezes)')
-ax.xaxis.set_major_locator(FixedLocator([.1,.2,.5,1,2,5,10,20]));ax.xaxis.set_major_formatter(FuncFormatter(lambda v,p:f'{v:g}'.replace('.',',')));ax.xaxis.set_minor_locator(NullLocator());ax.grid(axis='x',alpha=.2);ax.set_axisbelow(True)
-fig.tight_layout();save(fig,'fig_jetson_demanda')
+save(figura_demanda(),'fig_jetson_demanda')

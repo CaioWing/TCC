@@ -1,0 +1,29 @@
+{
+  "voos": [
+    "video09_regionE",
+    "video10_regionE",
+    "video15_regionH",
+    "video16_regionH",
+    "video23_regionL",
+    "video24_regionL"
+  ],
+  "altura_original_m": 40,
+  "lado_m": 8.64,
+  "motor": "trt_fp16",
+  "pesos_sha256": "2e592d202d47e964767f883db7bc9bcd1d181648781f30023e536fd416313273",
+  "limiares": {
+    "conf": 0.5,
+    "raio_m": 1.5,
+    "dmax_m": 1.0,
+    "iou_nms": 0.7
+  },
+  "regra": "Em cada quadro, projetar pontos fixos de 8,64 m. Pedir um recorte na primeira vista de cada um dos quatro quadrantes 2×2 durante a passagem contínua. Na saída a memória do ponto expira. Uma reentrada abre nova passagem. Sem vista de saída obrigatória.",
+  "selecao": "Usar o recorte que contém o ponto e tem o centro mais próximo. Fundir pedidos iguais. Todos os pontos contidos em um recorte enviado recebem crédito no quadrante atual.",
+  "teto": "Até 48 recortes por bloco de 60 quadros, limitado à cota do intervalo no bloco final. Selecionar a qualquer quadro, sem completar a cota por obrigação. Em falta de saldo, priorizar mais pedidos e depois o menor índice de recorte. Pedidos sem vista podem ser atendidos em outro quadro enquanto o ponto estiver visível no quadrante.",
+  "controle": "Mesmo número de recortes por voo. Quadros uniformemente espaçados desde o quadro zero, com um quadro parcial quando necessário, pela função temporal(). O controle pareado usa o total conhecido após cada voo.",
+  "avaliacao": "Mesma avaliação dos focos e primeiro alerta usada nos voos completos. Mediana e p90 condicionais à confirmação na imagem, em tempo de vídeo.",
+  "origem_malha": "Primeiro registro GPS válido na série usada para a pose. O referencial local WGS84 usa a latitude e longitude desse registro. Mantidas a guinada e a interpolação temporal do ensaio original.",
+  "referencial_avaliacao": "O plano de enquadramento usa o primeiro GPS. A projeção das detecções e das referências usa o mesmo referencial do ensaio original.",
+  "identificador_origem_anterior": "media_do_voo",
+  "identificador_origem_atual": "primeiro_gps"
+}

@@ -42,14 +42,14 @@ def primeiros_alertas(clip, previsoes):
     return primeiros
 
 
-def avaliar_voo(video):
-    with np.load(TEMP / f"{video}.npz") as info:
+def avaliar_voo(video, *, cache=TEMP, metodos=METODOS):
+    with np.load(cache / f"{video}.npz") as info:
         n, fps = int(info["total_frames"]), float(info["fps"])
         inicio, centros = referencias(video, n, fps, info["size"], info["gsd"])
-    clip, = load_clips(video, MOTOR, cache=TEMP)
+    clip, = load_clips(video, MOTOR, cache=cache)
     clip["centers"] = centros  # Inclui as trilhas ausentes de todos os quadros enviados.
     voos, trilhas = [], []
-    for m, metodo in enumerate(METODOS):
+    for m, metodo in enumerate(metodos):
         mascara = clip["masks"][:, :, m]
         previsoes = selected_tiles(clip, mascara)
         contagens, acertos = focus_counts(clip, projected(clip, previsoes), METRICA["conf"],

@@ -9,20 +9,21 @@ from balanco_telemetria import JETSON, ROOT
 from paleta_tcc import BLUE, GREEN, GRAY
 
 
-def cenarios():
+def cenarios(config="trt_fp16"):
     dados = ROOT / "doc/dados"
-    selecao = pd.read_csv(dados / "qualidade_memoria/cobertura_continua/por_voo.csv")
+    selecao = pd.read_csv(dados / "qualidade_memoria/quadrantes/por_voo.csv")
+    selecao = selecao[selecao.metodo.isin(["quadrantes", "intervalo_pareado"])].copy()
     selecao["voo"] = selecao.video.str.extract(r"video(\d+)_", expand=False).astype(int)
     cotas = selecao.pivot(index="voo", columns="metodo", values="recortes")
-    if len(cotas) != 6 or not cotas.cobertura.equals(cotas.intervalo):
+    if len(cotas) != 6 or not cotas.quadrantes.equals(cotas.intervalo_pareado) or cotas.isna().any().any():
         raise ValueError("São esperados seis voos com a mesma cota por estratégia.")
 
     balanco = pd.read_csv(dados / "balanco_telemetria.csv").set_index("voo").loc[cotas.index]
-    duracao = selecao.loc[selecao.metodo == "cobertura"].set_index("voo").loc[cotas.index, "duracao_s"]
+    duracao = selecao.loc[selecao.metodo == "quadrantes"].set_index("voo").loc[cotas.index, "duracao_s"]
     np.testing.assert_allclose(balanco.trecho_s, duracao, rtol=0, atol=1e-6)
-    bancada = pd.read_csv(JETSON / "summary.csv").query("config == 'trt_fp16' and mode == 'e2e'")
+    bancada = pd.read_csv(JETSON / "summary.csv").query("config == @config and mode == 'e2e'")
     energia_mJ = bancada.E_dyn_mJ_per_inf.item()
-    dinamica = cotas.cobertura * energia_mJ / (3.6e6 * balanco.area_sim_km2)
+    dinamica = cotas.quadrantes * energia_mJ / (3.6e6 * balanco.area_sim_km2)
 
     # Massa e repouso já estão integrados sobre o percurso em simular_potencia_missao.py.
     campos = ["voo", "carga_g", "bateria_Wh_km2", "massa_Wh_km2", "ocioso_Wh_km2"]

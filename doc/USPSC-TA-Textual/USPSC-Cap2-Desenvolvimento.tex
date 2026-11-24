@@ -97,7 +97,7 @@ Para fornecer a potência mecânica $P(V)$ nos eixos dos rotores, a bateria alim
   P_{el} = \frac{P(V)}{\eta_{m}} + P_{av},
   \label{eq_pel}
 \end{equation}
-em que $\eta_m$ é a eficiência combinada de motores e controladores e $P_{av}$ reúne cargas como controlador de voo, rádio e \textit{gimbal}. O consumo do computador dedicado à percepção entra separadamente no balanço da missão.
+em que $\eta_m$ é a eficiência combinada de motores e controladores e $P_{av}$ reúne cargas como controlador de voo, rádio e suporte estabilizado da câmera (\textit{gimbal}). O consumo do computador dedicado à percepção entra separadamente no balanço da missão.
 
 O produto da tensão $U(t)$ pela corrente $I(t)$, positiva na descarga, fornece a potência nos terminais da bateria. Integrando-a de $t_0$ a $t_1$, obtém-se a energia consumida no trecho \cite[Eq.~(3), p.~58385]{abeywickrama2018energy},
 \begin{equation}
@@ -133,7 +133,7 @@ Em uma passada retilínea sem lacunas nem revisitas, uma câmera com faixa de la
   e = \frac{P_{el,\mathrm{tot}}(V)}{V\,w},
   \label{eq_e_area}
 \end{equation}
-em que $P_{el,\mathrm{tot}}$ inclui a propulsão, os aviônicos e o computador de bordo. A interpretação da área imageada como área inspecionada pressupõe que seu processamento satisfaça o critério de qualidade adotado.
+em que $P_{el,\mathrm{tot}}$ inclui a propulsão, os aviônicos e o computador de bordo. Para considerar uma área imageada como inspecionada, a detecção precisa atender ao critério de qualidade adotado.
 
 Na comparação entre estratégias, usa-se a mesma área imageada e contam-se os mesmos recipientes anotados. A cobertura dos recortes selecionados é calculada à parte. Com $w$ fixa, minimizar $e$ equivale a maximizar o alcance. Se houver vento, a potência passa a depender da velocidade relativa ao ar e a cobertura, da velocidade relativa ao solo. Com potência em watts, $V$ em m/s e $w$ em metros, multiplica-se $e$ em J/m$^2$ por $10^6/3600$ para obter Wh/km$^2$.
 
@@ -244,7 +244,7 @@ A guinada da câmera, $\psi$, é medida a partir do norte em direção ao leste.
   \begin{bmatrix} -(v - c_y) \\ u - c_x \end{bmatrix}.
   \label{eq_georref}
 \end{equation}
-Com $\psi=0$, a frente da câmera aponta para o norte e sua direita para o leste. A Figura~\ref{fig_guinada_deslocamentos} mostra como a guinada muda essas direções para um mesmo ponto da imagem. Aplicada aos cantos do quadro, a Equação~\eqref{eq_georref} delimita a área visível para seleção dos recortes (Seção~\ref{sec_sim_estrategias}). Aplicada ao centro de uma caixa, ela situa o recipiente em relação à câmera.
+Com $\psi=0$, a frente da câmera aponta para o norte e sua direita para o leste. A Figura~\ref{fig_guinada_deslocamentos} mostra como a guinada muda essas direções para um mesmo ponto da imagem. Aplicada aos cantos do quadro, a Equação~\eqref{eq_georref} delimita a área visível para seleção dos recortes (Seção~\ref{sec_sim_estrategias}). Aplicada ao centro do retângulo que delimita o recipiente na imagem (a caixa), ela estima a posição do recipiente em relação à câmera.
 \begin{figure}[htb]
   \centering
   \caption{Efeito da guinada na conversão dos deslocamentos da câmera para norte e leste}
@@ -282,7 +282,7 @@ A precisão da posição obtida depende da escala adotada, da orientação da c�
 
 \subsection{Detecção por recortes}
 
-O YOLO prevê, em uma passada da rede, a posição das caixas, suas classes e os respectivos escores de confiança \cite{redmon2016yolo,jocher2024yolo11}. Para preservar o detalhe dos objetos pequenos na entrada do detector, extrai-se da imagem original uma grade de recortes quadrados de lado $s_t$ pixels. Cada recorte requer uma passada. Para analisar o quadro inteiro, são necessárias
+Em uma única execução, o YOLO prevê as caixas dos objetos. Para cada caixa, indica a classe mais provável e uma pontuação de confiança. O limiar de confiança é a pontuação mínima para aceitar a detecção \cite{redmon2016yolo,jocher2024yolo11}. Para preservar o detalhe dos objetos pequenos na entrada do detector, extrai-se da imagem original uma grade de recortes quadrados de lado $s_t$ pixels. Cada recorte requer uma inferência. Para analisar o quadro inteiro, são necessárias
 \begin{equation}
   n_t = \left\lceil \frac{N_x}{s_t} \right\rceil \left\lceil \frac{N_y}{s_t} \right\rceil.
   \label{eq_recortes}
@@ -296,7 +296,7 @@ A sobreposição entre uma caixa prevista $B_p$ e uma caixa anotada $B_g$ é med
   IoU = \frac{|B_p \cap B_g|}{|B_p \cup B_g|}\,.
   \label{eq_iou}
 \end{equation}
-No teste por quadro, uma previsão conta como correta quando a classe coincide com a anotação e a IoU atinge o limiar escolhido. Cada caixa anotada pode ser associada a uma única previsão. A precisão indica a proporção de alertas corretos, enquanto o \textit{recall} indica a proporção de objetos anotados que foram encontrados. Em termos de verdadeiros positivos ($VP$), falsos positivos ($FP$) e falsos negativos ($FN$), obtém-se
+No teste por quadro, uma previsão conta como correta quando a classe coincide com a anotação e a IoU atinge o limiar escolhido. Cada caixa anotada pode formar um único par com uma previsão. Um par válido é um verdadeiro positivo ($VP$), uma previsão sem par é um falso positivo ($FP$) e uma caixa anotada sem par é um falso negativo ($FN$). A precisão mede a fração das caixas previstas que estão corretas. O \textit{recall} mede a fração das caixas anotadas encontradas pelo detector. Essas duas proporções são dadas por
 \begin{equation}
   \mathcal{P} = \frac{VP}{VP + FP}, \qquad \mathcal{R} = \frac{VP}{VP + FN}.
   \label{eq_pr}
@@ -309,12 +309,12 @@ Em cada nível, toma-se a maior precisão obtida com recall igual ou superior à
 
 \subsection{Dos quadros aos focos únicos}
 
-Um recipiente visível em quadros sucessivos contribui com várias caixas para a mAP. Para saber quantos recipientes distintos a inspeção encontra, associam-se suas vistas pela classe e pela posição no solo (Seção~\ref{sec_georref}). Os focos previstos são então comparados ao conjunto $\mathcal{G}$ de referências anotadas. Cada par exige a mesma classe e uma distância de até $d_{\max}$ no terreno. Cada foco e cada referência podem entrar em um único par. Escolhe-se o conjunto $\mathcal{M}$ com mais pares e, em caso de empate, com a menor soma de distâncias. Para $|\mathcal{G}|>0$, o recall por foco é
+As caixas anotadas para um mesmo recipiente ao longo do vídeo formam uma \emph{trilha}. Cada uma dessas caixas entra na avaliação por imagem. Para contar recipientes distintos no mapa, agrupam-se as detecções da mesma classe que a projeção situa próximas no solo (Seção~\ref{sec_georref}). Cada grupo gera um ponto no mapa, o \emph{foco previsto}. As trilhas anotadas fornecem o conjunto $\mathcal{G}$ de posições de referência, uma por recipiente em cada voo. Cada par exige a mesma classe e uma distância de até $d_{\max}$ no terreno. Cada foco e cada referência podem entrar em um único par. Escolhe-se o conjunto $\mathcal{M}$ com mais pares e, em caso de empate, com a menor soma de distâncias. Para $|\mathcal{G}|>0$, o recall por foco é
 \begin{equation}
   \mathcal{R}_f = \frac{|\mathcal{M}|}{|\mathcal{G}|} = \frac{VP_f}{VP_f+FN_f},
   \label{eq_recall_focos}
 \end{equation}
-em que $VP_f$ e $FN_f$ contam os recipientes reconhecidos e os omitidos. Cada foco previsto sem associação conta como falso positivo ($FP_f$). Quando há previsões, a precisão é $\mathcal{P}_f=VP_f/(VP_f+FP_f)$. A Seção~\ref{sec_metodo_alertas} descreve a escolha do limiar de confiança e dos raios de associação e avaliação.
+em que $VP_f$ e $FN_f$ contam os recipientes reconhecidos e os omitidos. Cada foco previsto sem par conta como um falso alarme no mapa ($FP_f$), ainda que reúna várias detecções do vídeo. Quando há focos previstos, a precisão no mapa é $\mathcal{P}_f=VP_f/(VP_f+FP_f)$. A Seção~\ref{sec_metodo_alertas} descreve a escolha do limiar de confiança e dos raios de associação e avaliação.
 
 \section{Computação embarcada}
 \label{sec_embarcada}
@@ -322,7 +322,7 @@ em que $VP_f$ e $FN_f$ contam os recipientes reconhecidos e os omitidos. Cada fo
 \subsection{Restrição de tempo real}
 \label{sec_tempo_real}
 
-A $f_q$ quadros/s, o tempo até a chegada do próximo quadro é $1/f_q$. Em processamento serial, concluir cada quadro nesse prazo exige que seu pior tempo de execução $C$ satisfaça $C\leq 1/f_q$ \cite{laplante2004}. O ensaio da Seção~\ref{sec_metodo_jetson} mede a vazão média de recortes $r_b$ a partir da imagem decodificada. A capacidade $r_{\max}$ a bordo depende também da decodificação, da seleção dos recortes e da associação geográfica. Chegadas em grupos podem formar filas mesmo com demanda média abaixo de $r_b$.
+A $f_q$ quadros/s, o tempo até a chegada do próximo quadro é $1/f_q$. Em processamento serial, concluir cada quadro nesse prazo exige que seu pior tempo de execução $C$ satisfaça $C\leq 1/f_q$ \cite{laplante2004}. O ensaio da Seção~\ref{sec_metodo_jetson} mede a vazão média $r_b$, o número de recortes que o detector consegue processar por segundo a partir das imagens já decodificadas. A capacidade $r_{\max}$ a bordo depende também da decodificação, da seleção dos recortes e da associação geográfica. Quando vários recortes chegam juntos, pode haver fila mesmo que a demanda média fique abaixo de $r_b$.
 
 \subsection{Energia da computação}
 
@@ -335,11 +335,11 @@ Se a energia incremental por chamada é $E_{\mathrm{inf}}$, concluir $N$ inferê
 \end{equation}
 em que o produto de inferências por segundo e joules por inferência resulta em watts. A taxa solicitada $r$ coincide com $r_{\mathrm{exec}}$ quando toda a demanda é concluída no intervalo considerado.
 
-O repouso, a energia por inferência e a vazão dependem do modo de potência da Jetson \cite{nvidia2024orinnano,nvidia2025jetpack62}. A Equação~\eqref{eq_energia_bancada} estima $E_{\mathrm{inf}}$ pela energia acima do repouso dividida pelos recortes processados. Aplicar o valor a outra cadência pressupõe que o custo incremental por recorte se mantenha próximo ao da bancada.
+O repouso, a energia por inferência e a vazão dependem do modo de potência da Jetson \cite{nvidia2024orinnano,nvidia2025jetpack62}. A Equação~\eqref{eq_energia_bancada} estima $E_{\mathrm{inf}}$ dividindo a energia acima do repouso pelo número de recortes processados. Para usar esse valor em outra taxa de processamento, supõe-se que a energia adicional por recorte permaneça próxima à medida em bancada.
 
 \subsubsection{Taxa de inferências de cada estratégia}
 
-A demanda $r$ é o número de recortes enviados ao detector por segundo. Para uma câmera a $f_q$ quadros/s, selecionar um quadro de $n_t$ recortes a cada $k$ quadros exige $r=n_t f_q/k$. A mesma demanda média pode ser distribuída entre mais instantes, enviando menos recortes por vez. Na comparação deste trabalho, a memória por cobertura e a amostragem temporal dispõem da mesma cota em cada bloco de 60 quadros (Seção~\ref{sec_sim_estrategias}).
+A demanda $r$ é o número de recortes enviados ao detector por segundo. Para uma câmera a $f_q$ quadros/s, selecionar um quadro de $n_t$ recortes a cada $k$ quadros exige $r=n_t f_q/k$. A mesma demanda média pode ser distribuída entre mais instantes, enviando menos recortes por vez. Na comparação deste trabalho, a amostragem temporal distribui em intervalos regulares o total de recortes que a memória por quadrantes enviou em cada voo (Seção~\ref{sec_sim_estrategias}).
 
 \subsubsection{Custo computacional por área inspecionada}
 
@@ -359,7 +359,7 @@ O balanço combina a energia de voo por área coberta \cite{difranco2016coverage
   }{\underbrace{V\, w(h)}_{\text{área coberta por segundo}}},
   \label{eq_coprojeto}
 \end{equation}
-em que $m_0$ é a massa da aeronave sem o computador e $m_H$, a massa do conjunto embarcado. Nos percursos completos, a área de terreno revisitada conta uma única vez no denominador, enquanto toda a energia despendida entra no numerador (Seção~\ref{sec_exemplo_coprojeto}).
+em que $m_0$ é a massa da aeronave sem o computador e $m_H$, a massa do conjunto embarcado. Nos percursos completos, cada área revisitada conta uma única vez no denominador. O numerador inclui também a energia gasta nas revisitas (Seção~\ref{sec_exemplo_coprojeto}).
 
 A escolha da missão depende também dos recipientes reconhecidos e da capacidade de processar os recortes solicitados. Para um conjunto admissível $\mathcal{D}$ de alturas $h>0$, velocidades $V>0$, estratégias e configurações de hardware, o problema é
 \begin{equation}
@@ -392,11 +392,11 @@ A Tabela~\ref{tab_relacoes_analise} indica onde cada relação é usada. A MBG-V
     Escala, faixa e visibilidade \newline \eqref{eq_gsd}--\eqref{eq_visibilidade}
       & O $GSD$ estimado com as trilhas dá a largura e o comprimento da faixa. A largura entra no custo por área e o comprimento, dividido pela velocidade, prevê o tempo de visibilidade (Figura~\ref{fig_verificacao_telemetria}a--b). \\
     Altitude, tamanho e borrão \newline \eqref{eq_e_h}--\eqref{eq_borrao}
-      & A Figura~\ref{fig_altura_percursos} estima o efeito da altura sobre o custo por área e o tamanho aparente dos recipientes. A Figura~\ref{fig_altura_sobreposicao} considera também a sobreposição lateral. O borrão fornece um limite teórico de exposição. \\
+      & A Figura~\ref{fig_escala_por_classe} relaciona o tamanho aparente dos recipientes à detecção. As Figuras~\ref{fig_altura_percursos} e~\ref{fig_altura_sobreposicao} estimam o efeito da altura e da sobreposição lateral no custo por área. O borrão fornece um limite teórico de exposição. \\
     Posição e recortes \newline \eqref{eq_georref}--\eqref{eq_recortes}
-      & A projeção local situa a faixa no solo e as vistas de um mesmo recipiente. A grade dá o número de inferências por quadro completo (Figuras~\ref{fig_quadro_recortes} e~\ref{fig_selecao_dois_metodos}). \\
+      & A projeção local situa a faixa no solo e as vistas de um mesmo recipiente. A grade de recortes dá o número de inferências por quadro completo (Figura~\ref{fig_quadro_recortes}). \\
     Qualidade da detecção \newline \eqref{eq_iou}--\eqref{eq_recall_focos}
-      & Por quadro, a sobreposição define os acertos. Por recipiente, as vistas são reunidas antes da contagem. A Tabela~\ref{tab_cobertura_continua} reúne as contagens na imagem e no terreno nos seis voos de teste. \\
+      & Por quadro, a sobreposição define os acertos. Por recipiente, as vistas são reunidas antes da contagem. A Tabela~\ref{tab_resultados_quadrantes} reúne as contagens na imagem e no terreno nos seis voos de teste. \\
     Consumo a bordo \newline \eqref{eq_pc} e \eqref{eq_coprojeto}
       & A energia por inferência e a taxa de recortes dão a potência adicional sobre o repouso. O balanço reúne propulsão com o kit, repouso e inferência para projetar a energia por área (Seção~\ref{sec_exemplo_coprojeto}). \\
     Escolha da missão \newline \eqref{eq_otimizacao}

@@ -1,0 +1,40 @@
+{
+  "voos": [
+    "video09_regionE",
+    "video10_regionE",
+    "video15_regionH",
+    "video16_regionH",
+    "video23_regionL",
+    "video24_regionL"
+  ],
+  "validacao": [
+    "video11_regionF",
+    "video12_regionF",
+    "video17_regionI",
+    "video18_regionI"
+  ],
+  "motor": "trt_fp16",
+  "pesos_sha256": "2e592d202d47e964767f883db7bc9bcd1d181648781f30023e536fd416313273",
+  "quantil": 0.25,
+  "limiar": 433.78662109375,
+  "celulas_quadro_validacao": 386987,
+  "passo": 15,
+  "limite_por_quadro": 12,
+  "reducao": 4,
+  "janela_detalhe": 9,
+  "fases_temporais": [
+    0,
+    0.25,
+    0.5,
+    0.75
+  ],
+  "primeiro_ensaio": [
+    0.3333333333333333,
+    0.6666666666666666
+  ],
+  "novos_trechos": [
+    0.2,
+    0.8
+  ],
+  "duracao_s": 4
+}

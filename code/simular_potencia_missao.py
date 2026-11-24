@@ -120,33 +120,53 @@ def eficiencia_ajustada(flights):
 
 def plot_curve(flights, eta):
     v = np.linspace(flights.velocidade_ms.min(), flights.velocidade_ms.max(), 200)
-    fig, (ax, errors) = plt.subplots(1, 2, figsize=(9, 3.7), gridspec_kw={"width_ratios":[1.45, 1]})
-    ax.plot(v, mechanical(v, BASE_KG)/eta, color="0.2", lw=1.7, label="Modelo ajustado")
+    fig, (ax, zoom, errors) = plt.subplots(1, 3, figsize=(8.6, 3.4),
+                                           gridspec_kw={"width_ratios": [1, 1.24, 1.16]})
+    fig.subplots_adjust(left=.072, right=.99, top=.87, bottom=.30, wspace=.37)
+    v_zoom = np.linspace(4.06, 4.145, 100)
+    ax.plot(v, mechanical(v, BASE_KG)/eta, color="0.2", lw=1.5, label="Modelo ajustado")
+    zoom.plot(v_zoom, mechanical(v_zoom, BASE_KG)/eta, color="0.2", lw=1.5)
     held_out = flights.loc[flights.grupo != "ajuste"].sort_values("voo")
     flight_positions = pd.Series(np.arange(len(held_out)), index=held_out.voo)
-    groups = [("ajuste", "Ajuste · 14 voos", BLUE, "o"),
-              ("comparacao", "Comparação · 10 voos", GREEN, "s"),
-              ("outra_campanha", "Região A · 2 voos", ORANGE, "^")]
-    for name, label, color, marker in groups:
+    groups = [("ajuste", "Ajuste", BLUE, "o", BLUE, 23),
+              ("comparacao", "Comparação", GREEN, "s", "none", 46),
+              ("outra_campanha", "Região A", ORANGE, "^", ORANGE, 40)]
+    for name, label, color, marker, facecolor, size in groups:
         group = flights.loc[flights.grupo == name]
-        ax.scatter(group.velocidade_ms, group.bateria_W, s=27, facecolor="white",
-                   edgecolor=color, marker=marker, label=label, zorder=3)
+        style = dict(s=size, marker=marker, facecolors=facecolor, edgecolors=color,
+                     linewidths=1.2, zorder=3)
+        ax.scatter(group.velocidade_ms, group.bateria_W, label=f"{label} ({len(group)} voos)", **style)
+        if name != "outra_campanha":
+            zoom.scatter(group.velocidade_ms, group.bateria_W, **style)
         if name != "ajuste":
             x = flight_positions.loc[group.voo]
             errors.vlines(x, 0, group.erro_ajustado_W, colors=color, lw=1.1)
-            errors.scatter(x, group.erro_ajustado_W, s=26, color=color, marker=marker, zorder=3)
-    ax.set(xlabel="Velocidade em cruzeiro (m/s)", ylabel="Potência elétrica (W)",
+            errors.scatter(x, group.erro_ajustado_W, **style)
+    ax.set(xlabel="Velocidade (m/s)", ylabel="Potência elétrica (W)",
            xlim=(v.min()-.35, v.max()+.35), xticks=range(4,9))
-    ax.set_title("(a) Previsão e potência da bateria", fontsize=10)
-    ax.legend(fontsize=8, loc="upper right", frameon=False)
+    ax.set_title("(a) Potência em cruzeiro", fontsize=10)
+    zoom.set(xlabel="Velocidade (m/s)", xlim=(v_zoom[0], v_zoom[-1]), ylim=(171.5, 190.5),
+             xticks=[4.06, 4.08, 4.10, 4.12, 4.14], yticks=[175, 180, 185, 190])
+    zoom.xaxis.set_major_formatter(lambda x, _: f"{x:.2f}".replace(".", ","))
+    zoom.set_title("Ampliação em torno de 4,1 m/s", fontsize=10)
+    # As medianas dos voos 08 e 18 continuam próximas mesmo na ampliação.
+    for voo, dx, dy in [(8, 10, -9), (18, -13, -4)]:
+        ponto = flights.loc[flights.voo == voo].iloc[0]
+        zoom.annotate(f"{voo:02d}", (ponto.velocidade_ms, ponto.bateria_W),
+                      xytext=(dx, dy), textcoords="offset points", va="center",
+                      ha="left" if dx > 0 else "right", fontsize=8, color=".2",
+                      arrowprops=dict(arrowstyle="-", color=".4", lw=.6, shrinkB=3))
     errors.axhline(0, color="0.35", lw=1)
     errors.set(xlabel="Número do voo", ylabel="Prevista − medida (W)",
-               xticks=flight_positions.to_numpy(), xticklabels=held_out.voo.tolist(), ylim=(-9, 8))
+               xticks=flight_positions.to_numpy(), xticklabels=held_out.voo.tolist(),
+               ylim=(-9, 8.5), yticks=range(-8, 9, 4))
     errors.tick_params(axis="x", labelsize=8)
     errors.set_title("(b) Erro nos voos fora do ajuste", fontsize=10)
-    for panel in (ax, errors):
+    for panel in (ax, zoom, errors):
         panel.grid(axis="y", color="0.90", linewidth=0.6)
-    fig.tight_layout(w_pad=1.5)
+    handles, labels = ax.get_legend_handles_labels()
+    fig.legend(handles, labels, loc="lower center", ncol=4, frameon=False,
+               bbox_to_anchor=(.5, .014), fontsize=9, columnspacing=2)
     fig.savefig(FIG/"fig_potencia_telemetria.pdf", bbox_inches="tight")
     plt.close(fig)
 

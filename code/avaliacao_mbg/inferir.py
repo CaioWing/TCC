@@ -11,7 +11,30 @@ from dados import CACHE, SPLITS, folder
 from motores import ENGINES, blob, postprocess, runner, setup
 
 
-def infer_video(video, engine, run, *, cache=CACHE, sparse=False, leitura_continua=False):
+def quadros_opencv(source, frames, leitura_continua):
+    cam = cv2.VideoCapture(str(source))
+    try:
+        codec = int(cam.get(cv2.CAP_PROP_FOURCC)).to_bytes(4, "little")
+        sequencial = leitura_continua and codec != b"MJPG"
+        anterior = -1
+        for frame in frames:
+            if sequencial:
+                for _ in range(anterior + 1, frame):
+                    if not cam.grab():
+                        raise IOError(f"Vídeo interrompido antes do quadro {frame}: {source}")
+            elif anterior == -1 or frame != anterior+1:
+                cam.set(cv2.CAP_PROP_POS_FRAMES, int(frame))
+            ok, image = cam.read()
+            if not ok or round(cam.get(cv2.CAP_PROP_POS_FRAMES)) != frame+1:
+                raise RuntimeError(f"Falha ao decodificar {source} quadro {frame}")
+            yield image
+            anterior = frame
+    finally:
+        cam.release()
+
+
+def infer_video(video, engine, run, *, cache=CACHE, sparse=False, leitura_continua=False,
+                leitor=quadros_opencv):
     dst = cache / engine / f"{video}.npz"
     if dst.exists():
         return
@@ -20,32 +43,16 @@ def infer_video(video, engine, run, *, cache=CACHE, sparse=False, leitura_contin
         frames, tiles = info["frames"], info["tiles"]
         requested = info["requested"] if sparse else None
     source, = (folder(video) / "avi").glob("*.avi")
-    cam = cv2.VideoCapture(str(source))
-    codec = int(cam.get(cv2.CAP_PROP_FOURCC)).to_bytes(4, "little")
-    sequencial = leitura_continua and codec != b"MJPG"
     predictions, offsets = [], [0]
     t = time.monotonic()
-    try:
-        for i, frame in enumerate(frames):
-            if sequencial:
-                anterior = frames[i-1] if i else -1
-                for _ in range(anterior + 1, frame):
-                    if not cam.grab():
-                        raise IOError(f"Vídeo interrompido antes do quadro {frame}: {video}")
-            elif i == 0 or frame != frames[i-1]+1:
-                cam.set(cv2.CAP_PROP_POS_FRAMES, int(frame))
-            ok, image = cam.read()
-            if not ok or round(cam.get(cv2.CAP_PROP_POS_FRAMES)) != frame+1:
-                raise RuntimeError(f"Falha ao decodificar {video} quadro {frame}")
-            for j, (x, y) in enumerate(tiles):
-                if sparse and not requested[i, j]:
-                    offsets.append(offsets[-1])
-                    continue
-                pred = postprocess(run(blob(image[y:y+640, x:x+640])))
-                predictions.append(pred)
-                offsets.append(offsets[-1]+len(pred))
-    finally:
-        cam.release()
+    for i, image in zip(range(len(frames)), leitor(source, frames, leitura_continua), strict=True):
+        for j, (x, y) in enumerate(tiles):
+            if sparse and not requested[i, j]:
+                offsets.append(offsets[-1])
+                continue
+            pred = postprocess(run(blob(image[y:y+640, x:x+640])))
+            predictions.append(pred)
+            offsets.append(offsets[-1]+len(pred))
     tmp = dst.with_suffix(".partial.npz")
     extra = {"computed": requested} if sparse else {}
     detections = np.concatenate(predictions) if predictions else np.empty((0, 6), dtype=np.float32)

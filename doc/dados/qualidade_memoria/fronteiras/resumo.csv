@@ -1,0 +1,7 @@
+conjunto,metodo,quadros,vp_quadro,fp_quadro,fn_quadro,vp,fp,fn,unioes,unioes_retidas,quadros_com_uniao,mesma_trilha,trilhas_distintas,ambiguo,sem_identificacao_das_duas_partes,acertos_quadro_recuperados,acertos_quadro_perdidos
+iniciais,nms,1440,6773,4139,4934,105,181,32,0,0,0,0,0,0,0,0,0
+iniciais,reintegracao,1440,6935,2513,4772,105,140,32,1882,1882,991,1674,4,0,204,178,16
+novos,nms,1440,7081,5483,6590,115,222,59,0,0,0,0,0,0,0,0,0
+novos,reintegracao,1440,7222,3932,6449,117,171,57,1847,1847,1021,1342,0,0,505,150,9
+validacao,nms,960,3445,2624,881,54,122,5,0,0,0,0,0,0,0,0,0
+validacao,reintegracao,960,3533,1685,793,54,87,5,1085,1085,541,883,0,0,202,90,2

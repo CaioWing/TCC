@@ -1,0 +1,25 @@
+{
+  "voos": [
+    "video09_regionE",
+    "video10_regionE",
+    "video15_regionH",
+    "video16_regionH",
+    "video23_regionL",
+    "video24_regionL"
+  ],
+  "altura_nominal_m": 40,
+  "gsd_m_pixel": 0.013500000000000002,
+  "lado_recorte_px": 640,
+  "motor": "trt_fp16",
+  "pesos_sha256": "2e592d202d47e964767f883db7bc9bcd1d181648781f30023e536fd416313273",
+  "origens_da_malha": [
+    "media_do_voo",
+    "primeiro_gps"
+  ],
+  "par": "Entrada posterior ao quadro zero e primeira visita a outro quadrante, dentro da mesma passagem contínua. Excluem-se pontos já visíveis no primeiro quadro e entradas que não chegam a outro quadrante. Conta-se uma vez cada par físico de quadros e recortes, mesmo se mais de um ponto gerou o par. Conferem-se todos os pedidos reconstruídos, inclusive quadrantes posteriores, com a máscara efetivamente executada.",
+  "oportunidade": "Mesma classe e ID de trilha anotada no vídeo; centro da caixa anotada dentro das duas respectivas janelas. Uma observação por par físico e trilha. A mesma trilha pode contribuir em pares diferentes. A tabela também identifica anotações inteiras nos dois recortes.",
+  "deteccao": "Predições individuais do recorte efetivamente inferido, antes da supressão entre recortes. Em cada recorte, confiança >= 0.5, até 100 predições por classe em ordem de confiança, casamento guloso um a um com anotações da mesma classe por IoU no mesmo quadro >= 0,50. O teste espacial no terreno não intervém na associação. Uma vista sem detecção aparece em branco.",
+  "projecao": "Quatro cantos de cada caixa ou recorte em pixels do quadro original, projetados na mesma base local das métricas do voo por GSD constante, posição e guinada. IoU = interseção/união dos polígonos no solo. Fração de área comum = interseção/área de um recorte. Índices de quadros e recortes começam em zero.",
+  "estatistica": "Médias e medianas usam todas as IoUs definidas, inclusive zeros. Média de positivos exclui apenas os zeros. IoU do detector requer detecção pareada em ambas as vistas. As anotações são avaliadas em todas as oportunidades e separadamente no subconjunto de detecções duplas. Média por trilha dá peso igual a cada ID com ao menos uma comparação válida. Não juntar as origens, pois reusam os mesmos voos.",
+  "limite": "Concordância das projeções de caixas visíveis. As anotações controlam o efeito conjunto das imagens, da telemetria e da projeção. Sem pontos de controle topográfico, não há medida independente da área real nem atribuição isolada ao GSD."
+}

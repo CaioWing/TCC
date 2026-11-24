@@ -7,8 +7,8 @@ from dados import SPLITS, folder
 from memoria_sim import T, grade_projecao
 
 
-def contar_celulas(video):
-    with np.load(TEMP / f"{video}.npz") as dados:
+def contar_celulas(video, *, cache=TEMP, metodos=METODOS):
+    with np.load(cache / f"{video}.npz") as dados:
         n, fps, gsd = int(dados["total_frames"]), float(dados["fps"]), float(dados["gsd"])
         largura, altura = dados["size"]
         tiles, masks = dados["tiles"], dados["masks"]
@@ -18,14 +18,14 @@ def contar_celulas(video):
     log, = (folder(video) / "log").glob("*.csv")
     shape, raster = grade_projecao(log, n, fps, largura, altura, gsd, centros_na_origem=True)
     imageadas = np.zeros(shape, bool)
-    processadas = {metodo: np.zeros(shape, bool) for metodo in METODOS}
+    processadas = {metodo: np.zeros(shape, bool) for metodo in metodos}
     for quadro in range(n):
         j0, j1, i0, i1, visivel, u, v = raster(quadro)
         janela = np.s_[j0:j1, i0:i1]
         imageadas[janela] |= visivel
         if quadro not in envios:
             continue
-        for metodo, selecionados in zip(METODOS, envios[quadro].T):
+        for metodo, selecionados in zip(metodos, envios[quadro].T, strict=True):
             if selecionados.all():
                 processadas[metodo][janela] |= visivel
             else:
@@ -38,6 +38,13 @@ def contar_celulas(video):
 
 
 if __name__ == "__main__":
-    contagens = pd.DataFrame([contar_celulas(video) for video in SPLITS["voos"]["test"]])
+    import argparse
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--quadrantes", action="store_true")
+    args = ap.parse_args()
+    if args.quadrantes:
+        from quadrantes_voos import DESTINO, METODOS, TEMP
+    contagens = pd.DataFrame([contar_celulas(video, cache=TEMP, metodos=METODOS)
+                              for video in SPLITS["voos"]["test"]])
     contagens.to_csv(DESTINO / "area_recortes_por_voo.csv", index=False)
     print(contagens.to_string(index=False))

@@ -1,0 +1,33 @@
+{
+  "voos": [
+    "video09_regionE",
+    "video10_regionE",
+    "video15_regionH",
+    "video16_regionH",
+    "video23_regionL",
+    "video24_regionL"
+  ],
+  "metodos": [
+    "quadrantes",
+    "intervalo_pareado"
+  ],
+  "alturas_simuladas_m": [
+    50,
+    60,
+    70,
+    80
+  ],
+  "integral_m": 40,
+  "motor": "trt_fp16",
+  "pesos_sha256": "2e592d202d47e964767f883db7bc9bcd1d181648781f30023e536fd416313273",
+  "engine_sha256": "e8715fd9b6a067ca632dc9a4039a585bb71e5edd1bb796e0440ae4444235680e",
+  "planos_sha256": {
+    "video09_regionE": "4f05ad6c2a89c0b911969ba27f83eb2d24a333d0f0bf5b58fe6bb089a66570fd",
+    "video10_regionE": "5a23f084b9deb5d5f2b6c01c6dd7587b9a6db4672caafe98f0e233a73aa48bb6",
+    "video15_regionH": "5059505d4e8c074dfe953b3fb5fe7c5aa78bc534290a5a04611a3783788b88be",
+    "video16_regionH": "b66306966dc12aa1bad53ae927988ff5ff651ef29d530a30e37c7273e74729c3",
+    "video23_regionL": "41b3829abbf46da96b3d7bc835fc47344df8c82ad7b3f6f18f3d3e73491314b4",
+    "video24_regionL": "056ebd8ec4de5c25df2d857b801fa18f5d542c17555bdb00aa97fba6b6f75d0d"
+  },
+  "escala": "Mesmos instantes e posições dos recortes do plano a 40 m. As quatro escalas usam a transformação de ensaio_altitude_integral.inferencia_recorte. A avaliação por foco e primeiro alerta usa alertas_cobertura.avaliar_voo."
+}

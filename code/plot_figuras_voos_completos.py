@@ -1,12 +1,11 @@
-"""Figuras físicas e de processamento para a comparação entre cobertura e intervalo."""
+"""Figuras físicas e de processamento dos seis voos completos."""
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from paleta_tcc import BLUE
-from plot_demanda_jetson import painel_fila
+from paleta_tcc import BLUE, ORANGE
 from plot_verificacao_telemetria import observed_errors, paineis_fisicos
 from simular_potencia_missao import (BASE_KG, FIG, JETSON, KIT_KG, OUT, TEST_MASSES,
                                     eficiencia_ajustada, mechanical)
@@ -34,23 +33,47 @@ def fisica(telemetria):
     return fig
 
 
-def jetson(taxa, bancada):
-    fig = plt.figure(figsize=(7.5, 2.03))
-    a = fig.add_axes([.14, .26, .232, .46])
-    b = fig.add_axes([.565, .26, .425, .46])
-    fig.text(.008, .98, "(a) Demanda e vazão de bancada", va="top", size=9.3)
-    fig.text(.407, .98, "(b) Fila em um bloco regular de 60 quadros", va="top", size=9.3)
-    fig.text(.990, .82, "Processamento em cor · folga em cinza", ha="right", fontsize=7.4)
-    valores = [taxa, bancada.fps]
-    barras = a.barh([1, 0], valores, color=[BLUE, ".35"], height=.51)
-    a.bar_label(barras, labels=[decimal(x) for x in valores], label_type="center",
-                color="white", fontsize=7.8, weight="semibold")
-    a.set_yticks([1, 0], ["Por estratégia", "Bancada FP16"])
-    a.set(xlim=(0, 50), ylim=(-.6, 1.6), xticks=[0, 15, 30, 45], xlabel="Recortes por segundo")
+def jetson():
+    base = OUT / "qualidade_memoria"
+    fila = pd.read_csv(base / "quadrantes/fila_jetson_por_voo.csv").query("cenario == 'media'")
+    totais = fila.groupby("metodo")[["recortes", "duracao_s"]].sum()
+    np.testing.assert_allclose(totais.loc["quadrantes"], totais.loc["intervalo_pareado"])
+    total, duracao = totais.loc["quadrantes"]
+    integral = pd.read_csv(base / "altitude_integral/resumo_seis_voos.csv")
+    total_integral = integral.query("metodo == 'integral' and altura_m == 40").recortes.item()
+    bancada = pd.read_csv(JETSON / "summary.csv").query("config == 'trt_fp16' and mode == 'e2e'").iloc[0]
+    exemplo = pd.read_csv(base / "quadrantes/fila_jetson_inicio_voo09.csv")
+
+    fig = plt.figure(figsize=(7.45, 2.1))
+    a = fig.add_axes([.157, .245, .245, .56])
+    b = fig.add_axes([.571, .245, .414, .56])
+    fig.text(.005, .98, "(a) Demanda e vazão de bancada", va="top", size=9.3)
+    fig.text(.464, .98, "(b) Ocupação do detector no início do voo 09", va="top", size=9.3)
+    a.set_xscale("log")
+    for y, valor, cor in [(2, total / duracao, BLUE), (1, bancada.fps, ".3"),
+                          (0, total_integral / duracao, BLUE)]:
+        a.scatter(valor, y, color=cor, s=25, zorder=3)
+        a.annotate(decimal(valor), (valor, y), xytext=(0, 5), textcoords="offset points",
+                   ha="center", va="bottom", fontsize=7.8,
+                   bbox={"facecolor":"white", "edgecolor":"none", "pad":.25})
+    a.axvline(bancada.fps, lw=.8, ls=":", color=".4", zorder=0)
+    a.set_yticks([2, 1, 0], ["Quadrantes e intervalo", "Bancada FP16", "Integral"], fontsize=7.6)
+    a.set(xlim=(3, 1500), ylim=(-.45, 2.7), xlabel="Recortes/s (escala logarítmica)")
+    a.set_xticks([5, 10, 100, 1000], ["5", "10", "100", "1.000"])
+    a.tick_params(axis="x", which="minor", bottom=False)
     a.tick_params(axis="y", length=0)
     a.grid(axis="x", alpha=.15)
-    painel_fila(b, OUT/"qualidade_memoria")
-    b.set_yticklabels(["Cobertura\n16 recortes", "Intervalo\n24 recortes"], fontsize=7.5)
+    for y, (metodo, cor) in enumerate([("intervalo_pareado", ORANGE), ("quadrantes", BLUE)]):
+        lotes = exemplo[exemplo.metodo == metodo]
+        duracoes = (lotes.fim_ms - lotes.inicio_ms) / 1000
+        b.barh(y, 6, height=.43, color="#ededed")
+        b.barh(np.full(len(lotes), y), duracoes, left=lotes.inicio_ms / 1000, height=.43,
+               color=cor, linewidth=0)
+    b.set(xlim=(0, 6), xticks=range(7), xlabel="Tempo desde o início do voo (s)", ylim=(-.52, 1.57))
+    b.set_yticks([0, 1], ["Intervalo", "Quadrantes"], fontsize=7.6)
+    b.tick_params(axis="y", length=0)
+    b.spines["left"].set_visible(False)
+    b.grid(axis="x", alpha=.15)
     return fig
 
 
@@ -73,15 +96,10 @@ def massa():
 
 
 def main():
-    voos = pd.read_csv(OUT / "qualidade_memoria/cobertura_continua/por_voo.csv")
-    totais = voos.groupby("metodo")[["recortes","duracao_s"]].sum()
-    assert totais.loc["cobertura"].equals(totais.loc["intervalo"])
-    taxa = totais.loc["cobertura","recortes"]/totais.loc["cobertura","duracao_s"]
-    bancada = pd.read_csv(JETSON / "summary.csv").query("config == 'trt_fp16' and mode == 'e2e'").iloc[0]
     with plt.rc_context({"font.family":"DejaVu Sans","font.size":8,"axes.titlesize":9.3,
                          "axes.spines.top":False,"axes.spines.right":False,"axes.axisbelow":True,
                          "pdf.fonttype":42}):
-        for nome, figura in [("fig_jetson_cobertura_intervalo",jetson(taxa,bancada)),
+        for nome, figura in [("fig_jetson_quadrantes_intervalo",jetson()),
                              ("fig_massa_kit",massa()),
                              ("fig_telemetria_fisica",fisica(observed_errors()))]:
             figura.savefig(FIG / f"{nome}.pdf",bbox_inches="tight",pad_inches=.055)

@@ -10,7 +10,7 @@ import pandas as pd
 
 from balanco_telemetria import DATA, JETSON
 from memoria_sim import CELL, grade_projecao
-from paleta_tcc import BLUE, GREEN
+from paleta_tcc import BLUE
 from plot_ajuste_gsd import fit_gsd, load_tracks
 from plot_energia_por_area import cenarios
 from simular_potencia_missao import BASE_KG, KIT_KG, FIG, OUT, eficiencia_ajustada, mechanical
@@ -31,11 +31,11 @@ def area_do_percurso(log, n, fps, largura, altura, gsd):
 def percursos():
     ativos = cenarios().query("carga_g == 174").set_index("voo")
     balanco = pd.read_csv(OUT / "balanco_telemetria.csv").set_index("voo")
-    voos = pd.read_csv(OUT / "qualidade_memoria/cobertura_continua/por_voo.csv")
+    voos = pd.read_csv(OUT / "qualidade_memoria/quadrantes/por_voo.csv")
     classes = json.loads((DATA / "splits/splits.json").read_text(encoding="utf-8"))["classes_avaliadas"]
     objetos = pd.read_csv(DATA / "objetos_por_trilha.csv")
     linhas = []
-    for voo in voos.query("metodo == 'cobertura'").itertuples():
+    for voo in voos.query("metodo == 'quadrantes'").itertuples():
         numero = int(voo.video[5:7])
         referencia = balanco.loc[numero]
         pasta = DATA / "raw" / f"flight-mbg-v2-{numero:02d}-region{referencia.regiao}"
@@ -62,7 +62,7 @@ def faixas_paralelas(dados):
     eta = eficiencia_ajustada(pd.read_csv(OUT / "curva_potencia_por_voo.csv"))
     repouso = json.loads((JETSON / "results.json").read_text(encoding="utf-8"))["P_idle_W"]
     bancada = pd.read_csv(JETSON / "summary.csv").query("config == 'trt_fp16' and mode == 'e2e'").iloc[0]
-    envios = pd.read_csv(OUT / "qualidade_memoria/cobertura_continua/por_voo.csv").query("metodo == 'cobertura'")
+    envios = pd.read_csv(OUT / "qualidade_memoria/quadrantes/por_voo.csv").query("metodo == 'quadrantes'")
     taxa = envios.recortes.sum()/envios.duracao_s.sum()
     potencia = mechanical(velocidade, BASE_KG + KIT_KG)/eta + repouso + taxa*bancada.E_dyn_mJ_per_inf/1000
     largura_base = dados.loc[dados.altura_m == ALTURA_BASE, "largura_faixa_m"].median()
@@ -79,27 +79,17 @@ def faixas_paralelas(dados):
 
 
 def figura_altura(dados):
-    fig, (a, b) = plt.subplots(1, 2, figsize=(7.25, 2.6), layout="constrained")
-    por_altura = dados.groupby("altura_m")
-    energia = por_altura.energia_Wh_km2
+    fig, ax = plt.subplots(figsize=(5.5, 2.5), layout="constrained")
+    energia = dados.groupby("altura_m").energia_Wh_km2
     mediana = energia.median()
-    a.fill_between(mediana.index, energia.min(), energia.max(), color=BLUE, alpha=.18, lw=0,
-                   label="Mínimo a máximo dos seis voos")
-    a.plot(mediana.index, mediana, "o-", ms=3.7, lw=1.5, color=BLUE, label="Mediana")
-    a.set(ylabel="Energia por área (Wh/km²)", title="(a) Mesmos percursos, kit de 174 g")
-    a.legend(frameon=False, fontsize=7.5)
-    pequena = 100*por_altura.trilhas_abaixo_32px.sum()/por_altura.trilhas.sum()
-    b.plot(pequena.index, pequena, "s-", color=GREEN, lw=1.5, ms=3.7)
-    b.set(ylabel="Trilhas abaixo de 32 px (%)", title="(b) Tamanho dos recipientes na imagem",
-          ylim=(0, max(pequena)*1.22))
-    for h in (40, 80):
-        valor = pequena.loc[h]
-        b.annotate(f"{valor:.1f}%".replace(".", ","), (h, valor), xytext=(0, 7),
-                   textcoords="offset points", ha="center", fontsize=8)
-    for ax in (a, b):
-        ax.set(xlabel="Altura sobre o terreno (m)", xticks=ALTURAS, xlim=(17, 85))
-        ax.axvline(ALTURA_BASE, color=".53", ls=":", lw=.7, zorder=0)
-        ax.grid(axis="y", color=".9", lw=.6)
+    ax.fill_between(mediana.index, energia.min(), energia.max(), color=BLUE, alpha=.18, lw=0,
+                    label="Mínimo a máximo dos seis voos")
+    ax.plot(mediana.index, mediana, "o-", ms=4, lw=1.6, color=BLUE, label="Mediana")
+    ax.set(xlabel="Altura sobre o terreno (m)", ylabel="Energia por área (Wh/km²)",
+           xticks=mediana.index)
+    ax.axvline(ALTURA_BASE, color=".45", ls=":", lw=.9, zorder=0)
+    ax.grid(axis="y", color=".9", lw=.6)
+    ax.legend(frameon=False, fontsize=8)
     return fig
 
 

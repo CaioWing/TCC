@@ -1,0 +1,10 @@
+{
+  "origem": "media_do_voo",
+  "opencv": "4.11.0",
+  "semente": 639,
+  "pares_por_voo": 30,
+  "amostragem": "No conjunto principal de cada voo, ordenar por quadro e recorte de entrada e da primeira travessia. Selecionar 30 pares em passos de N/30 com fase inicial uniforme e semente fixa por voo, sem consultar imagens, anotações, detecções ou IoU. Estatísticas descritivas da amostra; os seis voos têm o mesmo peso na seleção.",
+  "registro": "SIFT nas imagens em cinza, máximo de 1500 características por recorte. Vizinhos por distância L2 com razão <0,75 nos dois sentidos e reciprocidade. Com pelo menos 40 correspondências, reservar 1/5 para validação por permutação reprodutível do par. Ajustar homografia com RANSAC apenas nas demais, limiar de 3 px. A matriz h00..h22 leva pixels locais do recorte de entrada a pixels locais do recorte de travessia.",
+  "aceitacao": "Ao menos 20 correspondências sustentam o ajuste e 8 na validação, cobrindo pelo menos metade das respectivas amostras, com erro máximo de 3 px nos dois sentidos. Mediana do erro na validação <=2 px. Envoltória convexa dos pontos aceitos cobre ao menos 15% de cada imagem. A janela transformada precisa ser convexa, com a orientação preservada. Todos os pares sorteados constam do CSV, inclusive os rejeitados.",
+  "medidas": "IoU visual no plano da segunda imagem entre as janelas, ou entre caixas da mesma trilha, transportando os quatro cantos da primeira por homografia. A transformação usa apenas os pixels. A IoU GSD de comparação usa os mesmos pares. Detecções exigem o pareamento um a um em ambas as vistas do protocolo principal. As homografias aceitas descrevem o plano predominante e podem sofrer influência da paralaxe e de objetos móveis. A análise não fornece posição absoluta no solo nem mede isoladamente o erro do GSD."
+}

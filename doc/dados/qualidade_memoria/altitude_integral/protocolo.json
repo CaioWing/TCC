@@ -1,0 +1,82 @@
+{
+  "assinatura": "2f0fbd006bb055a5",
+  "versao": 1,
+  "motor": "trt_fp16",
+  "engine_sha256": "e8715fd9b6a067ca632dc9a4039a585bb71e5edd1bb796e0440ae4444235680e",
+  "pesos_sha256": "2e592d202d47e964767f883db7bc9bcd1d181648781f30023e536fd416313273",
+  "limiares": {
+    "conf": 0.5,
+    "raio_m": 1.5,
+    "dmax_m": 1.0,
+    "iou_nms": 0.7
+  },
+  "alturas_simuladas_m": [
+    50,
+    60,
+    70,
+    80
+  ],
+  "referencia_m": 40,
+  "voos": [
+    "video09_regionE",
+    "video10_regionE",
+    "video15_regionH",
+    "video16_regionH",
+    "video23_regionL",
+    "video24_regionL"
+  ],
+  "quadros_por_bloco": 300,
+  "escala": "Mesmos quadros, recortes selecionados, cotas e 1.924 trilhas da referência. Para cada recorte, janela concêntrica de lado 640*h/40 no vídeo 4K, reduzida a 640 com INTER_AREA. Usa contexto real adjacente e preenchimento 114 só além do quadro. Reprojeta as caixas para os pixels de origem, aceita centros no recorte originalmente selecionado e limita a caixa aos seus contornos antes da NMS do quadro. Isola a perda por escala, sem simular terreno novo, alterações de trajetória ou novos sensores.",
+  "integral": "Somente 40 m originais. Os 24 recortes de todos os quadros dos seis voos. Reutiliza previsões originais já calculadas com o mesmo motor e infere os pares restantes.",
+  "codigo": "29de49c8fd8f1839130ee36d977e0f5866e5729ea292570cca9366fe27c381ad",
+  "entradas": {
+    "video09_regionE": {
+      "video_bytes": 5436692798,
+      "video_mtime_ns": 1794272465711213500,
+      "plano": "2d1432a821fcd5867b7c908b1f5c88cd5ddff314de9182fd8c6795106aaff59c",
+      "previsoes": "bfb1b251ce98369ae76d5e86b13c33965cf52f32c4e7fd667f4c6664c651be08",
+      "anotacao": "ff186798dccd3105bccc88835da5d482d0202984eae2c553fbfc0a3f116be580",
+      "telemetria": "da251a36eef3c8efbad5ec87da5a6a19d67a88fc34bf51eb59d2f2c10adcdf5e"
+    },
+    "video10_regionE": {
+      "video_bytes": 5001387692,
+      "video_mtime_ns": 1794272522686650000,
+      "plano": "3f7d0bc52e2028c900c10353329805d23ca2e1febe26ba7384f577a5709714c5",
+      "previsoes": "0d37f61b4701b859a4c790a029617196c229ab898f4ddd9177b6b1e9a8bcbd26",
+      "anotacao": "d19054ef36cbfaf6c499fde2ed1ff179963db50cabb855c729480c9f2870ee6a",
+      "telemetria": "b3189a6140c8aff3b08ba5c6970aadf616b58aa50ef6ef866e9cc61d4fd90c4e"
+    },
+    "video15_regionH": {
+      "video_bytes": 10857185568,
+      "video_mtime_ns": 1794282597844536600,
+      "plano": "30869418b0b9fcc492d5bfed9b4bdf60bf56bc9d0741a6f8f81fe845eec3a978",
+      "previsoes": "4539b3804aec098a35c87b36a6d73c042848493fc33ffd714c4c24b68ebfb415",
+      "anotacao": "c87685aa634ad1ca20fd1f65d88fd60887051b7b156461430ddc776ef1761615",
+      "telemetria": "57391ec8e7caa0d843643547cd9919a74b4ce44fbf738595e3ffd19b45cb90c5"
+    },
+    "video16_regionH": {
+      "video_bytes": 9825735016,
+      "video_mtime_ns": 1794283296227633100,
+      "plano": "05a8b84dedcf0b34ea6e922a3cdd6a5522d4a98c9127295be51bc2297ff06f38",
+      "previsoes": "14e7ad505828f26af9a7f6041e09595085f4603373a183cafe91c5785cb9eaa8",
+      "anotacao": "adeb8a89c1779f368194585f02c8ac988dfae91f7b06c05288044e0b6a9c3242",
+      "telemetria": "def9d35dc633df12e71d3d7b7b326601e0389cd6c6ca3e7b78c5a32dfada0d48"
+    },
+    "video23_regionL": {
+      "video_bytes": 1682632782,
+      "video_mtime_ns": 1792629537521956300,
+      "plano": "18e29fd3a91417a8b21f0c06b575372ed068c55efbc1f97a92b39691e366669c",
+      "previsoes": "1c6c28de0ec527e88bd6a35fb9b5d1f9028256726d132753815ac4527251ca02",
+      "anotacao": "1ef47adfbe9b925ba095452845bcf8aef5807b2c91043766c955fb89438158d5",
+      "telemetria": "26378abc594a6e87b76fc5f747f2373edc1331ebecaa5f435b32cb894f5510a8"
+    },
+    "video24_regionL": {
+      "video_bytes": 2059982634,
+      "video_mtime_ns": 1794285411610592700,
+      "plano": "1f7f70f0e4c947647c59cb936a8c70659eb4d48022999a120f8397a630a6eef9",
+      "previsoes": "8fdec9e087ca24c93883c5eafa5976e92946a65d912776168aefa94c33f824c5",
+      "anotacao": "9aa1d595881d5e2c775b2c3b0327c8fc9f07be76c77ac465db772f2967f3242c",
+      "telemetria": "1911b02692861cf639f5fd98872e1e20c05f96e1897705d0ddf8fcf82eed2774"
+    }
+  }
+}

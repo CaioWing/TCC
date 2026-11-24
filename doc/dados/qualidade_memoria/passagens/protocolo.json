@@ -1,0 +1,40 @@
+{
+  "lado_parcela_m": 8.64,
+  "origem": "EN local ao voo, centro da grade em (0,0).",
+  "unidade": "Passagem contínua do centro de uma parcela pela imagem. Nova entrada reinicia K.",
+  "planos": {
+    "entrada": [
+      "entrada"
+    ],
+    "meio": [
+      "meio"
+    ],
+    "extremos": [
+      "entrada",
+      "saida"
+    ],
+    "tres": [
+      "entrada",
+      "meio",
+      "saida"
+    ]
+  },
+  "fase_meio": "Metade da distância horizontal acumulada da câmera, com quadro intermediário distinto se existir; em repouso usa o meio temporal.",
+  "bordas_voo": "Primeiro e último quadros gravados delimitam passagens ainda abertas.",
+  "recorte": "Entre os recortes 640×640 que contêm o centro, escolher o de centro mais próximo em pixels; empates seguem a ordem da grade. Unir pedidos no mesmo quadro e recorte.",
+  "voo": "Trajetória integral conhecida na reprodução, inclusive para meio e saída.",
+  "sensibilidade_adicional": "Após o resultado principal, transladar a origem por meia parcela para leste, norte e ambas as direções, sem selecionar a melhor malha.",
+  "teste": "24 trechos de quatro segundos usados na comparação por cobertura, quatro por voo. Referência (classe, trilha) em cada trecho.",
+  "controle": "Quatro fases da amostragem temporal com número idêntico de recortes por trecho e plano.",
+  "pesos_sha256": "2e592d202d47e964767f883db7bc9bcd1d181648781f30023e536fd416313273",
+  "motor": "trt_fp16",
+  "voos": [
+    "video09_regionE",
+    "video10_regionE",
+    "video15_regionH",
+    "video16_regionH",
+    "video23_regionL",
+    "video24_regionL"
+  ],
+  "criterio": "Descrever recall, precisão, F1, recortes e interseção de referências com o integral; não estabelecer equivalência ou otimizar K nos voos de teste."
+}

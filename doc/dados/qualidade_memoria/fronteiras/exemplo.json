@@ -1,0 +1,47 @@
+{
+  "conjunto": "novos",
+  "video": "video10_regionE",
+  "trecho": 2,
+  "quadro": 3608,
+  "eixo": "vertical",
+  "recorte_a": 9,
+  "recorte_b": 10,
+  "ids_a": "117",
+  "ids_b": "117",
+  "classe": "pool",
+  "situacao": "mesma_trilha",
+  "id_observacao": 2,
+  "a": [
+    2388.719,
+    879.317,
+    2559.328,
+    1033.623
+  ],
+  "escore_a": 0.7468788623809814,
+  "b": [
+    2560.0,
+    871.605,
+    2752.487,
+    1026.445
+  ],
+  "escore_b": 0.8128677606582642,
+  "uniao": [
+    2388.719,
+    871.605,
+    2752.487,
+    1033.623
+  ],
+  "escore_uniao": 0.8128677606582642,
+  "trilha": 117.0,
+  "anotacao": [
+    2388.1,
+    868.54,
+    2756.14,
+    1030.67
+  ],
+  "iou_a": 0.4291238331386752,
+  "iou_b": 0.49948813597479497,
+  "iou_uniao": 0.9525547634668629,
+  "recuperou_caixa": 1.0,
+  "vertical": true
+}

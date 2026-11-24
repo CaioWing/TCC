@@ -29,11 +29,15 @@ def tiles_grid(W, H):
     return [(int(x), int(y)) for y in ys for x in xs]
 
 
-def load_pose(log_csv, nfr, fps):
+def load_pose(log_csv, nfr, fps, *, origem_primeiro_gps=False):
     L = pd.read_csv(log_csv, usecols=['time(millisecond)', 'latitude', 'longitude', 'gimbalYawRaw', 'remainPowerPercent'])
     L = L[L.remainPowerPercent > 0].groupby('time(millisecond)', as_index=False).mean(numeric_only=True)
     tl = (L['time(millisecond)'] - L['time(millisecond)'].iloc[0]).to_numpy() / 1000.0
-    lat0 = np.deg2rad(L.latitude.mean()); lon0 = L.longitude.mean(); latm = L.latitude.mean()
+    if origem_primeiro_gps:
+        latm, lon0 = L.latitude.iloc[0], L.longitude.iloc[0]
+    else:
+        latm, lon0 = L.latitude.mean(), L.longitude.mean()
+    lat0 = np.deg2rad(latm)
     RM = A_WGS * (1 - E2) / (1 - E2 * np.sin(lat0) ** 2) ** 1.5
     RN = A_WGS / np.sqrt(1 - E2 * np.sin(lat0) ** 2)
     tf = np.arange(nfr) / fps

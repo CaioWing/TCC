@@ -1,6 +1,19 @@
 # Comparação das estratégias de seleção na MBG-V2
 
-| Nome usado no TCC | Identificador na avaliação inicial |
+## Resultados dos seis voos completos usados no TCC
+
+A memória por quadrantes solicita um recorte na primeira vista de cada quadrante durante a passagem de um ponto do terreno pela imagem. O controle temporal distribui o mesmo total de recortes por voo. Nas tabelas de trabalho, filtre `metodo` por `quadrantes` e `intervalo_pareado`. Os identificadores `cobertura` e `intervalo` nessas tabelas pertencem ao ensaio anterior.
+
+- `python code/avaliacao_mbg/quadrantes_voos.py` reproduz a comparação nos vídeos originais a 40 m e grava os resultados em `doc/dados/qualidade_memoria/quadrantes`.
+- `python code/avaliacao_mbg/altitude_quadrantes.py` aplica as escalas de 50 a 80 m às mesmas seleções. O subdiretório `quadrantes/altitude` reúne as medidas por voo, por trilha e no conjunto. A referência integral a 40 m vem do ensaio completo em `altitude_integral`.
+
+## Teste da origem da malha
+
+`python code/avaliacao_mbg/quadrantes_primeiro_gps.py` ancora a malha na primeira posição válida de GPS de cada voo. O primeiro registro também define a latitude de referência para a conversão em metros. O controle temporal recebe a cota efetivamente usada pela nova malha, com a mesma fase do ensaio original. Os resultados a 40 m ficam em `doc/dados/qualidade_memoria/quadrantes/primeiro_gps`. A coluna `origem` distingue os dois ensaios. No intervalo, essa coluna identifica de qual malha veio a cota.
+
+## Avaliações anteriores
+
+| Estratégia | Identificador na avaliação inicial |
 |---|---|
 | Processamento integral | `todos` |
 | A cada 30 quadros | `cada30` |
@@ -46,3 +59,60 @@ python code/avaliacao_mbg/figura_seguimento.py
 A primeira etapa verifica a reprodução das máscaras originais e a separação entre os quadros. A segunda usa o mesmo motor TensorRT FP16 e calcula uma única previsão por recorte solicitado. A terceira usa os limiares originais e confere o pareamento dos orçamentos por trecho.
 
 Na coluna `orcamento`, `natural` preserva as propostas da memória e `inteiros` arredonda a demanda daquela meta para baixo em grupos de 24. Em `fixo_bruto` todas as metas recebem a menor demanda do trecho. Em `fixo` esse mínimo é arredondado para quadros inteiros. A fase -1 identifica a memória, cuja seleção independe do relógio. Cada fase temporal é uma alternativa com o mesmo orçamento.
+
+### Vistas por passagem e reunião de caixas na fronteira dos recortes
+
+Com as previsões integrais já calculadas nos mesmos 24 trechos de teste e nos oito de validação, execute a partir da raiz do projeto.
+
+```text
+python code/avaliacao_mbg/passagens.py preparar
+python code/avaliacao_mbg/passagens.py nms
+python code/avaliacao_mbg/passagens.py fronteiras
+python code/avaliacao_mbg/passagens.py origem
+python code/avaliacao_mbg/auditar_fronteiras.py
+python code/avaliacao_mbg/figura_passagem.py
+python code/avaliacao_mbg/figura_vistas_da_passagem.py
+python code/avaliacao_mbg/figura_uniao_fronteira.py
+```
+
+O diretório `doc/dados/qualidade_memoria/passagens` contém os eventos geográficos do voo completo, o exemplo da figura e os resultados da seleção e do controle temporal pareado. Cada referência é identificada por vídeo, trecho, classe e trilha. Os arquivos `pareamento_*` permitem conferir a interseção com os acertos do processamento integral sob o mesmo pós-processamento. A etapa `origem` repete a seleção com outras três origens da grade no terreno. Em `doc/dados/qualidade_memoria/fronteiras`, a auditoria registra as duas caixas de cada par e confronta cada uma com a parte visível da anotação no próprio recorte.
+
+Para estender o teste a mais vistas, execute `python code/avaliacao_mbg/curva_passagens.py` e depois `python code/avaliacao_mbg/figura_curva_passagens.py`. A avaliação distribui K quadros pela distância percorrida na passagem completa e pontua as previsões nos mesmos 24 trechos. A última meta usa todos os quadros de cada passagem. Os resultados em `passagens/curva` incluem a contagem por trecho, estratégia e fase temporal, com verificação das máscaras e dos resultados originais para K de 1 a 3.
+
+O ensaio de quadros inteiros nos eixos da câmera usa os mesmos 24 trechos e o mesmo pós-processamento. Execute, na raiz do projeto, os comandos abaixo. O primeiro grava resultados por trecho, fase e cota em `doc/dados/qualidade_memoria/passagens/camera` e verifica a reprodução do integral. O segundo calibra o filtro causal nos oito trechos de F/I com previsões TensorRT FP16 da cadência de 30 quadros. Zero no limiar reproduz o calendário original, contado a partir do início do vídeo.
+
+```bash
+python code/avaliacao_mbg/movimento_camera.py
+python code/avaliacao_mbg/filtro_cadencia_camera.py
+python code/avaliacao_mbg/figura_movimento_camera.py
+```
+
+As figuras com exemplos reais das decisões de seleção podem ser reproduzidas com os seguintes comandos na raiz do repositório.
+
+```bash
+python code/avaliacao_mbg/figura_entrada_saida_celula.py
+python code/avaliacao_mbg/figura_exemplo_temporal.py
+python code/avaliacao_mbg/figura_saida_faixas.py
+```
+
+O gráfico de qualidade nos três ambientes de execução é gerado a partir de `qualidade_teste.csv` com `python code/avaliacao_mbg/figura_qualidade_motores.py`.
+
+## Ensaios exploratórios fora do escopo do TCC
+
+Os experimentos a seguir ficam disponíveis para reprodução. A etapa de inferência da primeira experiência também fornece previsões integrais reutilizadas no ensaio por passagem.
+
+### Segunda vista por pouco detalhe
+
+Execute as etapas a partir da raiz do projeto.
+
+```
+python code/avaliacao_mbg/adaptativa.py selecionar
+python code/avaliacao_mbg/adaptativa.py inferir
+python code/avaliacao_mbg/adaptativa.py avaliar
+```
+
+A seleção calibra o detalhe local nos oito trechos de validação de F e I e percorre os seis voos de teste desde o início. A inferência calcula todos os recortes dos doze novos trechos em TensorRT FP16 com o modelo treinado. A avaliação reutiliza as previsões integrais dos doze trechos iniciais e as novas, confere a igualdade do orçamento por trecho nas quatro fases temporais e grava o protocolo, as contagens por trecho e voo, os totais e a tabela do ensaio em `doc/dados/qualidade_memoria/adaptativa`.
+
+### Recortes por cobertura e Rodízio de recortes
+
+Execute `python code/avaliacao_mbg/selecao_trajetoria.py` com as previsões integrais de validação em TorchScript FP32 e de teste em TensorRT FP16. O script escolhe a quantidade de quadros e o peso da segunda vista em F e I. Nos seis voos de teste, a pose da câmera e a grade de células determinam as máscaras de seleção. O rodízio usa os mesmos instantes e cotas da regra geográfica. O programa verifica se o controle temporal reproduz as contagens originais em cada trecho e fase e grava o protocolo, a validação, as contagens e a tabela do ensaio em `doc/dados/qualidade_memoria/trajetoria`.

@@ -15,7 +15,7 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from simular_potencia_missao import CRUZEIRO, OUT, samples
 
-DESTINO = OUT / "qualidade_memoria/cobertura_continua"
+DESTINO = OUT / "qualidade_memoria/quadrantes"
 SEM_JANELA = "sem_janela_valida"
 
 
@@ -50,26 +50,20 @@ def movimento(inicio, t, sinais):
 def resumo(pares, grupo):
     linha = dict(trilhas=len(pares))
     if grupo != SEM_JANELA:
-        c = pares.atraso_s_cobertura.le(CRUZEIRO.duracao_s)
-        i = pares.atraso_s_intervalo.le(CRUZEIRO.duracao_s)
-        linha.update(ambas=int((c & i).sum()), somente_cobertura=int((c & ~i).sum()),
+        c = pares.atraso_s_quadrantes.le(CRUZEIRO.duracao_s)
+        i = pares.atraso_s_intervalo_pareado.le(CRUZEIRO.duracao_s)
+        linha.update(ambas=int((c & i).sum()), somente_quadrantes=int((c & ~i).sum()),
                      somente_intervalo=int((~c & i).sum()), nenhuma=int((~c & ~i).sum()))
-        apenas_c = pares[c & ~i]
-        apenas_i = pares[i & ~c]
-        quadro_intermediario = apenas_c.primeiro_alerta_quadro_cobertura.mod(30).ne(0)
-        linha.update(
-            somente_cobertura_fora_dos_multiplos_de_30=int(quadro_intermediario.sum()),
-            somente_cobertura_sem_alerta_posterior_intervalo=int(apenas_c.atraso_s_intervalo.isna().sum()),
-            somente_intervalo_com_alerta_posterior_cobertura=int(apenas_i.atraso_s_cobertura.notna().sum()))
     return linha
 
 
 def main():
-    alertas = pd.read_csv(DESTINO / "por_trilha.csv")
-    voos = pd.read_csv(DESTINO / "por_voo.csv").query("metodo == 'cobertura'").set_index("video")
+    metodos = {"quadrantes", "intervalo_pareado"}
+    alertas = pd.read_csv(DESTINO / "por_trilha.csv").loc[lambda df: df.metodo.isin(metodos)]
+    voos = pd.read_csv(DESTINO / "por_voo.csv").query("metodo == 'quadrantes'").set_index("video")
     balanco = pd.read_csv(OUT / "balanco_telemetria.csv").set_index("voo")
     chaves = ["video", "trilha", "classe"]
-    assert set(alertas.metodo) == {"cobertura", "intervalo"}
+    assert set(alertas.metodo) == metodos
     assert alertas.groupby(chaves).metodo.nunique().eq(2).all()
     assert alertas.groupby(chaves).quadro_entrada.nunique().eq(1).all()
     pares = alertas.pivot(index=chaves + ["quadro_entrada"], columns="metodo",
@@ -90,8 +84,8 @@ def main():
             resultados.append(dict(video=video, regime=nome, **resumo(grupo, nome)))
     pd.DataFrame(resultados).convert_dtypes().to_csv(DESTINO / "alertas_por_movimento.csv", index=False)
     maior = trilhas[trilhas.regime.eq("maior_variacao")]
-    c = maior.atraso_s_cobertura.le(CRUZEIRO.duracao_s)
-    i = maior.atraso_s_intervalo.le(CRUZEIRO.duracao_s)
+    c = maior.atraso_s_quadrantes.le(CRUZEIRO.duracao_s)
+    i = maior.atraso_s_intervalo_pareado.le(CRUZEIRO.duracao_s)
     maior[c ^ i].drop(columns="regime").sort_values(["video", "quadro_entrada"]).convert_dtypes().to_csv(
         DESTINO / "alertas_discordantes_maior_variacao.csv", index=False, float_format="%.6f")
 

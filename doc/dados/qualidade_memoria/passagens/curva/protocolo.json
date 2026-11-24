@@ -1,0 +1,32 @@
+{
+  "metas": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    16,
+    24,
+    32,
+    48,
+    64,
+    96,
+    128,
+    192,
+    256,
+    512,
+    711
+  ],
+  "todos_os_instantes": 711,
+  "motor": "trt_fp16",
+  "origem_grade": "A mesma do ensaio principal de passagens.",
+  "marcos": "Entrada para K=1. Para K>=2, extremos e frações uniformes da distância percorrida. Em repouso, usar o tempo. Usar quadros distintos em ordem; se a passagem for mais curta que K, usar todos os quadros disponíveis.",
+  "avaliacao": "24 trechos, quatro fases temporais pareadas por orçamento em cada trecho. Reintegração idêntica e mesmo modelo e métricas do ensaio por passagem."
+}

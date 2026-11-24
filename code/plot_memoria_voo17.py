@@ -1,4 +1,4 @@
-"""Reproduz a seleção de um recorte do voo 17 e a localiza no quadro original."""
+"""Compara entrada e saída da célula na malha geográfica e no voo 17 completo."""
 from fractions import Fraction
 import json
 from pathlib import Path
@@ -8,10 +8,11 @@ import cv2
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from matplotlib.patches import Polygon, Rectangle
+from matplotlib.patches import Polygon
 import numpy as np
 import pandas as pd
 
+from avaliacao_mbg.figuras_malha import BORDA, ENVIO, VISIVEL, amostra_de_celulas, contagem, legenda, painel
 from memoria_sim import T, load_pose, simulate, tiles_grid
 from paleta_tcc import BLUE, GREEN, ORANGE
 
@@ -19,6 +20,7 @@ from paleta_tcc import BLUE, GREEN, ORANGE
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data/mbg_v2"
 GSD = .014  # m/pixel, ajuste do voo 17
+QUADRO = 2573  # Evento da figura: cruzeiro retilíneo aos 85,85 s.
 
 
 def project(east, north, yaw, k, pixels, width, height):
@@ -42,29 +44,59 @@ def main():
     east, north, yaw = load_pose(log, n, fps)
     window = round(fps)
     corners = np.array([[0, 0], [w, 0], [w, h], [0, h]])
-    example = []
+    k = QUADRO
+    grid_tiles = np.array(tiles_grid(w, h))
+    selected = {"imediata": [], "adiada": []}
+    def record_tile(policy, frame, x, y):
+        if frame == k:
+            selected[policy].append((x, y))
 
-    def select_example(k, x, y, u, v):
-        # Primeiro acionamento após 1/4 do voo, com saída pela borda e longe dos cantos.
-        if example or k < n//4 or k + window >= n:
+    # A entrada atende todas as células novas. Reconstituir a união das pegadas
+    # anteriores também considera células já vistas numa passagem anterior.
+    seen = None
+    raster = entry_due = None
+    def record_cells(frame, current, following, shape):
+        nonlocal seen, raster, entry_due
+        if frame > k:
             return
-        middle = np.flatnonzero((u > .22*w) & (u < .78*w))
-        if not len(middle):
-            return
-        distance = np.hypot(east[k+window]-east[k], north[k+window]-north[k])
-        if 3.9 < distance < 4.3 and np.ptp(yaw[k:k+window+1]) < np.deg2rad(1):
-            idx = middle[len(middle)//2]
-            example.append((k, x, y, np.array([[u[idx], v[idx]]])))
+        if seen is None:
+            seen = np.zeros(shape, bool)
+        j0, j1, i0, i1, inside, _, _ = current
+        region = seen[j0:j1, i0:i1]
+        if frame == k:
+            raster, entry_due = current, inside & ~region
+        region |= inside
+
+    exit_requests = []
+    def record_requests(frame, x, y, u, v):
+        if frame == k:
+            exit_requests.append(np.column_stack((u, v)))
 
     saved = pd.read_csv(DATA / "splits/memoria_sim_26voos.csv").set_index("vid").loc[17]
-    ntiles = len(tiles_grid(w, h))
+    ntiles = len(grid_tiles)
     matched_step = round(ntiles * n / saved.adiada_recortes)
-    result = simulate(log, n, fps, w, h, GSD, skip_steps=(30, matched_step), on_deferred_tile=select_example)
+    result = simulate(log, n, fps, w, h, GSD, skip_steps=(30, matched_step),
+                      on_selected=record_tile, on_deferred_frame=record_cells, on_deferred_tile=record_requests)
     for policy in ("imediata", "adiada"):
         if result[policy]["recortes"] != saved[f"{policy}_recortes"]:
             raise ValueError("A contagem de recortes diverge da simulação registrada.")
-    (k, x, y, point), = example
-    sample = project(east, north, yaw, k, point, w, h)[0]
+    j0, _, i0, _, inside, u, v = raster
+    requests = np.unique(np.vstack(exit_requests), axis=0)
+    exit_due = np.zeros_like(inside)
+    for px, py in requests:
+        exit_due |= inside & (u == px) & (v == py)
+    assert exit_due.sum() == len(requests)
+    middle = requests[(requests[:, 0] > .22*w) & (requests[:, 0] < .78*w)]
+    point = middle[len(middle)//2]
+    (j,), (i,) = np.nonzero(inside & (u == point[0]) & (v == point[1]))
+    cell = j+j0, i+i0
+    samples = {}
+    for policy, due in [("imediata", entry_due), ("adiada", exit_due)]:
+        tile_set = set(selected[policy])
+        mask = [tuple(tile) in tile_set for tile in grid_tiles]
+        samples[policy] = amostra_de_celulas(raster, due, grid_tiles, mask, cell)
+    assert not samples["imediata"][-1] and samples["adiada"][-1]
+    sample = project(east, north, yaw, k, point[None], w, h)[0]
     next_pose = project(east, north, yaw, k+1, corners, w, h)
     if cv2.pointPolygonTest(next_pose.astype("float32"), tuple(sample), False) >= 0:
         raise ValueError("A célula destacada também aparece no quadro seguinte.")
@@ -74,7 +106,8 @@ def main():
         ok, frame = cap.read()
         if not ok or round(cap.get(cv2.CAP_PROP_POS_FRAMES)) != k+1:
             raise ValueError(f"Não foi possível obter o quadro {k} do voo 17.")
-        gray = cv2.resize(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY), (960, 540), interpolation=cv2.INTER_AREA)
+        resized = cv2.resize(frame, (960, 540), interpolation=cv2.INTER_AREA)
+        image = cv2.cvtColor(resized, cv2.COLOR_BGR2RGB)
     finally:
         cap.release()
 
@@ -92,73 +125,72 @@ def main():
     new_pct = 100 * (1 - shared / ((w*GSD) * (h*GSD)))
     with plt.rc_context({"font.size": 10, "axes.titlesize": 11, "axes.spines.top": False,
                          "axes.spines.right": False, "axes.axisbelow": True, "pdf.fonttype": 42}):
-        fig = plt.figure(figsize=(8.6, 5.65))
-        grid = fig.add_gridspec(2, 3, left=.04, right=.97, top=.90, bottom=.12,
-                                width_ratios=[.13, .40, .47], height_ratios=[1.05, 1],
-                                hspace=.41, wspace=.15)
-        overlay = fig.add_subplot(grid[0, :2])
-        camera = fig.add_subplot(grid[0, 2])
-        lower = grid[1, 1:].subgridspec(1, 2, width_ratios=[5, 1], wspace=.10)
+        fig = plt.figure(figsize=(8.6, 5.05))
+        grid = fig.add_gridspec(2, 3, left=.015, right=.985, top=.835, bottom=.115,
+                                width_ratios=[.90, 1.22, 1.22], height_ratios=[1., 1.1],
+                                hspace=.35, wspace=.09)
+        overlay = fig.add_subplot(grid[0, 0])
+        cameras = [fig.add_subplot(grid[0, col]) for col in (1, 2)]
+        lower = fig.add_gridspec(1, 2, left=.235, right=.985, bottom=.115, top=.447,
+                                 width_ratios=[5, 1], wspace=.10)
         counts_ax = fig.add_subplot(lower[0])
         coverage_ax = fig.add_subplot(lower[1], sharey=counts_ax)
         coverage_ax.set_title("Área coberta", fontsize=10, pad=8)
         coverage_ax.axis("off")
 
-        for ax, title in [(overlay, "(a) Terreno novo após um segundo"), (camera, "(b) Última vista da célula")]:
+        legenda(fig, "Célula")
+        for ax, title in [(overlay, "(a) Terreno em 1 s"), (cameras[0], f"(b) Decisão no quadro {k}")]:
             bounds = ax.get_position(original=True)
-            fig.text(bounds.x0, bounds.y1 + .014, title, fontsize=11, va="bottom")
+            fig.text(bounds.x0, bounds.y1 + .065, title, fontsize=10.5, va="bottom")
         overlay.add_patch(Polygon(after, facecolor="#d6e4d3", edgecolor=GREEN, lw=1.2))
         overlay.add_patch(Polygon(before, facecolor="#e0e9ef", edgecolor=BLUE, lw=1.2))
         overlay.add_patch(Polygon(after, fill=False, edgecolor=GREEN, lw=1.15, ls="--"))
-        tile_px = np.array([[x, y], [x+T, y], [x+T, y+T], [x, y+T]])
-        tile_ground = (project(east, north, yaw, k, tile_px, w, h)-start) @ rotation
         cell_ground = (sample-start) @ rotation
-        overlay.add_patch(Polygon(tile_ground, fill=False, edgecolor=ORANGE, lw=2))
-        overlay.plot(*cell_ground, "o", color=ORANGE, mec="white", ms=6, zorder=3)
+        for x, y in selected["adiada"]:
+            tile_px = np.array([[x, y], [x+T, y], [x+T, y+T], [x, y+T]])
+            tile_ground = (project(east, north, yaw, k, tile_px, w, h)-start) @ rotation
+            overlay.add_patch(Polygon(tile_ground, fill=False, edgecolor=ORANGE, lw=1.4))
+        outros, ativos, _, _ = samples["adiada"]
+        for pixels, forma, cor, area in [(outros, "o", VISIVEL, 9), (ativos, "D", ENVIO, 20)]:
+            xy = (project(east, north, yaw, k, pixels, w, h)-start) @ rotation
+            overlay.scatter(*xy.T, marker=forma, c=cor, edgecolors=BORDA, linewidth=.5, s=area)
+        overlay.annotate("C", cell_ground, xytext=(8, -9), textcoords="offset points",
+                         weight="bold", fontsize=7.5, color="white", ha="center", va="center",
+                         bbox=dict(boxstyle="round,pad=.15", fc=BORDA, ec="white", lw=.65),
+                         arrowprops=dict(arrowstyle="-", lw=.8, color=BORDA, shrinkB=2))
         # Centro da borda de entrada nos dois instantes. Entre as bordas está a faixa nova.
         leading_edges = [poly[np.argsort(poly[:, 1])[-2:]].mean(axis=0) for poly in (before, after)]
         new_band = np.mean(leading_edges, axis=0)
-        overlay.annotate(f"Terreno novo ({new_pct:.1f}%)".replace(".", ","), new_band,
-                         xytext=(0, 25), ha="center", va="center", fontsize=9.2,
+        overlay.annotate(f"{new_pct:.1f}% de área nova".replace(".", ","), new_band,
+                         xytext=(0, 27), ha="center", va="center", fontsize=9.2,
                          arrowprops={"arrowstyle": "-", "lw": 1, "color": GREEN})
-        overlay.text(0, 2, "Terreno visível\nnos dois instantes", ha="center", va="center", fontsize=9.3)
-        overlay.annotate("Recorte selecionado", tile_ground.mean(axis=0), xytext=(0, -22),
-                         ha="center", va="center", fontsize=9.2,
-                         arrowprops={"arrowstyle": "-", "color": ORANGE, "lw": 1})
         overlay.set_aspect("equal")
-        overlay.set(xlim=(-32, 32), ylim=(-25, 28))
+        overlay.set(xlim=(-29, 29), ylim=(-23, 29))
         overlay.axis("off")
 
-        camera.imshow(gray, extent=(0, w, h, 0), cmap="gray", vmin=-28, vmax=275)
-        for u0, v0 in tiles_grid(w, h):
-            camera.add_patch(Rectangle((u0, v0), T, T, fill=False, lw=.45, edgecolor="white", alpha=.55))
-        camera.add_patch(Rectangle((x, y), T, T, fill=False, lw=2.2, edgecolor=ORANGE))
-        camera.plot(*point[0], marker="o", mec="white", mfc=ORANGE, ms=6, clip_on=False)
-        camera.annotate("Célula que sai de vista", point[0], xytext=(16, 36), textcoords="offset points",
-                        ha="left", va="center", fontsize=9,
-                        bbox={"facecolor":"white", "edgecolor":"none", "pad":2},
-                        arrowprops={"arrowstyle":"-", "lw":1, "color":"white"})
-        camera.set(xlim=(-20, w+20), ylim=(h+20, -20))
-        camera.axis("off")
+        for camera, (nome, policy) in zip(cameras, [("Entrada", "imediata"), ("Saída", "adiada")]):
+            outros, ativos, pixel, _ = samples[policy]
+            painel(camera, image, (w, h), selected[policy], outros, ativos, pixel, "C")
+            camera.set_title(f"{nome} da célula · {contagem(len(selected[policy]))}", loc="left", fontsize=9)
 
         counts_ax.set_title("(c) Recortes selecionados no voo completo", loc="left", pad=8)
-        interval = f"Intervalo ajustado por voo\n(a cada {matched_step} quadros)"
+        interval = f"Intervalo por voo\n(a cada {matched_step} quadros)"
         counts = {
             "Processamento integral": ntiles * n,
-            "Seleção na entrada": result["imediata"]["recortes"],
-            "A cada 30 quadros": len(range(0, n, 30)) * ntiles,
+            "Entrada da célula": result["imediata"]["recortes"],
+            "Um quadro a cada 30": len(range(0, n, 30)) * ntiles,
             interval: len(range(0, n, matched_step)) * ntiles,
-            "Seleção na saída": result["adiada"]["recortes"],
+            "Saída da célula": result["adiada"]["recortes"],
         }
         coverage = {
             "Processamento integral": 1.0,  # A união de todos os quadros define a área imageada.
-            "Seleção na entrada": 1 - result["imediata"]["frac_nao_analisada"],
-            "A cada 30 quadros": 1 - result["skip_30"]["frac_nao_vista"],
+            "Entrada da célula": 1 - result["imediata"]["frac_nao_analisada"],
+            "Um quadro a cada 30": 1 - result["skip_30"]["frac_nao_vista"],
             interval: 1 - result[f"skip_{matched_step}"]["frac_nao_vista"],
-            "Seleção na saída": 1 - result["adiada"]["frac_nao_analisada"],
+            "Saída da célula": 1 - result["adiada"]["frac_nao_analisada"],
         }
         for row, (name, count) in enumerate(counts.items()):
-            color = {"Seleção na entrada": BLUE, "Seleção na saída": ORANGE}.get(name, ".44")
+            color = {"Entrada da célula": BLUE, "Saída da célula": ORANGE}.get(name, ".44")
             counts_ax.scatter(count, row, color=color, s=38, zorder=3)
             label = f"{count:,}".replace(",", ".")
             percent = f"{100*coverage[name]:.2f}".removesuffix(".00").replace(".", ",")
@@ -177,6 +209,8 @@ def main():
         fig.savefig(ROOT / "doc/figuras/fig_memoria_voo17.pdf", dpi=260, bbox_inches="tight", pad_inches=.08)
         plt.close(fig)
     print(f"Quadro {k}, t={k/fps:.2f} s, avanço={distance:.2f} m, área nova={new_pct:.2f}%")
+    print("Recortes do quadro:", selected)
+    print("Células que pedem envio:", int(entry_due.sum()), "(entrada);", int(exit_due.sum()), "(saída).")
     print("Totais:", counts)
     print("Cobertura por estratégia:", coverage)
 

@@ -25,7 +25,7 @@ O Laboratório de Sinais, Multimídia e Telecomunicações da COPPE/UFRJ publico
 \subsection{Condições de voo e escala das imagens}
 \label{sec_base_condicoes}
 
-Os vídeos e a telemetria informam a resolução, a taxa de quadros e a velocidade (Tabela~\ref{tab_campanhas}). O \textit{gimbal} registrou arfagem de $-89{,}9^\circ$, com a câmera em visada vertical. A altitude relativa à decolagem ficou entre 39,8 e 40,1~m nos percentis 5 e 95 das amostras. A altura sobre cada objeto depende também da elevação do terreno. Como a base não fornece os parâmetros da câmera necessários à Equação~\eqref{eq_gsd}, estimou-se a escala das imagens a partir das trilhas anotadas.
+Os vídeos e a telemetria informam a resolução, a taxa de quadros e a velocidade (Tabela~\ref{tab_campanhas}). O \textit{gimbal} registrou arfagem de $-89{,}9^\circ$, com a câmera apontada para baixo. A altitude relativa à decolagem ficou entre 39,8 e 40,1~m nos percentis 5 e 95 das amostras. A altura sobre cada objeto depende também da elevação do terreno. Como a base não fornece os parâmetros da câmera necessários à Equação~\eqref{eq_gsd}, estimou-se a escala das imagens a partir das trilhas anotadas.
 
 \begin{table}[htb]
   \centering
@@ -55,7 +55,7 @@ Os vídeos e a telemetria informam a resolução, a taxa de quadros e a velocida
   \fonte{Elaborado pelo autor a partir da MBG-V2 \cite{smt2024mbgv2}. Os intervalos dão os extremos entre voos. A data da campanha A consta apenas no voo 02. A largura $w$, o comprimento $L$ e o número de vistas $n_v$ seguem as Equações~\eqref{eq_pegada} e~\eqref{eq_visibilidade}.}
 \end{table}
 
-Uma trilha reúne as caixas de um mesmo recipiente ao longo dos quadros. À medida que a aeronave avança, um recipiente parado muda de posição na imagem. Com a escala correta, os centros de suas caixas projetam-se no mesmo ponto do solo. Um $GSD$ pequeno demais faz a projeção acompanhar parte do movimento da aeronave. Um valor excessivo a desloca no sentido oposto (Figura~\ref{fig_estimativa_gsd}). Esse efeito permite estimar a escala sem conhecer a posição real do recipiente.
+À medida que a aeronave avança, um recipiente parado muda de posição na imagem. Com a escala correta, os centros de suas caixas projetam-se no mesmo ponto do solo. Um $GSD$ pequeno demais faz a projeção acompanhar parte do movimento da aeronave. Um valor excessivo a desloca no sentido oposto (Figura~\ref{fig_estimativa_gsd}). Esse efeito permite estimar a escala sem conhecer a posição real do recipiente.
 
 \begin{figure}[htbp]
   \centering
@@ -93,7 +93,7 @@ Na trilha da Figura~\ref{fig_trilha_real_gsd}, a aeronave percorre 30,85~m. Com 
 
 Nos 26 voos, a dispersão após o ajuste variou de 0,24 a 0,85~m. Essa medida indica a concordância entre vistas do mesmo objeto. Um erro comum a todas as vistas só poderia ser avaliado com posições de referência medidas no terreno.
 
-Para descrever a cobertura dos 26 voos, usou-se a escala ajustada pelas anotações de cada vídeo (Tabela~\ref{tab_campanhas}). Para comparar a detecção nos voos reservados, transferiu-se a todos o $GSD$ de 1,35~cm/pixel obtido no voo 03, do treinamento. Assim, as caixas anotadas no teste servem à avaliação e a seleção dos recortes independe delas.
+Para descrever a cobertura dos 26 voos, usou-se a escala ajustada pelas anotações de cada vídeo (Tabela~\ref{tab_campanhas}). Para comparar a detecção nos seis voos de teste, usou-se em todos eles o mesmo $GSD$ de 1,35~cm/pixel, estimado no voo 03 do conjunto de treinamento. Assim, as caixas anotadas no teste servem à avaliação e a seleção dos recortes independe delas.
 
 \subsection{Arquivos e sincronização}
 \label{sec_base_estrutura}
@@ -155,6 +155,8 @@ Para obter a energia fornecida pela bateria, calculou-se a potência $P_{el}=UI$
 \end{equation}
 em que $A_{\mathrm{img}}$ é a união das projeções dos quadros em células de 0,5~m (Seção~\ref{sec_sim_estrategias}), com o $GSD$ ajustado de cada voo. Uma revisita aumenta a energia sem acrescentar a mesma célula à área. Expressa-se o resultado em Wh/km$^2$.
 
+Para estimar o efeito da altura sobre a área imageada nos seis percursos de teste, variou-se $h$ de 20 a 80~m em passos de 10~m. Em terreno plano, o $GSD$ a cada altura é o valor ajustado para o voo multiplicado por $h/(40~\mathrm{m})$, tomando como referência a altura nominal de aquisição. Com essa escala, reprojetou-se cada quadro e calculou-se a área da união, multiplicando o número de células cobertas por $0,25~\mathrm{m}^2$. Mantiveram-se o trajeto horizontal, a guinada, a duração e a energia estimada para o kit de 174~g ativo. O balanço considera apenas o imageamento e exclui a subida até a altura simulada.
+
 Nos percursos completos, incluindo curvas e transientes, a potência mediana variou de 173 a 190~W entre os 24 voos de B a M, com valor central de 182~W. Nos dois voos de A, foi de 170 e 172~W. A comparação do modelo de cruzeiro usa apenas as janelas de voo estável da Seção~\ref{sec_curva_potencia_voos}.
 
 \subsection{Verificação de integridade e tratamento dos dados}
@@ -185,7 +187,7 @@ Como os dois voos de uma região podem observar os mesmos objetos, ambos ficam n
   \item o teste deve conter pelo menos 40 pneus, 40 baldes, 25 caixas d'água abertas, 80 piscinas e 80 vasos de planta, e a validação, pelo menos 20 pneus e 20 baldes; o treinamento deve reter pelo menos 45\% das trilhas de cada classe;
   \item entre as combinações viáveis de três regiões de teste e duas de validação, escolhe-se a de menor soma das distâncias $L_1$ entre a proporção de classes de cada conjunto e a do total das regiões B a M, acrescida de $2\,|f_{\mathrm{teste}}-0{,}25| + 2\,|f_{\mathrm{val}}-0{,}15|$, em que $f$ é a fração das trilhas do conjunto.
 \end{enumerate}
-A Tabela~\ref{tab_divisao} apresenta o resultado. A distribuição das classes não pôde ser igualada em todos os conjuntos: os pneus se concentram nas regiões F, H e J, e o treinamento ficou com 49\% deles.
+A Tabela~\ref{tab_divisao} apresenta o resultado. As proporções das classes variaram entre os conjuntos. Os pneus, por exemplo, concentram-se nas regiões F, H e J, e 49\% deles ficaram no treinamento.
 
 \begin{table}[htb]
   \centering
@@ -198,7 +200,7 @@ A Tabela~\ref{tab_divisao} apresenta o resultado. A distribuição das classes n
     \hline
     Regiões & B, C, D, G, J, K, M & F, I & E, H, L & A \\
     Voos & 14 & 4 & 6 & 2 \\
-    Trilhas (objetos) & 4.304 & 1.074 & 1.954 & 1.109 \\
+    Trilhas das doze classes & 4.304 & 1.074 & 1.954 & 1.109 \\
     \quad caixas d'água / pneus / baldes & 2.143 / 213 / 230 & 503 / 114 / 85 & 956 / 108 / 105 & 681 / 74 / 35 \\
     Quadros a 1 quadro/s com recortes & 3.299 & 1.061 & 1.574 & 655 \\
     Recortes de $640 \times 640$ pixels & 30.496 & 7.944 & 37.776 & 18.340 \\
@@ -206,12 +208,12 @@ A Tabela~\ref{tab_divisao} apresenta o resultado. A distribuição das classes n
     Caixas anotadas nos recortes & 37.553 & 9.065 & 18.987 & 5.438 \\
     \hline
   \end{tabular}}
-  \fonte{Elaborado pelo autor a partir da base MBG-V2 \cite{smt2024mbgv2}. Dos 6.604 quadros a 1 quadro/s, um quadro da região A estava corrompido e foi descartado, e 14 quadros do treinamento e da validação não tiveram nenhum recorte mantido. No treinamento e na validação, os recortes sem objeto foram amostrados em 10\%; nos testes, todos foram mantidos.}
+  \fonte{Elaborado pelo autor a partir da base MBG-V2 \cite{smt2024mbgv2}. As contagens de recortes referem-se às imagens amostradas a cerca de 1 quadro/s para treinar e avaliar o detector. Dos 6.604 quadros dessa amostra, um quadro da região A estava corrompido e foi descartado, e 14 quadros do treinamento e da validação ficaram sem recortes após a seleção. No treinamento e na validação, manteve-se uma amostra de 10\% dos recortes sem objeto. Nos testes, todos foram mantidos.}
 \end{table}
 
 \subsection{Recortes e modelo}
 
-Cada quadro é lido na resolução original e dividido em recortes de $640\times640$~pixels (Equação~\eqref{eq_recortes}). Um recorte selecionado corresponde a uma entrada do YOLO11n e preserva o tamanho do objeto em pixels, como mostra a caixa d'água da Figura~\ref{fig_quadro_recortes}. Após a inferência, somar a posição do recorte às coordenadas da detecção restitui a caixa ao quadro original.
+Cada quadro é lido na resolução original e dividido em recortes de $640\times640$~pixels (Equação~\eqref{eq_recortes}). Um recorte selecionado corresponde a uma entrada do YOLO11n e preserva o tamanho do objeto em pixels, como mostra a caixa d'água da Figura~\ref{fig_quadro_recortes}. Após a inferência, soma-se a posição do canto superior esquerdo do recorte às coordenadas da caixa para localizá-la no quadro original.
 
 \begin{figure}[H]
   \centering
@@ -221,7 +223,7 @@ Cada quadro é lido na resolução original e dividido em recortes de $640\times
   \fonte{Elaborado pelo autor a partir do quadro 5700 do voo 15, região H da MBG-V2 \cite{smt2024mbgv2}. Em (a), seis colunas de 640~pixels preenchem a largura de 3840~pixels. Para que quatro fileiras de 640 cubram os 2160~pixels de altura, cada par de fileiras vizinhas compartilha 133 ou 134~pixels. Em (b), vê-se o recorte destacado em laranja na quinta coluna e segunda fileira.}
 \end{figure}
 
-Treinou-se o YOLO11n \cite{jocher2024yolo11} a partir dos pesos pré-treinados da biblioteca, com os quadros a cerca de 1~quadro/s fornecidos pela MBG-V2 (Tabela~\ref{tab_preparo_detector}). A avaliação por classe relata precisão e recall no limiar que maximiza o F1 médio das classes, AP$_{50}$, AP$_{50\text{--}95}$ e o maior F1 de cada classe.
+Treinou-se o YOLO11n \cite{jocher2024yolo11} a partir dos pesos pré-treinados da biblioteca, com os quadros a cerca de 1~quadro/s fornecidos pela MBG-V2 (Tabela~\ref{tab_preparo_detector}). Cada passagem de treinamento pelo conjunto de recortes corresponde a uma época. A avaliação por classe relata precisão e recall no limiar que maximiza o F1 médio das classes, AP$_{50}$, AP$_{50\text{--}95}$ e o maior F1 de cada classe.
 
 \begin{table}[!htbp]
   \centering
@@ -248,30 +250,36 @@ Treinou-se o YOLO11n \cite{jocher2024yolo11} a partir dos pesos pré-treinados d
 
 \section{Seleção dos recortes ao longo do voo}
 \label{sec_sim_estrategias}
-\label{sec_metodo_cobertura_continua}
+\label{sec_metodo_quadrantes}
 
-A comparação acompanha do primeiro ao último quadro os seis vídeos de teste das regiões E, H e L. O YOLO11n treinado na MBG-V2 recebe recortes de $640\times640$~pixels da grade de 24 posições (Figura~\ref{fig_quadro_recortes}) e é executado em TensorRT FP16 na estação de trabalho. As duas estratégias começam no quadro zero e dispõem da mesma quantidade de recortes a cada bloco de 60 quadros.
+A comparação acompanha do primeiro ao último quadro os seis vídeos de teste das regiões E, H e L. Em cada voo, a memória por quadrantes e a amostragem por intervalo enviam o mesmo número de recortes ao YOLO11n treinado na MBG-V2. O detector recebe recortes de $640\times640$~pixels da grade de 24 posições (Figura~\ref{fig_quadro_recortes}) e é executado em TensorRT FP16 na estação de trabalho.
 
-A amostragem temporal, denominada \emph{Um quadro a cada 30}, envia os 24 recortes de um quadro e salta os 29 seguintes. A \emph{Memória por cobertura} mantém, durante todo o voo, um mapa das células de 0,5~m de lado que já apareceram nos recortes enviados. A cada 20 quadros, projeta essas células na imagem a partir da pose da câmera. Escolhe o recorte que cobre o maior número de células ainda sem vista, marca as células que ele cobre e repete a escolha até completar a cota. Em caso de empate, segue uma ordem rotativa entre as 24 posições. O mapa começa vazio e a escolha dos recortes independe das anotações.
+A \emph{memória por quadrantes} acompanha pontos fixos de uma malha quadrada no terreno. O espaçamento de 8,64~m corresponde ao lado de um recorte na escala adotada ($640\times1{,}35$~cm). A cada quadro, a posição da aeronave e a orientação da câmera determinam onde os pontos visíveis aparecem na imagem. Cada ponto solicita um recorte ao entrar no campo de visão. Enquanto permanece visível, volta a solicitar um recorte na primeira vez que aparece em cada um dos outros quadrantes da imagem. Um retorno a um quadrante já observado na mesma passagem dispensa novo envio. Quando o ponto sai do quadro, encerra-se a passagem. Se voltar ao campo de visão, começa uma nova passagem.
 
-Em cada bloco completo, o intervalo envia 24 recortes em dois instantes e a memória envia 16 em três instantes. No último bloco de cada voo, a memória distribui a cota efetivamente usada pelo intervalo entre os instantes disponíveis. A Figura~\ref{fig_selecao_dois_metodos} mostra o primeiro bloco do voo 09.
+Os eixos horizontal e vertical que passam pelo centro do quadro definem os quatro quadrantes. Para atender um pedido, escolhe-se, entre os recortes que contêm o ponto, aquele cujo centro fica mais próximo dele. Um único envio atende a todos os pontos contidos nesse recorte e marca o quadrante atual de cada um como observado. Na reconstrução dos vídeos, a origem da malha é a média das latitudes e longitudes válidas de todo o voo. A posição e a orientação da câmera em cada quadro são interpoladas entre os registros da telemetria. Com a malha assim definida, a memória decide cada envio pela posição do ponto e pelas vistas já registradas. Assim, um ponto da malha pode solicitar uma vista mesmo que nenhum recipiente apareça nela.
 
-Para verificar quanto terreno chegou ao detector, reconstruiu-se a malha usada na seleção, com $GSD$ de 1,35~cm/pixel. Contaram-se, em cada voo, as células cujo centro apareceu em pelo menos um quadro do vídeo e, entre elas, as que apareceram em pelo menos um recorte enviado por cada método. A cobertura do terreno é a razão entre essas contagens, somadas nos seis voos. Cada célula conta uma vez por voo, qualquer que seja o número de revisitas.
+A Figura~\ref{fig_memoria_quadrantes} acompanha um desses pontos no voo~09. No quadro~0, o ponto A recebe sua primeira vista no quadrante superior esquerdo. No quadro~92, ainda ocupa o mesmo quadrante. No quadro~93, cruza a metade horizontal da imagem e solicita um recorte no quadrante inferior esquerdo. No quadro seguinte, permanece ali e a memória já tem registro dessa vista.
 
-\begin{figure}[htbp]
+\begin{figure}[!htbp]
   \centering
-  \caption{Recortes escolhidos pelos dois métodos no primeiro bloco do voo 09}
-  \label{fig_selecao_dois_metodos}
-  \includegraphics[width=\textwidth]{figuras/fig_selecao_dois_metodos.pdf}
-  \fonte{Elaborado pelo autor com o vídeo da MBG-V2 e os registros de seleção. Cada coluna mostra o mesmo quadro nas duas linhas. As áreas em cor delimitam os recortes enviados. Nos demais quadros desse bloco, nenhum dos métodos envia recortes.}
+  \caption{Primeira vista e mudança de quadrante de um ponto do terreno no voo 09}
+  \label{fig_memoria_quadrantes}
+  \includegraphics[width=\textwidth]{figuras/fig_memoria_quadrantes.pdf}
+  \fonte{Elaborado pelo autor a partir dos quadros, da telemetria da MBG-V2 \cite{smt2024mbgv2} e dos recortes enviados no ensaio. A letra A identifica o mesmo ponto nos quatro painéis. As linhas tracejadas dividem o quadro nos quatro quadrantes da câmera.}
 \end{figure}
 
-\subsection{Avaliação dos focos e do tempo até o primeiro alerta}
+Um pedido pode surgir em qualquer quadro. No ensaio, limitou-se o total a 48 recortes por bloco de 60 quadros. No último bloco, o teto foi de 24 recortes se restavam até 30 quadros e de 48 nos demais casos. Todos os pedidos dos seis voos couberam no saldo disponível e foram atendidos no próprio quadro.
+
+O \emph{intervalo pareado} usa como cota o total de recortes que a memória efetivamente enviou em cada voo. A partir do quadro zero, selecionam-se quadros a intervalos regulares até completar essa cota. Cada quadro selecionado fornece 24 recortes, exceto um quadro parcial quando o total de recortes não é múltiplo de 24. A escolha desse quadro e de suas posições segue uma ordem predeterminada. O pareamento iguala o custo em inferências ao fim do voo e permite comparar como cada estratégia distribui os recortes no espaço e no tempo.
+
+\subsection{Avaliação da área, dos focos e do tempo até o primeiro alerta}
 \label{sec_metodo_alertas}
 
-Cada trilha das seis classes avaliadas conta uma vez por vídeo, inclusive quando só aparece em quadros omitidos. As estratégias compartilham o detector e os limiares da Tabela~\ref{tab_limiares_focos}. Esses limiares foram definidos na validação das regiões F e I, antes da comparação nos voos de teste. Após recolocar as caixas nas coordenadas do quadro, a NMS por classe elimina duplicatas com limiar de IoU de 0,7.
+Depois de selecionados os recortes, mediu-se a fração do terreno que cada método mostrou ao detector. Para essa medição, dividiu-se o terreno em células de 0,5~m de lado. Em cada voo, contaram-se os centros dessas células que apareceram em algum recorte enviado e os que apareceram em algum quadro do vídeo, com o mesmo $GSD$ de 1,35~cm/pixel. A cobertura do terreno é a razão entre a primeira contagem e a segunda, somadas nos seis voos. Cada célula conta uma vez por voo, qualquer que seja o número de revisitas.
 
-Para avaliar a localização, projeta-se o centro de cada detecção no terreno. A cada quadro, o pareamento um a um da Seção~\ref{sec_deteccao} reúne a detecção a um foco da mesma classe dentro do raio de associação e atualiza sua posição média. Uma detecção sem par inicia um foco. Ao fim do voo, comparam-se os focos com as referências da mesma classe até a distância $d_{\max}$. A referência de cada trilha é a mediana das posições de suas caixas anotadas projetadas no terreno. O recall mede a proporção das referências localizadas e cada foco sem correspondência conta como falso alarme.
+Cada trilha das seis classes avaliadas conta uma vez por vídeo, inclusive quando só aparece em quadros omitidos. As estratégias compartilham o detector e os limiares da Tabela~\ref{tab_limiares_focos}. Esses limiares foram definidos na validação das regiões F e I, antes da comparação nos voos de teste. Após recolocar as caixas nas coordenadas do quadro, a supressão de caixas sobrepostas (NMS) conserva as previsões de maior confiança e descarta as da mesma classe que se sobrepõem a elas acima de 0,7 de IoU.
+
+Para construir o mapa, projeta-se no terreno o centro de cada caixa prevista com confiança de pelo menos 0,50. A cada quadro, a detecção pode atualizar a posição média de um foco da mesma classe a até 1,5~m. Cada foco recebe no máximo uma detecção por quadro. Uma detecção sem par inicia um novo foco. Para avaliar o mapa pronto, adota-se como referência de cada recipiente a mediana das posições de suas caixas anotadas projetadas no terreno. Um foco pode corresponder a uma única referência da mesma classe a até 1,0~m, e cada referência pode confirmar um único foco. Se o sistema marcar duas vezes a mesma caixa d'água e houver uma única referência compatível, só um ponto conta como acerto. O ponto excedente conta como falso alarme.
 
 \begin{table}[!htbp]
   \centering
@@ -290,11 +298,28 @@ Para avaliar a localização, projeta-se o centro de cada detecção no terreno.
   \fonte{Elaborado pelo autor com os voos de validação das regiões F e I.}
 \end{table}
 
-Para medir o tempo até o primeiro alerta visual, conta-se, no relógio do vídeo, o intervalo entre a primeira aparição anotada e a primeira previsão da classe correta com confiança e IoU de pelo menos 0,5 no mesmo quadro. A mediana e o percentil 90 consideram as trilhas confirmadas por cada método. A fração confirmada até um dado prazo usa todas as trilhas como denominador.
+Para medir o tempo até o primeiro alerta visual, conta-se, no relógio do vídeo, o intervalo entre a primeira aparição anotada e a primeira previsão da classe correta com confiança e IoU de pelo menos 0,5 no mesmo quadro. A mediana corresponde ao tempo em que metade das trilhas com alerta já recebeu sua primeira detecção correta. No percentil 90, essa fração chega a 90\%. Já a fração confirmada até um prazo fixo considera todas as trilhas anotadas, inclusive as que nunca receberam alerta.
 
-Para examinar os alertas durante mudanças de movimento, consideraram-se os cinco segundos a partir da primeira aparição de cada trilha. O movimento foi classificado como de maior variação quando o vetor de velocidade horizontal se afastou mais de 0,5~m/s de sua média temporal nessa janela. O critério capta mudanças de direção ou de rapidez. Comparou-se se cada método confirmou visualmente a mesma trilha nesses cinco segundos, inclusive quando ela saiu de vista antes do prazo. Essa análise requer cinco segundos de vídeo e telemetria com lacunas de no máximo um segundo entre registros.
+Para medir quanto da primeira vista se repete na seguinte, tomou-se o recorte enviado quando um ponto entrou na imagem e o recorte enviado na primeira vez que esse ponto cruzou a linha de um quadrante durante a mesma passagem. Consideraram-se apenas entradas observadas após o quadro inicial, e cada par de recortes contou uma vez. Projetaram-se os quatro cantos de cada recorte no mesmo plano do terreno, com a posição e a orientação da câmera em cada quadro. A IoU no terreno é a área de interseção dos dois polígonos dividida pela área de sua união. Calculou-se também a fração do primeiro recorte coberta pelo segundo.
 
-Para estimar a capacidade da Jetson de acompanhar o vídeo, reproduziram-se os instantes de envio de cada voo com um recorte processado por vez. Cada envio começa quando o quadro está disponível e o envio anterior terminou. Seu tempo de processamento é o produto da quantidade de recortes pela latência média de bancada em TensorRT FP16 (Seção~\ref{sec_metodo_jetson}). Repetiu-se o cálculo atribuindo a cada recorte o percentil 99 dessa latência. A folga é o tempo entre o término de um envio e a chegada do próximo.
+Para repetir essa medida na escala dos recipientes, identificaram-se as trilhas cujo centro anotado aparecia nos dois recortes. Em cada imagem, associou-se uma previsão à anotação pela classe, com confiança e IoU visual de pelo menos 0,5. Quando o detector reconheceu a mesma trilha nas duas vistas, projetaram-se os quatro cantos das duas caixas previstas e mediram-se a IoU no terreno e a distância entre seus centros. Projetaram-se também as caixas anotadas das mesmas trilhas para verificar quanto da discrepância persistia com a marcação manual. A identificação do recipiente vem da anotação no vídeo e, por isso, duas observações podem corresponder mesmo com IoU zero no terreno.
+
+Fez-se ainda uma verificação independente da telemetria. Em cada voo, tomaram-se 30 pares em intervalos regulares na lista de entradas, a partir de um início sorteado. Identificaram-se pontos semelhantes nas duas imagens pelo método SIFT \cite{lowe2004sift}. Com essas correspondências, estimou-se por RANSAC uma homografia, transformação que alinha nas duas vistas a superfície predominante da cena \cite{fischler1981ransac}. Reservou-se um quinto dos pontos para verificar o ajuste. Exigiu-se que pelo menos metade dos pontos de verificação estivesse a até três pixels da posição observada e que o erro mediano fosse de até dois pixels. Os pontos aceitos precisavam abranger ao menos 15\% de cada recorte. A IoU visual compara os contornos depois desse alinhamento no plano da segunda imagem.
+
+Para examinar os alertas durante mudanças de movimento, consideraram-se os cinco segundos a partir da primeira aparição de cada trilha. O movimento foi classificado como de maior variação quando o vetor de velocidade horizontal se afastou mais de 0,5~m/s de sua média temporal nessa janela. O critério capta tanto curvas quanto acelerações e desacelerações. Para cada trilha, verificou-se se cada método a confirmou na imagem dentro de cinco segundos, mesmo que o recipiente tivesse saído de vista antes disso. Essa análise requer cinco segundos de vídeo e telemetria com lacunas de no máximo um segundo entre registros.
+
+Para estimar a capacidade da Jetson de acompanhar o vídeo, reproduziram-se os instantes de envio de cada voo. Os recortes de um mesmo quadro chegam juntos à fila e são processados um por vez, em ordem de chegada. A espera de um lote vai da disponibilidade do quadro até o início do seu primeiro recorte. Seu tempo total inclui a espera e o processamento até o último recorte ficar pronto. Adotou-se a latência média medida em bancada com TensorRT FP16 e repetiu-se o cálculo atribuindo a cada recorte o percentil 99 dessa latência (Seção~\ref{sec_metodo_jetson}).
+
+\subsection{Referência integral e simulação da altura de voo}
+\label{sec_metodo_altura_integral}
+
+Nos vídeos originais, captados a 40~m de altura nominal, a inferência integral avalia os 24 recortes de cada quadro desde o início até o fim do voo. Usaram-se o mesmo YOLO11n e os mesmos limiares das duas estratégias de seleção. Quando um recorte do mesmo quadro já havia sido processado pelo motor TensorRT FP16, reaproveitou-se a previsão. Os demais recortes foram processados na estação de trabalho. A referência integral permite quantificar os acertos e os falsos alarmes associados a examinar o vídeo inteiro.
+
+Para avaliar a perda de detalhe a 50, 60, 70 e 80~m equivalentes, mantiveram-se os quadros e as posições dos recortes que a memória por quadrantes e o intervalo pareado escolheram a 40~m. De cada imagem original, extraiu-se uma janela com o mesmo centro do recorte e lado de $640\,h/(40~\mathrm{m})$ pixels à altura simulada $h$. Essa janela foi redimensionada para $640\times640$ por interpolação de área, com preenchimento em cinza de intensidade 114 onde ultrapassava as bordas da imagem. A 80~m, por exemplo, uma janela de $1280\times1280$ pixels produz uma entrada em que o lado do recipiente ocupa metade dos pixels originais.
+
+Após a inferência, converteram-se as coordenadas das caixas previstas para as do quadro original. Mantiveram-se as caixas cujo centro caiu dentro do recorte de referência, ajustando seus contornos às bordas desse recorte antes de reunir as detecções do quadro. O ensaio conserva os instantes, a área avaliada e as trilhas de cada estratégia, e mede o efeito conjunto da escala e da vizinhança mostrada ao detector. Em voos reais mais altos, o campo de visão também abrangeria outras regiões do terreno.
+
+Para relacionar a detecção de cada classe ao tamanho dos objetos, atribuiu-se a cada trilha a mediana de $\sqrt{\text{largura}\times\text{altura}}$ de suas caixas anotadas a 40~m. O lado médio projetado em pixels de cada classe é a média entre suas trilhas, multiplicada por $40~\mathrm{m}/h$. Essa medida inclui todas as trilhas da classe, mesmo quando o detector deixou de localizá-las.
 
 \section{Caracterização do computador de bordo}
 \label{sec_metodo_jetson}
@@ -303,13 +328,13 @@ Para estimar a capacidade da Jetson de acompanhar o vídeo, reproduziram-se os i
 
 O ensaio foi realizado em um NVIDIA Jetson Orin Nano Super de 8~GB, no modo de potência de 25~W, com L4T 36.4.4, CUDA 12.6, TensorRT 10.3, ONNX Runtime 1.23 e PyTorch 2.8. Foi mantido o controle dinâmico de tensão e frequência (DVFS), sem fixar os relógios com \texttt{jetson\_clocks}. O valor de 25~W identifica o modo configurado; o consumo usado nos cálculos é a potência medida na entrada da placa.
 
-A projeção para os voos usa o YOLO11n em TensorRT FP16, exportado com Ultralytics 8.3.40 para processar um recorte de $640\times640$~pixels por inferência.
+Na bancada, o YOLO11n com pesos para as 80 classes do COCO recebeu uma entrada de $640\times640$~pixels por inferência. O modelo foi exportado com Ultralytics 8.3.40 e executado em nove configurações. O TensorRT nativo usou FP32, FP16 e INT8. O ONNX Runtime usou o provedor TensorRT em FP32 e FP16, o provedor CUDA em FP32 e a CPU com seis \textit{threads} em FP32. O PyTorch executou o modelo TorchScript em CUDA, em FP32 e FP16. Os termos FP32 e FP16 designam formatos de ponto flutuante de 32 e 16 bits, respectivamente. A configuração INT8 empregou quantização inteira de 8 bits, com operações em FP16 permitidas.
 
-O custo por recorte foi transferido dos ensaios da Jetson com pesos COCO para a missão, pois a arquitetura, a entrada e o lote coincidem. A qualidade da detecção nos vídeos foi medida na estação de trabalho com os pesos treinados na MBG-V2 (Seção~\ref{sec_metodo_alertas}).
+Para verificar o efeito da precisão numérica na detecção, calculou-se a mAP$_{50\text{--}95}$ em 500 imagens sorteadas do conjunto de validação COCO 2017. A calibração INT8 por entropia usou outras 512 imagens do mesmo conjunto, sem sobreposição com as 500 de avaliação. Nos voos, a avaliação dos recipientes usou os pesos treinados na MBG-V2 e a estação de trabalho (Seção~\ref{sec_metodo_alertas}). Para a projeção embarcada, transferiu-se da bancada o custo por recorte do TensorRT FP16, com a mesma arquitetura, dimensão de entrada e tamanho de lote.
 
 \subsection{Latência, potência e energia por inferência}
 
-A bancada percorreu ciclicamente 95 imagens de $640\times480$~pixels de duas câmeras de um carrinho, já decodificadas em memória. Após 5~s de aquecimento, mediram-se cerca de 30~s de execução. Cronometrou-se o processamento desde o preenchimento da imagem para $640\times640$~pixels até a saída da NMS por classe, com confiança mínima de 0,25 e limiar de IoU de 0,7. A aquisição e a decodificação do vídeo 4K, a seleção dos recortes e a associação geográfica exigem tempo adicional a bordo.
+Dois ensaios mediram a vazão e a energia nas nove configurações. No primeiro, a entrada era um tensor já preparado na memória da CPU e a saída era a previsão bruta, novamente na CPU. Nas configurações com GPU, essa medição inclui as transferências de entrada e de saída e a sincronização. No segundo ensaio, a bancada percorreu ciclicamente 95 imagens de $640\times480$~pixels de duas câmeras de um carrinho, já decodificadas em memória. Mediu-se o tempo desde o preenchimento e a normalização da imagem até a saída da NMS por classe, com confiança mínima de 0,25 e IoU de 0,7. Cada combinação de motor e modo teve uma rodada principal de cerca de 30~s após 5~s de aquecimento. A projeção para o voo usa o segundo ensaio. A aquisição e a decodificação do vídeo 4K, a seleção de recortes e a associação geográfica exigem tempo adicional a bordo.
 
 Mediu-se a latência por chamada e calculou-se a vazão dividindo o número de inferências pela duração da janela. O sensor INA3221 registrou a potência de entrada da placa (\texttt{VDD\_IN}) a cada 20~ms. A média de duas janelas de 30~s, antes e depois da sequência, deu a potência ociosa $P_{c0}$. Os serviços de monitoramento permaneceram ativos durante as medições. Para cada configuração, foram calculadas
 \begin{equation}

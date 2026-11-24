@@ -20,10 +20,10 @@ MOTORS = {
 }
 SELECTION = {
     "todos": "Processamento integral",
-    "imediata": "Seleção na entrada",
-    "cada30": "A cada 30 quadros",
-    "pareada": "Intervalo ajustado por voo",
-    "adiada": "Seleção na saída",
+    "imediata": "Entrada da célula",
+    "cada30": "Um quadro a cada 30",
+    "pareada": "Intervalo por voo",
+    "adiada": "Saída da célula",
 }
 
 

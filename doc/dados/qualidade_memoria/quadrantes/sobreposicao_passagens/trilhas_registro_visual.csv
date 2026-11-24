@@ -1,0 +1,13 @@
+origem,video,quadro_entrada,recorte_entrada,quadro_travessia,recorte_travessia,classe,trilha,iou_gsd_anotacoes,iou_visual_anotacoes,iou_gsd_deteccoes,iou_visual_deteccoes
+media_do_voo,video09_regionE,3987,18,4091,6,storm_drain,178,0.0000000000,0.4909065995,0.0000000000,0.9158130381
+media_do_voo,video15_regionH,281,4,388,16,watertank,4,0.0000000000,0.8186658551,,
+media_do_voo,video15_regionH,281,4,388,16,pool,0,0.0000000000,0.6211321963,,
+media_do_voo,video15_regionH,6607,0,6713,12,storm_drain,391,0.0000000000,0.8629144932,,
+media_do_voo,video15_regionH,6607,0,6713,12,storm_drain,392,0.0000000000,0.7862873357,0.0000000000,0.9187447655
+media_do_voo,video15_regionH,7356,3,7463,15,storm_drain,396,0.0000000000,0.7801112184,0.0000000000,0.9019442830
+media_do_voo,video16_regionH,1118,23,1223,11,watertank,10,0.0000000000,0.6576080866,0.0000000000,0.4788951660
+media_do_voo,video16_regionH,1368,22,1471,10,pool,133,0.0000000000,0.6233152804,0.0000000000,0.4560559517
+media_do_voo,video16_regionH,1870,20,1976,8,storm_drain,211,0.0000000000,0.9286594272,0.0000000000,0.6674940451
+media_do_voo,video16_regionH,3665,3,3769,15,storm_drain,221,0.0000000000,0.5733102258,,
+media_do_voo,video16_regionH,3665,3,3769,15,storm_drain,222,0.0000000000,0.5704264159,,
+media_do_voo,video24_regionL,6328,3,6432,15,watertank,47,0.0000000000,0.3781221399,,

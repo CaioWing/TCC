@@ -23,22 +23,25 @@ def desenhar():
         ax.set_xlim(.7,5.3)
         ax.tick_params(labelsize=7)
         ax.grid(axis="y",alpha=.21)
-        ax.set_xlabel("Meta de vistas por célula")
+        ax.set_xlabel("Faixas horizontais da imagem")
     quality.set_title("(a) Detecção nos trechos de teste",fontsize=8.5)
-    quality.set_ylabel("Recipientes reconhecidos (de 137)")
-    quality.set_ylim(0,121)
-    quality.set_yticks([0,25,50,75,100])
-    quality.axhline(full.vp,color="#55595c",ls="--",lw=.8)
-    quality.text(.8,full.vp+2.4,f"Processamento integral ({int(full.vp)})",fontsize=7,color="#424649")
-    for method,label,color,marker,shift in (("geo","Seleção na saída",BLUE,"o",-10),
-                                            ("tempo","Intervalo ajustado por voo",ORANGE,"s",4)):
+    quality.set_ylabel("Recipientes reconhecidos (%)")
+    quality.set_ylim(0,90)
+    quality.set_yticks([0,20,40,60,80])
+    integral = 100 * full.recall
+    quality.axhline(integral, color="#55595c", ls="--", lw=.8)
+    referencia = f"Processamento integral ({integral:.1f}%)".replace(".", ",")
+    quality.text(.8, integral + 2.2, referencia, fontsize=7, color="#424649")
+    for method,label,color,marker,shift in (("geo","Saída de cada faixa",BLUE,"o",-10),
+                                            ("tempo","Intervalo por voo",ORANGE,"s",4)):
         g = q[q.metodo==method].sort_values("k")
-        quality.plot(g.k,g.vp,marker=marker,color=color,label=label,lw=1.45,ms=4)
-        for x,y in zip(g.k,g.vp):
-            quality.annotate(str(y),(x,y),xytext=(0,shift),textcoords="offset points",
+        recall = 100 * g.recall
+        quality.plot(g.k,recall,marker=marker,color=color,label=label,lw=1.45,ms=4)
+        for x,y in zip(g.k,recall):
+            quality.annotate(f"{y:.1f}".replace(".", ","),(x,y),xytext=(0,shift),textcoords="offset points",
                              ha="center",color=color,fontsize=6.8)
     quality.legend(loc="lower right",frameon=False,fontsize=6.7)
-    capacity.set_title("(b) Demanda da seleção na saída",fontsize=8.5)
+    capacity.set_title("(b) Demanda da saída de cada faixa",fontsize=8.5)
     capacity.set_ylabel("Recortes por segundo")
     capacity.set_ylim(0,52)
     capacity.set_yticks([0,10,20,30,40,50])
