@@ -170,6 +170,23 @@ A Figura~\ref{fig_sobreposicao_pares} mostra três exemplos próximos aos percen
 
 Fixar a origem da malha na primeira posição válida do GPS de cada voo produziu resultado semelhante. Nos 4.051 pares dessa configuração, a IoU média dos recortes foi 0,736. Nos 624 casos em que o detector reconheceu o recipiente nas duas imagens, a IoU média das caixas foi 0,190.
 
+\subsection{Mapa final dos recipientes}
+\label{sec_mapa_final_quadrantes}
+
+A Figura~\ref{fig_mapa_final_quadrantes} compara o mapa produzido pela memória por quadrantes ao fim de cada voo com a posição de referência dos recipientes anotados. A malha de 8,64~m orienta a escolha dos recortes. Já a posição de cada foco vem das caixas detectadas e pode ficar entre os pontos da malha. Para obter a referência, projetaram-se no terreno os centros das caixas anotadas de cada trilha e tomou-se a mediana. Como as duas projeções usam o mesmo GSD e a mesma telemetria, a distância entre elas mede a concordância com as anotações projetadas. A base utilizada não fornece uma posição de cada recipiente medida em campo.
+
+Nos seis voos, dos 2.370 focos previstos, 1.079 corresponderam a recipientes anotados e 1.291 ficaram sem par. Entre as 1.924 referências, 845 ficaram sem foco correspondente. Nos 1.079 pares aceitos, a distância mediana foi de 0,33~m e o percentil 90 foi de 0,81~m. Essas distâncias descrevem apenas os acertos dentro do raio de avaliação de 1,0~m.
+
+\begin{figure}[H]
+  \centering
+  \caption{Mapa final da memória por quadrantes e posições de referência dos recipientes nos seis voos}
+  \label{fig_mapa_final_quadrantes}
+  \includegraphics[width=\textwidth]{figuras/fig_mapa_final_quadrantes.pdf}
+  \fonte{Elaborado pelo autor a partir das detecções e das trilhas anotadas da MBG-V2 \cite{smt2024mbgv2}. Os pontos cinza mostram a malha que orientou a seleção dos recortes. Os painéis (g) a (i) ampliam o quadrado de 21,6~m de lado marcado no voo~09 e mostram, na mesma escala, a referência, o resultado da memória e a sobreposição. Em (i), os círculos pontilhados indicam o raio de avaliação de 1,0~m.}
+\end{figure}
+
+No detalhe do voo~09 há seis recipientes anotados e cinco focos previstos. Quatro formaram pares, dois recipientes ficaram sem marcação correspondente e um foco ficou sem par. Esse foco estava a 1,06~m da referência mais próxima da mesma classe, já associada a outro foco a 0,52~m.
+
 \section{Até que ponto a curva de potência reproduz a telemetria?}
 \label{sec_curva_potencia_voos}
 
@@ -251,6 +268,18 @@ Na região A, a energia por área supera a previsão em 32\% no voo~01 e em 12\%
 \subsection{Tempo de visibilidade}
 
 O tempo $t_v=L/V$ da Equação~\eqref{eq_visibilidade} prevê por quanto tempo um alvo permanece visível ao atravessar toda a faixa. Comparadas à previsão de cada voo, as durações medianas das trilhas variaram de 10\% abaixo a 5\% acima, com correlação de 0,97 (Figura~\ref{fig_verificacao_telemetria}b). As trilhas do próprio voo também serviram para ajustar o $GSD$ usado no cálculo de $L$. A comparação verifica a consistência desse ajuste com as durações observadas. Na mediana, as trilhas duraram 3\% menos que o previsto. Uma curva ou o fim do vídeo pode interromper a observação antes de o recipiente atravessar toda a faixa.
+
+A Figura~\ref{fig_visibilidade_por_classe} mostra a distribuição das durações nas 12 classes anotadas. Cada trilha recebeu a previsão $L/V$ do seu voo. Como essa previsão é comum a todas as classes de um voo, sua distribuição por classe depende de quais voos contêm os recipientes. As caixas d'água, presentes nos 26 voos, ficaram visíveis por uma mediana de 3,38~s na região A e de 7,07~s nas regiões B a M.
+
+\begin{figure}[H]
+  \centering
+  \caption{Tempo de visibilidade previsto e duração das trilhas anotadas por classe e campanha}
+  \label{fig_visibilidade_por_classe}
+  \includegraphics[width=\textwidth]{figuras/fig_visibilidade_por_classe.pdf}
+  \fonte{Elaborado pelo autor a partir das 8.441 trilhas da MBG-V2 \cite{smt2024mbgv2}. A duração anotada vai do primeiro ao último quadro com o recipiente na imagem, incluindo ambos, à taxa de quadros do vídeo. Os símbolos indicam a mediana e os segmentos vão do percentil 10 ao 90. Cada trilha conta uma vez. A coluna $n$ informa quantas trilhas há em cada grupo.}
+\end{figure}
+
+Nas regiões B a M, a previsão mediana foi semelhante para baldes e piscinas (7,34 e 7,55~s). Nas anotações, as medianas foram de 6,32 e 8,07~s, respectivamente. A diferença também aparece nas trilhas mais breves. O percentil 10 foi de 3,50~s para baldes e de 6,51~s para piscinas. Para a seleção dos recortes, essas aparições curtas importam porque um recipiente pode entrar e sair da imagem entre dois envios ao detector.
 
 \section{Desempenho e consumo do computador de bordo}
 \label{sec_res_jetson}
@@ -345,10 +374,22 @@ A estimativa supõe que toda a potência fornecida pela bateria à placa chegue 
 
 A 4,1~m/s e com rotação fixa, a potência de propulsão estimada sobe de 181,3~W sem o kit para 200,5~W com 174~g (Figura~\ref{fig_potencia_com_kit}). As medições da bateria foram feitas com a aeronave sem o kit. Verificar o acréscimo de potência previsto para os 174~g exige repetir o percurso com a carga instalada.
 
+Ao longo dos seis voos, transportar o kit acrescentaria em média 19,27~W à propulsão, e manter a Jetson ligada em repouso acrescentaria outros 4,76~W. A Figura~\ref{fig_potencia_estrategias_motores} mostra quanto a inferência acrescentaria a essa base comum em cada estratégia. Para obter a média, somou-se a energia adicional nos seis percursos e dividiu-se o resultado pela duração total. O tempo de processamento foi estimado com os horários de envio dos recortes e a vazão de cada configuração medida em bancada.
+
+\begin{figure}[H]
+  \centering
+  \caption{Acréscimo médio de potência em relação ao drone sem o kit, por estratégia e configuração da Jetson}
+  \label{fig_potencia_estrategias_motores}
+  \includegraphics[width=\textwidth]{figuras/fig_potencia_estrategias_motores.pdf}
+  \fonte{Elaborado pelo autor para uma Jetson com o kit de 174~g. Quadrantes e intervalo compartilham as barras porque as estimativas coincidem a uma casa decimal nas nove configurações. Na integral, a placa trabalha continuamente e a barra inclui apenas o processamento realizado durante o voo. ORT designa o ONNX Runtime. O PyTorch foi executado com TorchScript.}
+\end{figure}
+
+Em TensorRT FP16, os quadrantes e o intervalo concluiriam a mesma cota de 8.796 recortes. Transportar o kit e executar qualquer uma das duas estratégias consumiria 10,61~Wh adicionais nos 26,2~min de voo, o que corresponde a um acréscimo médio de 24,3~W. Na integral, a potência adicional chegaria a 26,1~W, mas a placa concluiria apenas 6,2\% dos 1.131.600 recortes até o fim dos vídeos. Mesmo a configuração mais rápida, TensorRT INT8, alcançaria 7,0\% da demanda integral.
+
 \subsection{Consequência para a energia por área imageada}
 \label{sec_exemplo_coprojeto}
 
-Nos seis voos de teste, a bateria forneceu 80,08~Wh em 26,2~min. A energia $E_i$ vem das medições de tensão e corrente (Equação~\eqref{eq_energia}). A área $A_i$ conta uma única vez cada célula imageada de 0,5~m de lado, com o $GSD$ ajustado por voo. As revisitas consomem energia sem ampliar essa área.
+Nos seis voos de teste, a bateria forneceu 80,08~Wh. A energia $E_i$ vem das medições de tensão e corrente (Equação~\eqref{eq_energia}). A área $A_i$ conta uma única vez cada célula imageada de 0,5~m de lado, com o $GSD$ ajustado por voo. As revisitas consomem energia sem ampliar essa área.
 
 À energia medida na bateria, somaram-se a energia para transportar o kit e a energia para alimentar a placa. Para o transporte, integrou-se por trapézios a potência adicional prevista à velocidade horizontal de cada instante. Para a placa, usou-se a taxa média de recortes $r_i$. Com $E_i$ em Wh, $A_i$ em km$^2$ e $t_i$ em segundos, o custo em Wh/km$^2$ é
 \begin{equation}
@@ -358,11 +399,11 @@ Nos seis voos de teste, a bateria forneceu 80,08~Wh em 26,2~min. A energia $E_i$
   \right].
   \label{eq_placa_por_area}
 \end{equation}
-A parcela de alimentação se anula com a placa desligada. Em repouso, $r_i=0$ e permanece $P_{c0}$. Para a placa ativa, adotou-se em cada voo a taxa de recortes das duas estratégias sobre o intervalo comum ao vídeo e à telemetria.
+A parcela de alimentação se anula com a placa desligada. Em repouso, $r_i=0$ e permanece $P_{c0}$. Para a placa ativa, usaram-se o TensorRT FP16 e a cota de recortes comum aos quadrantes e ao intervalo em cada voo.
 
 \begin{table}[!htbp]
   \centering
-  \caption{Energia por área imageada com o kit de 174~g nos seis voos de teste}
+  \caption{Mediana da energia por área imageada nos seis voos, sem o kit e com o kit de 174~g}
   \label{tab_balanco_telemetria}
   \begin{tabular}{@{}lr@{}}
     \hline
@@ -371,25 +412,23 @@ A parcela de alimentação se anula com a placa desligada. Em repouso, $r_i=0$ e
     Aeronave sem o kit & 239,0 \\
     Kit transportado, placa desligada & 263,9 \\
     Placa ligada em repouso & 270,0 \\
-    Placa ativa, ambas as estratégias & 270,3 \\
+    Placa ativa, quadrantes ou intervalo & 270,3 \\
     \hline
   \end{tabular}
   \fonte{Elaborado pelo autor. A primeira linha usa a energia medida e a área reconstruída pela telemetria. Nas demais, somaram-se os custos estimados em cada voo antes de calcular a mediana dos seis.}
 \end{table}
 
-Com o kit de 174~g e o detector ativo, a mediana projetada foi de 270,3~Wh/km$^2$, cerca de 13,1\% acima dos 239,0~Wh/km$^2$ medidos sem o kit (Tabela~\ref{tab_balanco_telemetria}). O acréscimo variou entre os voos, de 29,5~Wh/km$^2$ no voo~15 a 35,7~Wh/km$^2$ no voo~10 (Figura~\ref{fig_energia_por_area}a).
+A mediana da energia por área passaria de 239,0 para 270,3~Wh/km$^2$ com o kit de 174~g ativo, um aumento de 13,1\% (Tabela~\ref{tab_balanco_telemetria}). A Figura~\ref{fig_energia_por_area} mostra por que esse custo varia entre os percursos. Nos voos 10 e 15, o kit acrescentaria cerca de 24,3~W em ambos. O voo~10 cobriu 1,13~ha por minuto, a um custo adicional de 35,7~Wh/km$^2$. O voo~15 cobriu mais terreno no mesmo tempo, 1,37~ha por minuto, o que reduziu o acréscimo para 29,5~Wh/km$^2$.
 
 \begin{figure}[!htbp]
   \centering
-  \caption{Energia por área imageada nos seis voos e variação com a massa e o estado da placa}
+  \caption{Energia total por área imageada em cada voo, sem o kit e com a Jetson em TensorRT FP16}
   \label{fig_energia_por_area}
-  \includegraphics[width=\textwidth]{figuras/fig_energia_por_area.pdf}
-  \fonte{Elaborado pelo autor com a telemetria da MBG-V2 e o ensaio da Tabela~\ref{tab_jetson_configuracoes}. Em (a), cada linha liga a medição sem o kit à projeção da Equação~\eqref{eq_placa_por_area} para o mesmo voo. Em (b), a extremidade de cada segmento dá o acréscimo mediano em relação à aeronave sem o kit, sucessivamente com a placa desligada, em repouso e ativa.}
+  \includegraphics[width=.80\textwidth]{figuras/fig_energia_por_area.pdf}
+  \fonte{Elaborado pelo autor com a telemetria da MBG-V2 e a Equação~\eqref{eq_placa_por_area}. Em cada linha, o círculo usa a energia medida na bateria e o quadrado inclui a energia estimada para transportar e alimentar o kit com a cota dos quadrantes e do intervalo. Ambos usam a mesma área imageada no voo.}
 \end{figure}
 
-Com o detector ativo, a mediana projetada passou de 259,6~Wh/km$^2$ com 100~g para 281,6~Wh/km$^2$ com 250~g (Figura~\ref{fig_energia_por_area}b). Acionar o detector a partir do repouso acrescentaria 0,33~Wh/km$^2$ em ambas as estratégias, que enviam a mesma quantidade de recortes. O custo de projetar os pontos no quadro e atualizar os quadrantes observados ainda requer medição a bordo.
-
-Mantendo os mesmos envios e o kit de 174~g, pode-se estimar quanto a escolha do motor alteraria essa parcela. Com o TensorRT nativo, o acréscimo mediano devido à inferência seria de 0,58~Wh/km$^2$ em FP32, 0,33~Wh/km$^2$ em FP16 e 0,23~Wh/km$^2$ em INT8. Na cota de 5,59~recortes/s, passar de FP16 a INT8 economizaria cerca de 0,10~Wh/km$^2$, diante dos 24,8~Wh/km$^2$ atribuídos ao transporte do kit. A comparação usa a energia incremental medida em bancada (Seção~\ref{sec_res_jetson}) e mantém a trajetória de cada voo.
+Com o detector ativo em FP16, variar a massa do kit de 100 para 250~g elevaria a mediana de 259,6 para 281,6~Wh/km$^2$. Para o kit de 174~g, o transporte respondeu por 24,8~Wh/km$^2$ adicionais na mediana. A inferência em FP16 acrescentaria 0,33~Wh/km$^2$ acima do repouso, dos quais a troca para INT8 pouparia cerca de 0,10~Wh/km$^2$.
 
 \subsubsection*{Altura de voo nos seis percursos}
 

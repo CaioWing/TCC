@@ -16,16 +16,26 @@ DATA = ROOT / "data/mbg_v2"
 FIG = ROOT / "doc/figuras/fig_verificacao_telemetria.pdf"
 
 
-def visible_span(path, fps):
-    """Duração inclusiva entre a primeira e a última caixa visível de cada trilha."""
-    spans = []
+def visible_tracks(path, fps):
+    """Uma duração por trilha, incluindo os quadros inicial e final com caixa visível."""
     for _, track in ET.iterparse(path, events=["end"]):
         if track.tag == "track":
             frames = [int(b.get("frame")) for b in track.findall("box") if b.get("outside") != "1"]
             if frames:
-                spans.append(max(frames) - min(frames) + 1)
+                yield int(track.attrib["id"]), track.attrib["label"], (max(frames) - min(frames) + 1) / fps
             track.clear()
-    return np.median(spans) / fps
+
+
+def visible_span(path, fps):
+    return np.median([duration for _, _, duration in visible_tracks(path, fps)])
+
+
+def flight_geometry(folder, log):
+    tracks, meta = load_tracks(flight=folder)
+    _, _, scales, _, best = fit_gsd(tracks)
+    gsd = scales[best] / 100
+    speed = log.loc[log.remainPowerPercent > 0, "speed(mps)"].median()
+    return meta["width"] * gsd, meta["height"] * gsd, speed, meta["fps"]
 
 
 def tilt_in_both_directions(log, nominal_speed, end):
@@ -60,17 +70,14 @@ def observed_errors():
     rows = []
     for flight, record in balance.iterrows():
         folder = DATA / "raw" / f"flight-mbg-v2-{flight:02d}-region{record.regiao}"
-        tracks, meta = load_tracks(flight=folder)
-        _, _, scale, _, best = fit_gsd(tracks)
-        gsd = scale[best] / 100
         columns = ["speed(mps)", "remainPowerPercent", "currentVoltage", "currentCurrent",
                    "time(millisecond)", "velocityX(mps)", "velocityY(mps)", "velocityZ(mps)",
                    "altitude(m)", "pitch(deg)", "roll(deg)", "yaw(deg)"]
         log = pd.read_csv(next((folder / "log").glob("*.csv")), usecols=columns)
-        v = log.loc[log.remainPowerPercent > 0, "speed(mps)"].median()
-        energy = record.potencia_mediana_W * 1e6 / (3600 * v * meta["width"] * gsd)
-        duration = meta["height"] * gsd / v
-        observed = visible_span(next((folder / "ann").glob("*.xml")), meta["fps"])
+        width, length, v, fps = flight_geometry(folder, log)
+        energy = record.potencia_mediana_W * 1e6 / (3600 * v * width)
+        duration = length / v
+        observed = visible_span(next((folder / "ann").glob("*.xml")), fps)
         tilt, cruise_speed = tilt_in_both_directions(log, 7.9 if record.regiao == "A" else 4.1, record.trecho_s)
         rows.append((flight, record.regiao, 100 * (record.bateria_Wh_km2 / energy - 1),
                      100 * (observed / duration - 1), tilt, cruise_speed))

@@ -136,9 +136,8 @@ def associate_observations(centers, counts, xy, radius):
     return centers, counts, indices
 
 
-def focus_counts(clip, projections, conf, radius, dmax, *, return_matches=False):
-    result = []
-    matched = set()
+def focus_assignments(clip, projections, conf, radius, dmax):
+    """Centros finais e pares usados nas métricas do mapa, separados por classe."""
     for cls in range(len(CLASSES)):
         centers = np.empty((0,2))
         counts = np.zeros(0,dtype=int)
@@ -149,6 +148,13 @@ def focus_counts(clip, projections, conf, radius, dmax, *, return_matches=False)
             centers, counts, _ = associate_observations(centers, counts, xy, radius)
         ids = [k for k in clip["centers"] if k[0]==cls]
         assignment = pairs(centers,[clip["centers"][k] for k in ids],dmax)
+        yield cls, centers, counts, ids, assignment
+
+
+def focus_counts(clip, projections, conf, radius, dmax, *, return_matches=False):
+    result = []
+    matched = set()
+    for _, centers, _, ids, assignment in focus_assignments(clip, projections, conf, radius, dmax):
         matched.update(ids[j] for _,j in assignment)
         tp = len(assignment)
         result.append([tp,len(centers)-tp,len(ids)-tp])

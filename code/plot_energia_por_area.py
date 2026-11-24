@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 
 from balanco_telemetria import JETSON, ROOT
-from paleta_tcc import BLUE, GREEN, GRAY
+from paleta_tcc import GREEN
 
 
 def cenarios(config="trt_fp16"):
@@ -36,44 +36,22 @@ def cenarios(config="trt_fp16"):
 
 
 def figura(cen):
-    fig, (voos, massas) = plt.subplots(1, 2, figsize=(7.45, 2.50))
-    fig.subplots_adjust(left=.073, right=.985, top=.79, bottom=.19, wspace=.32)
+    fig, voos = plt.subplots(figsize=(5.65, 2.32))
+    fig.subplots_adjust(left=.11, right=.98, top=.83, bottom=.22)
     base = cen.loc[cen.carga_g == 174].sort_values("voo")
     pos = np.arange(len(base))
     voos.hlines(pos, base.bateria_Wh_km2, base.ativa, color=".69", linewidth=1.4)
     voos.scatter(base.bateria_Wh_km2, pos, s=28, facecolor="white", edgecolor=".20",
-                 linewidth=1.2, label="Sem kit, medida", zorder=3)
+                 linewidth=1.2, label="Sem kit (medição)", zorder=3)
     voos.scatter(base.ativa, pos, s=28, marker="s", color=GREEN,
-                 label="Kit ativo, projeção", zorder=3)
+                 label="Com kit de 174 g (estimativa)", zorder=3)
     voos.set_yticks(pos, [f"Voo {n:02d}" for n in base.voo])
-    voos.set(xlim=(218, 302), ylim=(5.55, -.55), xlabel="Energia por área (Wh/km²)",
+    voos.set(xlim=(218, 302), ylim=(5.55, -.55), xlabel="Energia total por área imageada (Wh/km²)",
              xticks=range(220, 301, 20))
-    voos.set_title("(a) Aeronave sem kit e com o kit de 174 g", pad=22, loc="left")
-    voos.legend(loc="lower left", bbox_to_anchor=(-.01, 1.005), ncol=2, borderaxespad=0,
+    voos.legend(loc="lower center", bbox_to_anchor=(.5, 1.015), ncol=2, borderaxespad=0,
                 columnspacing=1.05, handletextpad=.35)
-
-    # Cada barra acumula as medianas das diferenças pareadas em relação à bateria.
-    estados = ["desligada", "repouso", "ativa"]
-    incrementos = cen[estados].sub(cen.bateria_Wh_km2, axis=0)
-    cumulativo = incrementos.groupby(cen.carga_g).median()
-    pos = np.arange(len(cumulativo))
-    inicio = np.zeros(len(cumulativo))
-    for estado, nome, cor in zip(estados, ["Transporte", "Repouso", "Inferência"],
-                                 [BLUE, GRAY, GREEN]):
-        fim = cumulativo[estado].to_numpy()
-        massas.barh(pos, fim - inicio, left=inicio, height=.44, color=cor, label=nome)
-        inicio = fim
-    for y, total in zip(pos, inicio):
-        massas.text(total+.6, y, f"{total:.1f}".replace(".", ","), va="center")
-    massas.set_yticks(pos, [f"{m} g" for m in cumulativo.index])
-    massas.set(xlim=(0, 49), ylim=(2.5, -.5), xlabel="Energia adicional (Wh/km²)",
-               xticks=range(0, 41, 10))
-    massas.set_title("(b) Acréscimo mediano por massa do kit", pad=22, loc="left")
-    massas.legend(loc="lower left", bbox_to_anchor=(-.005, 1.005), ncol=3, borderaxespad=0,
-                  columnspacing=.8, handlelength=1.1, handletextpad=.35)
-    for ax in (voos, massas):
-        ax.tick_params(axis="y", length=0)
-        ax.grid(axis="x", color=".9", linewidth=.65)
+    voos.tick_params(axis="y", length=0)
+    voos.grid(axis="x", color=".9", linewidth=.65)
     return fig
 
 
