@@ -42,7 +42,7 @@ Caixas d'água e bueiros tiveram as maiores AP$_{50}$ entre as seis classes prin
   \fonte{Elaborado pelo autor com o avaliador da Ultralytics 8.4.183. Em 7.944 recortes, $P$ e $R$ usam o limiar que maximiza a curva suavizada de F1 médio entre classes. O F1 máximo usa o melhor limiar de cada classe. A AP integra por trapézios a curva de precisão interpolada em 101 níveis de recall. A validação conserva 10\% dos recortes vazios, o que reduz as oportunidades de falso positivo em relação à varredura do quadro completo.}
 \end{table}
 
-\subsection{Comparação com trabalhos na mesma base}
+\subsection{Detecção de pneus em comparação com Souza (2025)}
 
 Na quinta divisão da MBG-V2, que contém os mesmos quatro voos usados aqui para validação, o maior F1 para pneus tabulado por \citeonline[Tabelas 3.1 e A.7]{souza2025aedes} foi de 0,59. A autora avaliou o YOLOv8s em diferentes faixas de confiança e variou a fração de um pneu que precisava permanecer no recorte para conservar a anotação. O YOLO11n deste trabalho alcançou F1 máximo de 0,47 para pneus. Além do tratamento dos recortes, os treinos diferem em escopo. Souza usou 22 voos para treinar um detector de pneus, enquanto o YOLO11n aprendeu a distinguir doze classes em 14 voos.
 
@@ -93,7 +93,7 @@ A inferência integral examinou os 24 recortes de todos os quadros. Com cerca de
   \fonte{Elaborado pelo autor. Em (a) e (b), subtrai-se o resultado do intervalo do obtido pelos quadrantes. Em (c), as curvas mostram, a cada instante, a fração das 1.924 trilhas anotadas que já receberam confirmação visual. Em (d), contam-se apenas as 1.035 trilhas que tanto a memória quanto o intervalo confirmaram.}
 \end{figure}
 
-\subsection{Tempo até o primeiro alerta correto}
+\subsection{Tempo até a primeira detecção correta no vídeo}
 \label{sec_primeiro_alerta}
 
 Na imagem, o primeiro alerta corresponde ao primeiro quadro com detecção da classe anotada, confiança de pelo menos 0,5 e IoU de pelo menos 0,5. No primeiro segundo após a aparição anotada, a memória confirmou 416 recipientes e o intervalo, 228 (Figura~\ref{fig_resultados_quadrantes}c). A memória envia poucos recortes por vez em muitos instantes do voo, enquanto o intervalo concentra o mesmo total em quadros mais espaçados. Assim, quando um recipiente aparece logo após um envio por intervalo, a espera até a próxima oportunidade de detectá-lo é maior.
@@ -170,7 +170,7 @@ A Figura~\ref{fig_sobreposicao_pares} mostra três exemplos próximos aos percen
 
 Fixar a origem da malha na primeira posição válida do GPS de cada voo produziu resultado semelhante. Nos 4.051 pares dessa configuração, a IoU média dos recortes foi 0,736. Nos 624 casos em que o detector reconheceu o recipiente nas duas imagens, a IoU média das caixas foi 0,190.
 
-\subsection{Mapa final dos recipientes}
+\subsection{Mapa das detecções e das anotações projetadas no terreno}
 \label{sec_mapa_final_quadrantes}
 
 A Figura~\ref{fig_mapa_final_quadrantes} compara o mapa que a memória por quadrantes produziu ao fim de cada voo com as posições de referência dos recipientes anotados. A malha de 8,64~m orienta a escolha dos recortes, mas os focos podem ficar entre seus pontos, pois a posição de cada foco vem das caixas detectadas. A referência é a mediana dos centros das caixas anotadas de cada trilha após a projeção no terreno. Como a base não fornece posições medidas em campo e as duas projeções usam o mesmo GSD e a mesma telemetria, a distância entre um foco e sua referência indica a concordância com as anotações projetadas.
@@ -187,7 +187,7 @@ Dos 2.370 focos previstos e das 1.924 referências, formaram-se 1.079 pares no r
 
 No detalhe do voo~09, havia seis recipientes anotados e cinco focos previstos. Quatro focos encontraram par. O quinto estava a 1,06~m da referência mais próxima da mesma classe, já associada a outro foco a 0,52~m.
 
-\section{Até que ponto a curva de potência reproduz a telemetria?}
+\section{Potência e inclinação em cruzeiro: comparação com a telemetria}
 \label{sec_curva_potencia_voos}
 
 A curva da Figura~\ref{fig_curva_potencia} prevê menor potência a 8~m/s do que a 4~m/s pela redução da potência induzida. Os dois regimes de cruzeiro da MBG-V2 permitem verificar essa queda. A posição do mínimo e o aumento da potência em velocidades maiores dependem da extrapolação do modelo.
@@ -325,7 +325,7 @@ Entre as três precisões do TensorRT nativo, FP16 reduziu em 43\% a energia por
   \fonte{Elaborado pelo autor a partir do ensaio de bancada com um recorte por inferência. A potência foi medida na entrada da placa (\texttt{VDD\_IN}).}
 \end{table}
 
-\subsection{Capacidade da Jetson para as estratégias de seleção}
+\subsection{Demanda de recortes e espera simulada na Jetson}
 \label{sec_res_jetson_memoria}
 
 Nos vídeos a 29,97 quadros/s, os quadrantes e o intervalo solicitaram em média 5,59 recortes/s, o equivalente a 12,5\% da vazão de bancada. Para acompanhar a mesma câmera, a inferência integral exigiria 719,28 recortes/s, cerca de 16 vezes a vazão medida (Figura~\ref{fig_jetson_demanda}a).
@@ -344,7 +344,7 @@ Nos quadrantes, 14 envios encontraram o detector ocupado e a maior espera até o
 
 Como as duas estratégias concluiriam os mesmos 8.796 recortes, cada uma acrescentaria 0,112~Wh ao consumo da placa nos seis voos, admitindo que se mantenham os 45,72~mJ por recorte medidos acima do repouso. Distribuído pela duração dos voos, o acréscimo equivale a 0,26~W. Com a placa ligada durante todo o percurso, sua potência média estimada chega a 5,02~W, dos quais 4,76~W correspondem ao repouso (Equação~\eqref{eq_pc}). A projeção usa os pesos COCO e começa com a imagem em memória. Para avaliar a cadeia completa com os pesos treinados na MBG-V2, ainda é preciso medir a captura e a decodificação em 4K, a seleção dos recortes e a associação das detecções no mapa.
 
-\section{Energia por área com a Jetson a bordo}
+\section{Estimativa da energia por área com a Jetson a bordo}
 \label{sec_balanco_por_voo}
 
 Nos seis voos de teste, estimou-se quanto transportar e alimentar a Jetson acrescentaria à energia medida na bateria. A partir dessa referência, variaram-se a altura da câmera e a sobreposição entre passadas para examinar a área que cada unidade de energia permitiria imagear.
@@ -425,7 +425,7 @@ Com o kit de 174~g ativo, a mediana da energia por área passaria de 239,0 para 
 
 Com o detector ativo em FP16, variar a massa do kit de 100 para 250~g elevaria a mediana de 259,6 para 281,6~Wh/km$^2$. Para o kit de 174~g, o transporte respondeu por 24,8~Wh/km$^2$ adicionais na mediana. A inferência em FP16 acrescentaria 0,33~Wh/km$^2$ acima do repouso, dos quais a troca para INT8 pouparia cerca de 0,10~Wh/km$^2$.
 
-\subsubsection*{Altura de voo nos seis percursos}
+\subsubsection*{Efeito da altura simulada nos seis percursos}
 
 \begin{figure}[!htbp]
   \centering

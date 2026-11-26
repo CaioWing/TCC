@@ -341,8 +341,6 @@ O repouso, a energia por inferência e a vazão dependem do modo de potência da
 
 A demanda $r$ é o número de recortes enviados ao detector por segundo. Para uma câmera a $f_q$ quadros/s, selecionar um quadro de $n_t$ recortes a cada $k$ quadros exige $r=n_t f_q/k$. A mesma demanda média pode ser distribuída entre mais instantes, enviando menos recortes por vez. Na comparação deste trabalho, a amostragem temporal distribui em intervalos regulares o total de recortes que a memória por quadrantes enviou em cada voo (Seção~\ref{sec_sim_estrategias}).
 
-\subsubsection{Custo computacional por área inspecionada}
-
 O modelo estima a energia das inferências multiplicando o número de recortes por $E_{\mathrm{inf}}$. Se o detector e a energia por inferência se mantêm constantes, processar a mesma quantidade de recortes ao longo de um percurso leva ao mesmo consumo estimado nessa etapa. O gasto adicional com a seleção dos recortes e a associação das detecções depende da implementação a bordo.
 
 \section{Energia por área e requisitos de detecção e processamento}

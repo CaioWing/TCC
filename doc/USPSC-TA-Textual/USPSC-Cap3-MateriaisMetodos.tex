@@ -272,7 +272,7 @@ A memória pode enviar recortes em qualquer quadro em que surja um pedido. O ens
 
 Para construir o \emph{intervalo pareado}, primeiro conta-se quantos recortes a memória enviou ao longo de cada voo. Em seguida, distribui-se esse total em quadros regularmente espaçados do mesmo vídeo, a partir do quadro zero. Cada quadro selecionado fornece 24 recortes, exceto um quadro parcial quando o total de recortes não é múltiplo de 24. A escolha desse quadro e de suas posições segue uma ordem predeterminada. O pareamento iguala o custo em inferências ao fim do voo e permite comparar como cada estratégia distribui os recortes no espaço e no tempo.
 
-\subsection{Avaliação da área, dos focos e do tempo até o primeiro alerta}
+\subsection{Cobertura do terreno, recipientes localizados e tempo até a primeira detecção no vídeo}
 \label{sec_metodo_alertas}
 
 Após a seleção dos recortes, dividiu-se o terreno em células de 0,5~m de lado para medir a fração da área visível que cada método mostrou ao detector. Com o mesmo $GSD$ de 1,35~cm/pixel, contou-se, em cada voo, quantas células tiveram seu centro em algum recorte enviado e quantas tiveram seu centro em algum quadro do vídeo. Para obter a cobertura do terreno, somou-se cada contagem nos seis voos e dividiu-se a primeira soma pela segunda. Revisitas à mesma célula durante o voo não alteram a contagem.
@@ -343,7 +343,7 @@ Mediu-se a latência por chamada e calculou-se a vazão dividindo o número de i
 \end{equation}
 em que $r_b$ é a vazão em inferências por segundo e $\bar P$, a potência média da janela. $E_{\mathrm{total}}$ inclui o repouso e $E_{\mathrm{inf}}$ dá a energia incremental por inferência usada na Equação~\eqref{eq_pc}. O percentil 99 foi calculado sobre as chamadas da rodada de medição em TensorRT FP16.
 
-\subsection{Aplicação à demanda da missão}
+\subsection{Comparação entre a demanda dos voos e a vazão de bancada}
 
 A razão entre a demanda de recortes dos voos $r$ e a vazão de bancada $r_b$ é
 \begin{equation}
