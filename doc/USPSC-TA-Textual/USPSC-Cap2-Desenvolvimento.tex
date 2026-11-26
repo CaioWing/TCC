@@ -3,7 +3,7 @@
 \chapter[Fundamentação teórica]{Fundamentação teórica}
 \label{cap_fundamentacao}
 
-A energia por área inspecionada depende da potência necessária para voar, da faixa de terreno coberta pela câmera e do consumo do detector. A geometria da imagem liga essas parcelas à possibilidade de reconhecer um mesmo recipiente em mais de um quadro.
+A energia por área inspecionada depende da potência de voo e de processamento e da área nova que a câmera observa por segundo. Como um recipiente pode aparecer em vários quadros, a qualidade da inspeção também depende de quantos recipientes distintos o detector reconhece.
 
 \section{Potência de um rotor pela teoria da quantidade de movimento}
 \label{sec_momento}
@@ -17,7 +17,7 @@ A teoria da quantidade de movimento representa o rotor por um disco atuador idea
   v_h = \sqrt{\frac{T_r}{2\rho A}},
   \label{eq_vh}
 \end{equation}
-em que $\rho$ é a densidade do ar. A potência ideal necessária para gerar essa tração é o produto da tração pela velocidade induzida:
+em que $\rho$ é a densidade do ar, em kg/m$^3$, e $T_r$ é a tração de um rotor, em newtons. A potência ideal necessária para gerar essa tração é o produto da tração pela velocidade induzida:
 \begin{equation}
   P_{h,\mathrm{ideal}} = T_r v_h = \frac{T_r^{3/2}}{\sqrt{2\rho A}}.
   \label{eq_ph}
@@ -34,7 +34,7 @@ Um rotor real consome mais potência que a prevista pela Equação~\eqref{eq_ph}
 
 \subsection{Efeito da massa embarcada}
 
-Para sustentar a aeronave em pairado, cada um dos $N$ rotores idênticos suporta uma tração $mg/N$. Com carga igualmente distribuída e sem interação entre esteiras, a soma das potências da Equação~\eqref{eq_ph} é $(mg)^{3/2}/\sqrt{2\rho A_{\Sigma}}$, em que $A_{\Sigma}=NA$ é a área total dos discos. A potência ideal cresce com $m^{3/2}$. Para um pequeno acréscimo de massa $\Delta m\ll m$, a aproximação de primeira ordem dá
+Para sustentar a aeronave em pairado, cada um dos $N$ rotores idênticos suporta uma tração $mg/N$. Com carga igualmente distribuída e sem interação entre esteiras, a soma das potências da Equação~\eqref{eq_ph} é $(mg)^{3/2}/\sqrt{2\rho A_{\Sigma}}$, em que $A_{\Sigma}=NA$ é a área total dos discos. Mantidas a densidade do ar e a área dos discos, a potência ideal cresce com $m^{3/2}$. Para um pequeno acréscimo de massa $\Delta m\ll m$, a aproximação de primeira ordem dá
 \begin{equation}
   \frac{\Delta P_{h,\mathrm{ideal}}}{P_{h,\mathrm{ideal}}} \approx \frac{3}{2}\,\frac{\Delta m}{m}.
   \label{eq_dm}
@@ -44,9 +44,9 @@ Essa relação explica o custo de transportar o computador, mesmo desligado. Par
 \section{Voo à frente e curva de potência requerida}
 \label{sec_voo_frente}
 
-Em voo à frente, o rotor recebe ar com velocidade $V$ além da velocidade induzida $v_i$. Na hipótese de Glauert, a tração é o produto da vazão mássica através do disco pelo dobro da velocidade induzida \cite[p.~93--96]{leishman2006}. Para um disco inclinado de $\alpha_d$, obtém-se
+Em voo à frente, o rotor recebe ar com velocidade relativa $V$, à qual se soma vetorialmente a velocidade induzida $v_i$. Na hipótese de \citeonline[p.~563, Eq.~(11)]{glauert1926autogyro}, a tração é o produto da vazão mássica através do disco pelo dobro da velocidade induzida \cite[p.~93--96]{leishman2006}. Para um disco inclinado de $\alpha_d$, obtém-se
 \begin{equation}
-  v_i = \frac{v_h^{2}}{\sqrt{(V\cos\alpha_d)^{2} + (V\sin\alpha_d + v_i)^{2}}},
+  v_i = \frac{v_h^{2}}{\sqrt{(V\cos\alpha_d)^{2} + (V\sin\alpha_d + v_i)^{2}}}.
   \label{eq_glauert}
 \end{equation}
 Calcula-se $v_h^2=T_r/(2\rho A)$ para a tração do rotor no ponto de operação. O ângulo $\alpha_d$ é positivo quando o disco se inclina para a frente, de modo que $V\sin\alpha_d$ e $v_i$ atravessam o disco no mesmo sentido \cite[p.~93]{leishman2006}.
@@ -60,7 +60,7 @@ Em voo nivelado, a potência de subida $mgV_c$ se anula. Restam a potência indu
   \end{aligned}
   \label{eq_pv}
 \end{equation}
-O fator $\kappa$ corrige as perdas induzidas. Para estimativas preliminares, \citeonline[p.~219]{leishman2006} indica $\kappa$ de 1,15 a 1,25 e, para o aumento de potência de perfil, $K$ de 4,65 a 4,7 na aproximação para $\mu<0{,}5$. A razão de avanço é $\mu=V\cos\alpha_d/(\Omega R)$, com $\Omega R$ a velocidade de ponta da pá. A solidez $\sigma$ e o coeficiente médio de arrasto de perfil $C_{d0}$ caracterizam as pás. A área equivalente de placa plana $f_e$ reúne o arrasto da fuselagem, do cubo e do trem de pouso \cite[p.~225]{leishman2006}.
+O fator $\kappa$ corrige as perdas induzidas. Para estimativas preliminares, \citeonline[p.~219]{leishman2006} indica $\kappa$ de 1,15 a 1,25. Para o aumento de potência de perfil com $\mu<0{,}5$, o autor apresenta duas estimativas de $K$, 4,65 e 4,7. A razão de avanço é $\mu=V\cos\alpha_d/(\Omega R)$, com $\Omega R$ a velocidade de ponta da pá. A solidez $\sigma$ e o coeficiente médio de arrasto de perfil $C_{d0}$ caracterizam as pás. A área equivalente de placa plana $f_e$ reúne o arrasto da fuselagem, do cubo e do trem de pouso \cite[p.~225]{leishman2006}.
 
 A Figura~\ref{fig_curva_potencia} mostra por que aumentar a velocidade pode, a princípio, reduzir o consumo. Mais ar atravessa os discos e a potência induzida cai. Em velocidades maiores, o crescimento da potência parasita passa a dominar \cite[p.~227]{leishman2006}.
 
@@ -79,9 +79,9 @@ Em voo retilíneo, nivelado e a velocidade constante, a tração total $T=NT_r$ 
   T\cos\theta = mg, \qquad T\sin\theta = D = \tfrac{1}{2}\rho V^{2} f_e,
   \label{eq_equilibrio}
 \end{equation}
-em que $\theta$ é a inclinação da aeronave, positiva para a frente. Na convenção de \citeonline[p.~98]{etkin1996}, a arfagem de Euler é positiva com o nariz para cima e vale $-\theta$ nesse caso.
+em que $\theta$ é o ângulo entre a tração e a vertical. No modelo, os rotores têm eixos paralelos e fixos à aeronave. Com a tração perpendicular ao plano da aeronave e sem inclinação lateral, $\theta$ coincide com a inclinação da aeronave para a frente e, em voo nivelado, com $\alpha_d$. Na convenção de \citeonline[p.~98]{etkin1996}, a arfagem de Euler é positiva com o nariz para cima e vale $-\theta$ nesse caso.
 
-A razão entre as componentes horizontal e vertical elimina $T$ e permite estimar a área equivalente de placa plana a partir da massa, da velocidade e da inclinação,
+A razão entre as componentes horizontal e vertical elimina $T$ e permite estimar a área equivalente de placa plana a partir da massa, da inclinação e da velocidade de cruzeiro $V>0$,
 \begin{equation}
   \tan\theta = \frac{\rho V^{2} f_e}{2 m g}
   \qquad\Longrightarrow\qquad
@@ -111,20 +111,20 @@ Com potência em watts e tempo em segundos, $E$ é expressa em joules. A telemet
 
 \subsection{Autonomia e alcance}
 
-Para uma aeronave elétrica com energia útil de bateria $E_b$, tomada como fixa no modelo, a autonomia e o alcance em voo retilíneo e nivelado, em regime permanente e sem vento, são
+Para uma aeronave elétrica com energia útil de bateria $E_b$, tomada como fixa no modelo, a autonomia e o alcance em voo retilíneo e nivelado, em regime permanente e sem vento, seguem do balanço de energia \cite{zeng2019energia},
 \begin{equation}
   t_{\mathrm{aut}} = \frac{E_b}{P_{el}(V)}, \qquad
   R = V\,t_{\mathrm{aut}} = \frac{E_b\,V}{P_{el}(V)}.
   \label{eq_aut}
 \end{equation}
-Autonomia mede o tempo de voo; alcance mede a distância percorrida. A autonomia máxima ocorre na velocidade de potência elétrica mínima, $V_{Pmin}$, sob a hipótese de $E_b$ constante.
+A autonomia mede o tempo de voo, e o alcance, a distância percorrida. A autonomia máxima ocorre na velocidade de potência elétrica mínima, $V_{Pmin}$, sob a hipótese de $E_b$ constante.
 
 O alcance máximo ocorre na velocidade $V_{Rmax}$ que minimiza a energia por metro, $P_{el}/V$. Em um ótimo interior com $V>0$ e curva diferenciável, a reta que parte da origem é tangente a $P_{el}(V)$ \cite[p.~106]{saarlas2006}. Igualando as inclinações da reta e da curva, obtém-se a condição necessária
 \begin{equation}
   \frac{\mathrm{d}P_{el}}{\mathrm{d}V}\bigg|_{V_{Rmax}} = \frac{P_{el}(V_{Rmax})}{V_{Rmax}}.
   \label{eq_vrmax}
 \end{equation}
-A Figura~\ref{fig_curva_potencia} ilustra a tangência para a potência mecânica. O alcance da aeronave equipada depende da curva elétrica total, incluindo os aviônicos e o computador.
+A Figura~\ref{fig_curva_potencia} ilustra essa construção para a potência mecânica. Para estimar a autonomia e o alcance com o computador ligado, substitui-se $P_{el}$ pela potência elétrica total nas duas equações anteriores.
 
 \subsection{Energia por área inspecionada}
 
@@ -165,10 +165,10 @@ Os ângulos de visão $\beta_x$ e $\beta_y$ fixam, respectivamente, as razões $
   \fonte{Elaborado pelo autor. Os esquemas em (a) e (b), sem escala, mostram os ângulos de visão $\beta_x$ e $\beta_y$ nas direções da largura e do comprimento da região imageada. As curvas em (c) e (d) ilustram as Equações~\eqref{eq_gsd} e~\eqref{eq_pegada} para uma câmera fixa, com $GSD = 1{,}4$~cm/pixel a 40~m e imagem de $3840 \times 2160$ pixels; os pontos destacam as alturas de 40 e 80~m.}
 \end{figure}
 
-Em translação retilínea ao longo do comprimento $L$ da região imageada, sem rotação da câmera e com velocidade constante $V>0$ em relação ao solo, um ponto do terreno permanece visível a uma câmera com taxa de captura $f_q$ durante
+Considere um ponto dentro da faixa filmada durante uma passagem completa. Se a câmera mantém a orientação e avança ao longo de $L$ com velocidade constante $V>0$ em relação ao solo, o tempo de visibilidade $t_v$ e o número aproximado de quadros $n_v$ a uma taxa de captura $f_q$ são dados por
 \begin{equation}
   t_{v} = \frac{L}{V},
-  \qquad\text{e aparece em}\qquad
+  \qquad
   n_{v} \approx \frac{f_q\,L}{V} = \frac{f_q\,N_y\,p}{f_c}\,\frac{h}{V}\ \text{quadros}.
   \label{eq_visibilidade}
 \end{equation}
@@ -178,7 +178,7 @@ O número inteiro de quadros em que um ponto aparece depende dos instantes de ca
   \caption{Geometria do imageamento com visada vertical nas condições dos voos da base MBG-V2}
   \label{fig_geometria}
   \includegraphics[width=0.95\textwidth]{figuras/fig_geometria_imageamento.pdf}
-  \fonte{Elaborado pelo autor, com $h = 40$~m, $GSD = 1{,}4$~cm/pixel, imagem de $3840 \times 2160$ pixels e $V = 4$~m/s. A faixa destacada é a área nova que entra no campo de visão a cada segundo; a grade indica recortes de 640 pixels.}
+  \fonte{Elaborado pelo autor, com $h = 40$~m, $GSD = 1{,}4$~cm/pixel, imagem de $3840 \times 2160$ pixels e $V = 4$~m/s. Em um segundo, a aeronave avança 4~m. A faixa destacada tem esses 4~m de comprimento e a largura da imagem no solo ($53{,}76$~m), o que corresponde a cerca de 215~m$^2$ de terreno novo. A grade indica a escala de 640 pixels.}
 \end{figure}
 
 \subsection{Compromisso entre altitude, energia e detecção}
@@ -195,12 +195,12 @@ Para a mesma câmera, dobrar a altura dobra a largura da faixa. Um objeto de dim
   s_{px} = \frac{s}{GSD} = \frac{s\,f_c}{p\,h}
   \label{eq_spx}
 \end{equation}
-em que $s_{px}$ é a dimensão em pixels. Mantidas a velocidade e a potência, dobrar a altura reduz à metade tanto a energia por área quanto o lado do objeto em pixels. Se a detecção de um objeto de dimensão $s$ exigir ao menos $s_{px,\min}$ pixels de lado, a maior altura admissível será
+em que $s_{px}$ é a dimensão em pixels. Mantidas a velocidade e a potência, dobrar a altura reduz à metade tanto a energia por área quanto o lado do objeto em pixels. Para um objeto plano de dimensão $s$ paralela ao terreno, se a detecção exigir ao menos $s_{px,\min}$ pixels de lado, a maior altura admissível será
 \begin{equation}
   h_{\max} = \frac{s\,f_c}{p\,s_{px,\min}}.
   \label{eq_hmax}
 \end{equation}
-Essa altura minimiza a energia por área na velocidade considerada, desde que satisfaça as demais restrições. O limiar $s_{px,\min}$ depende do detector, da classe e das condições de aquisição. Para estimá-lo, é preciso medir a taxa de detecção em imagens representativas dessas condições.
+Com potência e velocidade constantes, essa altura minimiza a energia por área, desde que satisfaça as demais restrições. O limiar $s_{px,\min}$ depende do detector, da classe e das condições de aquisição. Para estimá-lo, é preciso medir a taxa de detecção em imagens representativas dessas condições.
 
 \subsection{Borrão de movimento}
 
@@ -209,7 +209,7 @@ Para translação da câmera sobre um objeto estacionário, com velocidade $V$ e
   b = \frac{V\,t_e}{GSD}\ \text{pixels}.
   \label{eq_borrao}
 \end{equation}
-Substituindo a Equação~\eqref{eq_gsd}, $b = V t_e f_c/(p\,h)$: para exposição fixa, o borrão cresce com a velocidade e diminui com a altura, porque o $GSD$ aumenta. Esse modelo não inclui movimento angular, vibração ou efeitos da leitura sequencial do sensor (\textit{rolling shutter}). Velocidades altas, que seriam favoráveis à energia por área, podem assim degradar a detecção de objetos pequenos.
+Substituindo a Equação~\eqref{eq_gsd}, $b = V t_e f_c/(p\,h)$: para exposição fixa, o borrão cresce com a velocidade e diminui com a altura, porque o $GSD$ aumenta. Esse modelo não inclui movimento angular, vibração ou efeitos da leitura sequencial do sensor (\textit{rolling shutter}). Assim, aumentar a velocidade pode degradar a detecção de objetos pequenos mesmo no trecho da curva em que a energia por área diminui.
 
 \subsection{Georreferenciamento das detecções}
 \label{sec_georref}
@@ -218,7 +218,7 @@ Para localizar um objeto no solo, combinam-se sua posição na imagem, a escala 
 
 \subsubsection{Do pixel ao deslocamento no solo}
 
-Na imagem, a coordenada $u$ cresce para a direita e $v$ para baixo, com ponto principal $(c_x,c_y)$ no encontro do eixo óptico com a imagem. No referencial da câmera, os eixos apontam para a frente (topo da imagem), para a direita e para baixo \cite[p.~101--102]{etkin1996}. Assim, os deslocamentos para a frente, $x_c$, e para a direita, $y_c$, em metros, são
+Na imagem, a coordenada $u$ cresce para a direita e $v$ para baixo, com ponto principal $(c_x,c_y)$ no encontro do eixo óptico com a imagem. Adota-se um referencial local com a convenção aeronáutica de eixos para a frente, para a direita e para baixo \cite[p.~101--102]{etkin1996}. Aqui, a frente corresponde ao topo da imagem e o eixo para baixo coincide com o eixo óptico. Assim, os deslocamentos para a frente, $x_c$, e para a direita, $y_c$, em metros, são
 \begin{equation*}
   x_c = -GSD\,(v-c_y),
   \qquad
@@ -257,7 +257,7 @@ A transformação depende da guinada da câmera no instante do quadro. Para usar
 
 \subsubsection{Da posição da aeronave à posição do objeto}
 
-Para expressar a posição da aeronave em metros, adota-se uma origem de latitude geodésica $\phi_0$, longitude $\lambda_0$ e altura elipsoidal de referência $H_e$. Para pequenas diferenças de latitude e longitude, $\Delta\phi=\phi-\phi_0$ e $\Delta\lambda=\lambda-\lambda_0$, em radianos, as coordenadas locais são \cite[p.~23--25]{kayton1997}
+Para expressar a posição da aeronave em metros, adota-se uma origem de latitude geodésica $\phi_0$, longitude $\lambda_0$ e altura elipsoidal de referência $H_e$. Para pequenas diferenças de latitude e longitude, $\Delta\phi=\phi-\phi_0$ e $\Delta\lambda=\lambda-\lambda_0$, em radianos, as coordenadas locais resultam da linearização das Equações~(2.2), (2.3) e (2.5) de \citeonline[p.~25]{kayton1997},
 \begin{equation}
   \begin{gathered}
     N_{\mathrm{aer}} \approx (R_M+H_e)\,\Delta\phi, \qquad
@@ -267,7 +267,7 @@ Para expressar a posição da aeronave em metros, adota-se uma origem de latitud
   \end{gathered}
   \label{eq_raios}
 \end{equation}
-em que $R_M$ e $R_N$ são os raios de curvatura meridiano e do primeiro vertical do elipsoide WGS-84, $a$ é seu semieixo maior e $\epsilon$ é sua excentricidade. A altura de referência $H_e$ é medida em relação ao elipsoide. O $GSD$ depende da altura da câmera sobre o terreno.
+em que $R_M$ e $R_N$ são os raios de curvatura meridiano e do primeiro vertical do elipsoide WGS-84, $a$ é seu semieixo maior e $\epsilon$ é sua excentricidade. Na projeção horizontal usada nos voos, adota-se $H_e=0$, desprezando a altura elipsoidal diante dos raios de curvatura da Terra. Para calcular o $GSD$, usa-se a altura da câmera sobre o terreno.
 
 Por fim, desprezando a separação entre a câmera e a antena de posicionamento, a posição estimada do objeto é
 \begin{equation*}
@@ -296,16 +296,16 @@ A sobreposição entre uma caixa prevista $B_p$ e uma caixa anotada $B_g$ é med
   IoU = \frac{|B_p \cap B_g|}{|B_p \cup B_g|}\,.
   \label{eq_iou}
 \end{equation}
-No teste por quadro, uma previsão só pode formar par com uma caixa anotada da mesma classe se a IoU atingir o limiar escolhido. Cada anotação pode entrar em um único par. Os pares válidos contam como verdadeiros positivos ($VP$), as previsões sem par como falsos positivos ($FP$) e as anotações sem par como falsos negativos ($FN$). A precisão indica que fração das caixas previstas está correta, enquanto o \textit{recall} indica que fração das caixas anotadas o detector encontrou. Calculam-se essas proporções por
+No teste por quadro, uma previsão só pode formar par com uma caixa anotada da mesma classe se a IoU atingir o limiar escolhido. As previsões são ordenadas por confiança decrescente. Cada uma recebe a anotação disponível de maior IoU que atenda ao limiar. Os pares válidos contam como verdadeiros positivos ($VP$), as previsões sem par como falsos positivos ($FP$) e as anotações sem par como falsos negativos ($FN$). A precisão indica que fração das caixas previstas está correta, enquanto o \textit{recall} indica que fração das caixas anotadas o detector encontrou. Calculam-se essas proporções por
 \begin{equation}
   \mathcal{P} = \frac{VP}{VP + FP}, \qquad \mathcal{R} = \frac{VP}{VP + FN}.
   \label{eq_pr}
 \end{equation}
-Para um dado limiar de confiança, o F1 expressa a média harmônica da precisão e do recall. Quando ambas as métricas estão definidas e sua soma é positiva, $F_1=2\mathcal{P}\mathcal{R}/(\mathcal{P}+\mathcal{R})$. Ao variar o limiar de confiança, obtém-se uma curva de precisão em função do recall, que a precisão média (AP) resume em um único valor. Para cada classe e limiar de IoU, pode-se calcular a AP pela precisão interpolada em 101 níveis de recall,
+Para um dado limiar de confiança, o F1 expressa a média harmônica da precisão e do recall. Quando ambas as métricas estão definidas e sua soma é positiva, $F_1=2\mathcal{P}\mathcal{R}/(\mathcal{P}+\mathcal{R})$. Ao variar o limiar de confiança, obtém-se uma curva de precisão em função do recall, que a precisão média (AP) resume em um único valor. Na avaliação por quadro deste trabalho, mantêm-se até 100 previsões por classe e quadro. Para cada classe e limiar de IoU, calcula-se a AP pela precisão interpolada nos 101 níveis de recall usados pelo avaliador COCO \cite{cocoeval2015},
 \begin{equation*}
   AP = \frac{1}{101}\sum_{j=0}^{100}\mathcal{P}_{\mathrm{interp}}(j/100).
 \end{equation*}
-Em cada nível, toma-se a maior precisão obtida com recall igual ou superior ao valor considerado, ou zero quando esse nível não é atingido. Esse princípio de interpolação também aparece no protocolo VOC2007 \cite[p.~313--314]{everingham2010voc}. A mAP$_{50}$ é a média das AP das classes para o limiar de IoU de 0,50, enquanto a mAP$_{50\text{--}95}$ inclui na média dez limiares de IoU, de 0,50 a 0,95.
+Em cada nível, toma-se a maior precisão obtida com recall igual ou superior ao valor considerado, ou zero quando esse nível não é atingido. O protocolo VOC2007 usa o mesmo princípio com 11 níveis de recall \cite[p.~313--314]{everingham2010voc}. A mAP$_{50}$ é a média das AP das classes para o limiar de IoU de 0,50, enquanto a mAP$_{50\text{--}95}$ inclui na média dez limiares de IoU, de 0,50 a 0,95.
 
 \subsection{Dos quadros aos focos únicos}
 
@@ -322,7 +322,7 @@ em que $VP_f$ e $FN_f$ contam os recipientes reconhecidos e os omitidos. Cada fo
 \subsection{Restrição de tempo real}
 \label{sec_tempo_real}
 
-A $f_q$ quadros/s, o tempo até a chegada do próximo quadro é $1/f_q$. Em processamento serial, concluir cada quadro nesse prazo exige que seu pior tempo de execução $C$ satisfaça $C\leq 1/f_q$ \cite{laplante2004}. O ensaio da Seção~\ref{sec_metodo_jetson} mede a vazão média $r_b$, o número de recortes que o detector consegue processar por segundo a partir das imagens já decodificadas. A capacidade $r_{\max}$ a bordo depende também da decodificação, da seleção dos recortes e da associação geográfica. Quando vários recortes chegam juntos, pode haver fila mesmo que a demanda média fique abaixo de $r_b$.
+A $f_q$ quadros/s, o tempo até a chegada do próximo quadro é $1/f_q$. Em processamento serial, concluir cada quadro nesse prazo exige que o tempo de execução no pior caso, $C$, satisfaça $C\leq 1/f_q$, condição de utilização de um único processador por uma tarefa periódica \cite[p.~95]{laplante2004}. O ensaio da Seção~\ref{sec_metodo_jetson} mede a vazão média $r_b$, o número de recortes que o detector consegue processar por segundo a partir das imagens já decodificadas. A capacidade $r_{\max}$ a bordo depende também da decodificação, da seleção dos recortes e da associação geográfica. Quando vários recortes chegam juntos, pode haver fila mesmo que a demanda média fique abaixo de $r_b$.
 
 \subsection{Energia da computação}
 
@@ -359,9 +359,9 @@ O balanço combina a energia de voo por área coberta \cite{difranco2016coverage
   }{\underbrace{V\, w(h)}_{\text{área coberta por segundo}}},
   \label{eq_coprojeto}
 \end{equation}
-em que $m_0$ é a massa da aeronave sem o computador e $m_H$, a massa do conjunto embarcado. Nos percursos completos, cada área revisitada conta uma única vez no denominador. O numerador inclui também a energia gasta nas revisitas (Seção~\ref{sec_exemplo_coprojeto}).
+em que $m_0$ é a massa da aeronave sem o computador e $m_H$, a massa do conjunto embarcado. O modelo supõe que a conversão entre a bateria e a entrada da placa ocorra sem perdas. Para avaliar um percurso completo, divide-se a energia total, inclusive a gasta nas revisitas, pela área da união das regiões imageadas (Seção~\ref{sec_exemplo_coprojeto}).
 
-A escolha da missão depende também dos recipientes reconhecidos e da capacidade de processar os recortes solicitados. Para um conjunto admissível $\mathcal{D}$ de alturas $h>0$, velocidades $V>0$, estratégias e configurações de hardware, o problema é
+A escolha da missão depende também dos recipientes reconhecidos e da capacidade de processar os recortes solicitados. Para um conjunto admissível $\mathcal{D}$ de alturas $h>0$, velocidades $V>0$, estratégias e configurações de hardware, a formulação proposta neste trabalho é
 \begin{equation}
   \min_{(h,V,\pi,H)\in\mathcal{D}}\ e(h, V, \pi, H)
   \quad \text{sujeito a} \quad
@@ -369,7 +369,7 @@ A escolha da missão depende também dos recipientes reconhecidos e da capacidad
   \quad r(\pi, h, V) \leq r_{\max}(H,\pi),
   \label{eq_otimizacao}
 \end{equation}
-em que $\mathcal{R}_{\min}$ é a fração mínima de focos que a inspeção deve detectar (Equação~\eqref{eq_recall_focos}). O recall de cada estratégia $\pi$ é medido sobre as trilhas anotadas dos mesmos voos. A segunda restrição trata da vazão média. O cumprimento de prazos individuais depende também das latências e das filas (Seção~\ref{sec_tempo_real}).
+em que $\mathcal{R}_{\min}$ é a fração mínima de focos que a inspeção deve detectar (Equação~\eqref{eq_recall_focos}). Neste estudo, o recall de cada estratégia foi medido na estação de trabalho. O efeito da configuração $H$ sobre o recall nos vídeos da MBG-V2 ainda requer ensaio a bordo. A segunda restrição trata da vazão média. O cumprimento de prazos individuais depende também das latências e das filas (Seção~\ref{sec_tempo_real}).
 
 A Tabela~\ref{tab_relacoes_analise} indica onde cada relação é usada na análise. A MBG-V2 permite comparar as estratégias na mesma trajetória. A escolha de uma altura e de uma velocidade ótimas exigiria variar ambas na mesma campanha e estabelecer a fração de omissões que a inspeção de campo tolera.
 

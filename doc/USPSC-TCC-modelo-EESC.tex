@@ -38,6 +38,7 @@
 %%
 %----------------------------------------------------------------
 
+\PassOptionsToPackage{hyphens}{url}
 \documentclass[
 % -- opções da classe memoir --
 12pt,		% tamanho da fonte
@@ -246,25 +247,29 @@ brazil				% o último idioma é o principal do documento
 % ---
 % Capa
 % ---
+\hypersetup{pageanchor=false}
 \imprimircapa
+\hypersetup{pageanchor=true}
 % ---
 % Folha de rosto
 % (o * indica impressão em anverso (frente) e verso )
 % ---
-\imprimirfolhaderosto*
+\imprimirfolhaderosto*{}
 %\imprimirfolhaderosto
 % ---
 % ---
-% Inserir a ficha catalográfica em pdf
+% Inserir a ficha catalográfica emitida pela EESC no verso da folha de rosto.
 % ---
-% A biblioteca da sua Unidade lhe fornecerá um PDF com a ficha
-% catalográfica definitiva. 
-% Quando estiver com o documento, salve-o como PDF no diretório
-% do seu projeto como fichacatalografica.pdf e inclua o arquivo
-% utilizando o comando abaixo:
-
-% O PDF distribuído com o modelo contém apenas instruções. Ativar com a ficha definitiva.
-%\includepdf{USPSC-TA-PreTextual/USPSC-fichacatalografica.pdf}
+\IfFileExists{figuras/ficha-catalografica.png}{%
+  \thispagestyle{empty}%
+  \null\vfill
+  \noindent\makebox[\linewidth][c]{\includegraphics[width=15cm,height=20cm,keepaspectratio]{figuras/ficha-catalografica.png}}\par
+  \clearpage
+}{%
+  \IfFileExists{USPSC-TA-PreTextual/ficha-catalografica-oficial.pdf}{%
+    \includepdf[pages=-]{USPSC-TA-PreTextual/ficha-catalografica-oficial.pdf}%
+  }{}%
+}
 
 % Se você optar por elaborar a ficha catalográfica, deverá 
 % incluir uma % antes da linha % antes
@@ -315,6 +320,7 @@ brazil				% o último idioma é o principal do documento
 % Agradecimentos
 % ---
 \include{USPSC-TA-PreTextual/USPSC-Agradecimentos}
+\include{USPSC-TA-PreTextual/USPSC-DeclaracaoIA}
 % ---
 
 % ---
@@ -376,7 +382,11 @@ brazil				% o último idioma é o principal do documento
 % inserir o sumario
 % ---
 \pdfbookmark[0]{\contentsname}{toc}
+\begingroup
+\setlength{\cftbeforechapterskip}{0.45em}
+\SingleSpacing
 \tableofcontents*
+\endgroup
 \cleardoublepage
 % ---
 % ----------------------------------------------------------

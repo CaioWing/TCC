@@ -11,7 +11,7 @@ A partir da telemetria dos 26 voos da MBG-V2, estima-se a energia fornecida pela
 \subsection{Origem e aquisição}
 \label{sec_base_origem}
 
-O Laboratório de Sinais, Multimídia e Telecomunicações da COPPE/UFRJ publicou a base \textit{Mosquito Breeding Grounds V2} (MBG-V2) \cite{smt2024mbgv2}. São dois voos sobre cada uma das 13 regiões urbanas identificadas de A a M no Rio de Janeiro (Figura~\ref{fig_regioes}). A região A pertence a uma campanha anterior à das regiões B a M, com outra velocidade de cruzeiro e outra taxa de quadros (Tabela~\ref{tab_campanhas}).
+O Laboratório de Sinais, Multimídia e Telecomunicações da COPPE/UFRJ publicou a base \textit{Mosquito Breeding Grounds V2} (MBG-V2) \cite{smt2024mbgv2}. Os 26 vídeos foram adquiridos com um DJI Phantom 4 Pro, em pares sobre as 13 regiões urbanas identificadas de A a M no Rio de Janeiro \cite[p.~39--40]{passos2024tese} (Figura~\ref{fig_regioes}). A região A pertence a uma campanha anterior à das regiões B a M, com outra velocidade de cruzeiro e outra taxa de quadros (Tabela~\ref{tab_campanhas}).
 % Pendência: o sítio da base não indica uma licença de uso explícita. Confirmar com os autores que o uso acadêmico está liberado e registrar aqui.
 
 \begin{figure}[htb]
@@ -19,13 +19,13 @@ O Laboratório de Sinais, Multimídia e Telecomunicações da COPPE/UFRJ publico
   \caption{Localização das 13 regiões da base MBG-V2 no município do Rio de Janeiro e faixas imageadas pelos dois voos da região M}
   \label{fig_regioes}
   \includegraphics[width=\textwidth]{figuras/fig_mbgv2_regioes.pdf}
-  \fonte{Elaborado pelo autor a partir dos polígonos e da telemetria da base MBG-V2 \cite{smt2024mbgv2} e da malha municipal do IBGE \cite{ibge2026malha}. (a) Cada ponto é o centro do polígono de uma região, em coordenadas locais norte-leste centradas no município. (b) As áreas coloridas são as faixas imageadas por cada voo, calculadas com o $GSD$ ajustado na Seção~\ref{sec_base_condicoes}; as linhas cheias são os trajetos da aeronave, e a linha tracejada é o polígono da região.}
+  \fonte{Elaborado pelo autor a partir dos polígonos e da telemetria da base MBG-V2 \cite{smt2024mbgv2} e da malha municipal do IBGE \cite{ibge2026malha}. (a) Cada ponto é o centro do polígono de uma região, em coordenadas locais norte-leste centradas no município. (b) As áreas coloridas representam as faixas imageadas por cada voo, calculadas com o $GSD$ ajustado na Seção~\ref{sec_base_condicoes}. As linhas cheias são os trajetos da aeronave, e a linha tracejada é o polígono da região.}
 \end{figure}
 
 \subsection{Condições de voo e escala das imagens}
 \label{sec_base_condicoes}
 
-A resolução, a taxa de quadros e a velocidade de voo foram obtidas dos vídeos e da telemetria (Tabela~\ref{tab_campanhas}). O \textit{gimbal} registrou arfagem de $-89{,}9^\circ$, com a câmera apontada para baixo. Os percentis 5 e 95 da altitude em relação à decolagem foram de 39,8 e 40,1~m, respectivamente. A altura sobre cada objeto depende também da elevação local do terreno. Como a base não fornece os parâmetros da câmera necessários à Equação~\eqref{eq_gsd}, estimou-se a escala das imagens a partir das trilhas anotadas.
+A resolução, a taxa de quadros e a velocidade de voo foram obtidas dos vídeos e da telemetria (Tabela~\ref{tab_campanhas}). O \textit{gimbal} registrou arfagem de $-89{,}9^\circ$, com a câmera apontada para baixo. Os percentis 5 e 95 da altitude em relação à decolagem foram de 39,8 e 40,1~m, respectivamente. A altura sobre cada objeto depende também da elevação local do terreno. Para obter uma escala efetiva por voo, estimou-se o $GSD$ a partir do deslocamento aparente dos objetos anotados e da trajetória medida.
 
 \begin{table}[htb]
   \centering
@@ -52,7 +52,7 @@ A resolução, a taxa de quadros e a velocidade de voo foram obtidas dos vídeos
     Quadros por ponto do solo, $n_v$ & 79--81 & 190--283 \\
     \hline
   \end{tabular}}
-  \fonte{Elaborado pelo autor a partir da MBG-V2 \cite{smt2024mbgv2}. Os intervalos dão os extremos entre voos. A data da campanha A consta apenas no voo 02. A largura $w$, o comprimento $L$ e o número de vistas $n_v$ seguem as Equações~\eqref{eq_pegada} e~\eqref{eq_visibilidade}.}
+  \fonte{Elaborado pelo autor a partir da MBG-V2 \cite{smt2024mbgv2}. Os intervalos indicam o menor e o maior valor entre os voos de cada campanha. A data da região A consta na telemetria do voo 02 e na tabela de aquisição da base \cite[p.~40]{passos2024tese}. A largura $w$, o comprimento $L$ e o número de vistas $n_v$ seguem as Equações~\eqref{eq_pegada} e~\eqref{eq_visibilidade}.}
 \end{table}
 
 À medida que a aeronave avança, um recipiente parado muda de posição na imagem. Com a escala correta, os centros de suas caixas projetam-se no mesmo ponto do solo. Quando o $GSD$ é pequeno demais, a projeção acompanha parte do movimento da aeronave, enquanto um valor excessivo a desloca no sentido oposto (Figura~\ref{fig_estimativa_gsd}). Esse efeito permite estimar a escala sem conhecer a posição real do recipiente.
@@ -65,7 +65,7 @@ A resolução, a taxa de quadros e a velocidade de voo foram obtidas dos vídeos
   \fonte{Elaborado pelo autor. Em (a), o objeto aparece em três posições na imagem. Em (b), projetam-se os centros das caixas pela Equação~\eqref{eq_georref} com a escala correta e com escalas 30\% menor e maior. O círculo tracejado marca a posição real neste exemplo ilustrativo.}
 \end{figure}
 
-Em cada voo, amostrou-se uma caixa a cada cinco quadros e usaram-se as trilhas com pelo menos cinco amostras. A posição da aeronave e a guinada do \textit{gimbal} foram interpoladas nos instantes dos quadros, com o primeiro registro da telemetria associado ao início do vídeo. Para cada $GSD$ candidato, projetou-se o centro da caixa da trilha $j$ no quadro $k$ pela Equação~\eqref{eq_georref}, obtendo $\mathbf{x}_{jk}$ em coordenadas norte e leste. O centro da trilha, $\tilde{\mathbf{x}}_j$, é a mediana de cada coordenada.
+Em cada voo, selecionaram-se os quadros de índice múltiplo de cinco e, neles, todas as caixas visíveis das trilhas com pelo menos cinco amostras. A posição da aeronave e a guinada do \textit{gimbal} foram interpoladas nos instantes dos quadros, com o primeiro registro da telemetria associado ao início do vídeo. Para cada $GSD$ candidato, projetou-se o centro da caixa da trilha $j$ no quadro $k$ pela Equação~\eqref{eq_georref}, obtendo $\mathbf{x}_{jk}$ em coordenadas norte e leste. O centro da trilha, $\tilde{\mathbf{x}}_j$, é a mediana de cada coordenada.
 
 As distâncias das projeções a esse centro indicam quanto variam as posições atribuídas ao mesmo recipiente. Calculou-se a mediana das distâncias em cada trilha e depois a mediana entre trilhas, dando o mesmo peso a objetos observados por tempos diferentes. A escala escolhida minimiza essa dispersão,
 \begin{equation}
@@ -105,7 +105,7 @@ Para conferir o alinhamento temporal, deslocou-se a telemetria em relação ao v
 \subsection{Estatísticas das anotações}
 \label{sec_base_anotacoes}
 
-A base contém 193.901 quadros (1,83~h de vídeo) e 1.649.228 caixas anotadas, distribuídas em 8.441 trilhas. As seis classes presentes em pelo menos 25 voos respondem por 96,7\% das trilhas e constituem a referência para comparar a detecção entre regiões. As estatísticas da Tabela~\ref{tab_classes} e da Figura~\ref{fig_anotacoes} incluem as doze classes.
+Os 26 vídeos analisados contêm 193.901 quadros (1,83~h). Nos arquivos XML, contaram-se 1.649.228 caixas em que o objeto está presente no quadro, distribuídas em 8.441 trilhas. As seis classes presentes em pelo menos 25 voos respondem por 96,7\% das trilhas e constituem a referência para comparar a detecção entre regiões. As estatísticas da Tabela~\ref{tab_classes} e da Figura~\ref{fig_anotacoes} incluem as doze classes.
 
 \begin{table}[htb]
   \centering
@@ -130,10 +130,10 @@ A base contém 193.901 quadros (1,83~h de vídeo) e 1.649.228 caixas anotadas, d
     caçamba (\texttt{dumpster}) & 6 & 0,1 & 4 & 4 & 388 & 626 (513--676) & 0 \\
     \hline
   \end{tabular}}
-  \fonte{Elaborado pelo autor a partir das anotações da base MBG-V2 \cite{smt2024mbgv2}. O lado de cada trilha é a mediana de $\sqrt{\text{largura} \times \text{altura}}$ de suas caixas; em centímetros, é convertido com o $GSD$ ajustado do voo. As colunas de lado mostram a mediana entre as trilhas e, entre parênteses, os percentis 25 e 75.}
+  \fonte{Elaborado pelo autor a partir das anotações da base MBG-V2 \cite{smt2024mbgv2}. O lado de cada trilha é a mediana de $\sqrt{\text{largura} \times \text{altura}}$ de suas caixas; em centímetros, é convertido com o $GSD$ ajustado do voo. As colunas de lado mostram a mediana entre as trilhas de cada classe. Na coluna em centímetros, os parênteses indicam os percentis 25 e 75. A última coluna usa como denominador o número de trilhas da própria classe.}
 \end{table}
 
-Em 10,7\% das trilhas, o lado do objeto na imagem ficou abaixo de 32~pixels, sobretudo entre garrafas e baldes. Com o $GSD$ mediano da base, esse tamanho corresponde a cerca de 45~cm no solo (Figura~\ref{fig_anotacoes}c).
+Em 10,7\% das trilhas, o lado do objeto na imagem ficou abaixo de 32~pixels, sobretudo entre garrafas e baldes. Com o $GSD$ mediano da base, o limiar de 32~pixels corresponde a cerca de 45~cm no solo (Figura~\ref{fig_anotacoes}c).
 
 \begin{figure}[htb]
   \centering
@@ -148,7 +148,7 @@ Para comparar a densidade entre voos (Figura~\ref{fig_anotacoes}a), dividiu-se a
 \subsection{Telemetria e energia dos voos}
 \label{sec_base_energia}
 
-Para obter a energia fornecida pela bateria, calculou-se a potência $P_{el}=UI$ em cada amostra, com corrente positiva na descarga. A Equação~\eqref{eq_energia} foi integrada pela regra dos trapézios entre os instantes válidos da Seção~\ref{sec_base_integridade}. O gasto por área imageada é
+Para obter a energia fornecida pela bateria, calculou-se a potência $P_{el}=UI$ em cada amostra, com corrente positiva na descarga. Integrou-se a potência no tempo pela regra dos trapézios, conforme a Equação~\eqref{eq_energia}, usando os registros válidos da Seção~\ref{sec_base_integridade}. O gasto por área imageada é
 \begin{equation}
   e_{\mathrm{voo}} = \frac{E}{A_{\mathrm{img}}},
   \label{eq_e_voo}
@@ -157,7 +157,7 @@ em que $A_{\mathrm{img}}$ é a união das projeções dos quadros em células de
 
 Para estimar o efeito da altura sobre a área imageada nos seis percursos de teste, variou-se $h$ de 20 a 80~m em passos de 10~m. Em terreno plano, o $GSD$ a cada altura é o valor ajustado para o voo multiplicado por $h/(40~\mathrm{m})$, tomando como referência a altura nominal de aquisição. Com essa escala, reprojetou-se cada quadro e calculou-se a área da união, multiplicando o número de células cobertas por $0,25~\mathrm{m}^2$. Mantiveram-se o trajeto horizontal, a guinada, a duração e a energia estimada para o kit de 174~g ativo. O balanço considera apenas o imageamento e exclui a subida até a altura simulada.
 
-Nos percursos completos, incluindo curvas e transientes, a potência mediana variou de 173 a 190~W entre os 24 voos de B a M, com valor central de 182~W. Nos dois voos de A, foi de 170 e 172~W. A comparação do modelo de cruzeiro usa apenas as janelas de voo estável da Seção~\ref{sec_curva_potencia_voos}.
+Nos percursos completos, incluindo curvas e transientes, a potência mediana variou de 173 a 190~W entre os 24 voos de B a M, com valor central de 182~W. Nos dois voos de A, foi de 170 e 172~W. A comparação com o modelo de cruzeiro usa apenas as janelas de voo estável da Seção~\ref{sec_curva_potencia_voos}.
 
 \subsection{Verificação de integridade e tratamento dos dados}
 \label{sec_base_integridade}
@@ -172,7 +172,7 @@ Nos 26 voos, a contagem de quadros do vídeo coincidiu com a das anotações, o 
 \subsection{Representatividade e limitações}
 \label{sec_base_limitacoes}
 
-As 13 regiões pertencem à mesma cidade, as anotações vieram de um único grupo e todos os voos ocorreram à altitude nominal de 40~m. A região A distingue-se tanto pela velocidade quanto pela aquisição de imagem. Como os registros não identificam a aeronave e a câmera, diferenças entre campanhas não isolam o efeito da velocidade. A comparação das seleções em um mesmo voo preserva essas condições.
+As 13 regiões pertencem à mesma cidade, as anotações vieram de um único grupo e todos os voos ocorreram à altitude nominal de 40~m. A região A distingue-se tanto pela velocidade quanto pela aquisição de imagem. Embora o modelo da aeronave seja comum às campanhas, as diferenças de resolução, taxa de quadros e região impedem atribuir à velocidade, isoladamente, uma diferença de detecção. A comparação das seleções em um mesmo voo preserva essas condições.
 
 \section{Divisão dos dados e treinamento do detector}
 \label{sec_detector}
@@ -184,10 +184,10 @@ Como os dois voos de uma região podem observar os mesmos objetos, ambos ficam n
   \item os dois voos da região A ficam reservados à comparação exploratória de velocidade, fora do treinamento e da comparação das estratégias de detecção. Essa campanha tem cerca do dobro da velocidade e um terço dos quadros por ponto do solo das demais (Tabela~\ref{tab_campanhas});
   \item validação e teste só recebem regiões em que a maior falha da telemetria dentro do vídeo é menor que 1,5~s, porque a memória geográfica depende da pose em cada quadro. Os voos 06, 07, 08, 14 e 22 têm falhas de 3,1 a 9,2~s, o que deixa as regiões C, D, G e K no treinamento;
   \item a região M fica fora do teste, por ter sido usada em testes preliminares deste trabalho;
-  \item o teste deve conter pelo menos 40 pneus, 40 baldes, 25 caixas d'água abertas, 80 piscinas e 80 vasos de planta, e a validação, pelo menos 20 pneus e 20 baldes; o treinamento deve reter pelo menos 45\% das trilhas de cada classe;
-  \item entre as combinações viáveis de três regiões de teste e duas de validação, escolhe-se a de menor soma das distâncias $L_1$ entre a proporção de classes de cada conjunto e a do total das regiões B a M, acrescida de $2\,|f_{\mathrm{teste}}-0{,}25| + 2\,|f_{\mathrm{val}}-0{,}15|$, em que $f$ é a fração das trilhas do conjunto.
+  \item o teste deve conter pelo menos 40 pneus, 40 baldes, 25 caixas d'água abertas, 80 piscinas e 80 vasos de planta, e a validação, pelo menos 20 pneus e 20 baldes; o treinamento deve reter pelo menos 45\% das trilhas de cada uma das seis classes frequentes e 45\% das trilhas das demais classes reunidas, considerando as regiões B a M;
+  \item entre as combinações viáveis de três regiões de teste e duas de validação, escolhe-se a de menor soma das distâncias $L_1$ entre as proporções desses sete grupos em cada conjunto e no total das regiões B a M, acrescida de $2\,|f_{\mathrm{teste}}-0{,}25| + 2\,|f_{\mathrm{val}}-0{,}15|$, em que $f$ é a fração das trilhas do conjunto.
 \end{enumerate}
-Como mostra a Tabela~\ref{tab_divisao}, a proporção de cada classe varia entre os conjuntos. Os pneus, por exemplo, concentram-se nas regiões F, H e J, e 49\% deles ficaram no treinamento.
+Como mostra a Tabela~\ref{tab_divisao}, a proporção de cada classe varia entre os conjuntos. Os pneus, por exemplo, concentram-se nas regiões F, H e J, e o treinamento reuniu 213 dos 435 pneus das regiões B a M (49\%).
 
 \begin{table}[htb]
   \centering
@@ -223,7 +223,7 @@ Cada quadro é lido na resolução original e dividido em recortes de $640\times
   \fonte{Elaborado pelo autor a partir do quadro 5700 do voo 15, região H da MBG-V2 \cite{smt2024mbgv2}. Em (a), seis colunas de 640~pixels preenchem a largura de 3840~pixels. Para que quatro fileiras de 640 cubram os 2160~pixels de altura, cada par de fileiras vizinhas compartilha 133 ou 134~pixels. Em (b), vê-se o recorte destacado em laranja na quinta coluna e segunda fileira.}
 \end{figure}
 
-Treinou-se o YOLO11n \cite{jocher2024yolo11} a partir dos pesos pré-treinados da biblioteca, com os quadros a cerca de 1~quadro/s fornecidos pela MBG-V2 (Tabela~\ref{tab_preparo_detector}). Cada passagem de treinamento pelo conjunto de recortes corresponde a uma época. A avaliação por classe relata precisão e recall no limiar que maximiza o F1 médio das classes, AP$_{50}$, AP$_{50\text{--}95}$ e o maior F1 de cada classe.
+Treinou-se o YOLO11n \cite{jocher2024yolo11} a partir dos pesos pré-treinados no COCO, com os quadros a cerca de 1~quadro/s fornecidos pela MBG-V2 (Tabela~\ref{tab_preparo_detector}). Cada passagem de treinamento pelo conjunto de recortes corresponde a uma época. A avaliação por classe relata precisão e recall no limiar que maximiza o F1 médio das classes, AP$_{50}$, AP$_{50\text{--}95}$ e o maior F1 de cada classe.
 
 \begin{table}[!htbp]
   \centering
@@ -277,11 +277,11 @@ Para construir o \emph{intervalo pareado}, primeiro conta-se quantos recortes a 
 
 Após a seleção dos recortes, dividiu-se o terreno em células de 0,5~m de lado para medir a fração da área visível que cada método mostrou ao detector. Com o mesmo $GSD$ de 1,35~cm/pixel, contou-se, em cada voo, quantas células tiveram seu centro em algum recorte enviado e quantas tiveram seu centro em algum quadro do vídeo. Para obter a cobertura do terreno, somou-se cada contagem nos seis voos e dividiu-se a primeira soma pela segunda. Revisitas à mesma célula durante o voo não alteram a contagem.
 
-Cada trilha das seis classes avaliadas conta uma vez por vídeo, inclusive quando só aparece em quadros omitidos. As estratégias compartilham o detector e os limiares da Tabela~\ref{tab_limiares_focos}. Esses limiares foram definidos na validação das regiões F e I, antes da comparação nos voos de teste. Após recolocar as caixas nas coordenadas do quadro, a supressão de caixas sobrepostas (NMS) conserva as previsões de maior confiança e descarta as da mesma classe que se sobrepõem a elas acima de 0,7 de IoU.
+Cada trilha das seis classes avaliadas conta uma vez por vídeo, inclusive quando só aparece em quadros omitidos. As estratégias compartilham o detector e os limiares da Tabela~\ref{tab_limiares_focos}. Para defini-los, usaram-se dois trechos de quatro segundos de cada voo de validação das regiões F e I, centrados a um e a dois terços do vídeo. Com previsões em TorchScript FP32, escolheu-se a combinação de confiança e raio de associação que maximizou o F1 médio de cinco estratégias de seleção avaliadas nessa etapa. Para cada estratégia, somaram-se os acertos, os falsos alarmes e as referências sem par nas seis classes e nos oito trechos antes de calcular o F1. Após recolocar as caixas nas coordenadas do quadro, a supressão de caixas sobrepostas (NMS) conserva as previsões de maior confiança e descarta as da mesma classe que se sobrepõem a elas acima de 0,7 de IoU.
 
-Um recorte pode gerar várias detecções. Para cada caixa com confiança de pelo menos 0,50, projeta-se seu centro no terreno e usa-se essa posição para atualizar a média de um foco da mesma classe a até 1,5~m. Se a detecção ficar sem par, ela inicia um novo foco. Assim, várias detecções de um mesmo quadro podem atualizar focos distintos, mas cada foco pode receber no máximo uma atualização por quadro.
+Um recorte pode gerar várias detecções. Em cada quadro, projetam-se no terreno os centros das caixas que atingem a confiança mínima. Dentro de cada classe, escolhe-se o maior número de pares entre detecções e focos existentes que respeitem o raio de associação, com a menor soma das distâncias. Cada foco recebe no máximo uma detecção por quadro e sua posição passa a ser a média das observações associadas. Cada detecção sem par inicia um foco.
 
-Na avaliação do mapa final, a posição de referência de cada recipiente é a mediana dos centros de suas caixas anotadas após a projeção no terreno. Um foco previsto e uma referência podem formar um par se forem da mesma classe e estiverem a até 1,0~m um do outro. Como cada um só pode formar um par, toda marcação que fica sem correspondência conta como \emph{falso alarme}, inclusive a marcação excedente quando duas disputam a mesma referência.
+Na avaliação do mapa final, a posição de referência de cada recipiente é a mediana dos centros de suas caixas anotadas após a projeção no terreno. Um foco previsto e uma referência podem formar um par se forem da mesma classe e estiverem a até 1,0~m um do outro. Aplica-se a mesma regra de pareamento usada na associação entre quadros. Toda marcação que fica sem correspondência conta como \emph{falso alarme}, inclusive a marcação excedente quando duas disputam a mesma referência.
 
 \begin{table}[!htbp]
   \centering
@@ -300,13 +300,13 @@ Na avaliação do mapa final, a posição de referência de cada recipiente é a
   \fonte{Elaborado pelo autor com os voos de validação das regiões F e I.}
 \end{table}
 
-O tempo até o primeiro alerta visual é contado desde a primeira aparição anotada do recipiente no vídeo até sua primeira detecção correta. Para contar como alerta, a detecção precisa ter a classe anotada, confiança de pelo menos 0,5 e IoU de pelo menos 0,5 com a caixa anotada no mesmo quadro. A mediana e o percentil 90 são calculados entre as trilhas com alerta, enquanto a proporção confirmada até cada prazo tem como base todas as trilhas anotadas.
+O tempo até o primeiro alerta visual é contado desde a primeira aparição anotada do recipiente no vídeo até sua primeira detecção correta. Para contar como alerta, a detecção precisa ter a classe anotada, confiança de pelo menos 0,5 e IoU de pelo menos 0,5 com a caixa anotada no mesmo quadro. A mediana e o percentil 90 usam apenas as trilhas com alerta. A proporção confirmada até cada prazo usa como denominador as 1.924 trilhas das seis classes avaliadas, inclusive as que nunca geraram alerta. Os tempos seguem o relógio do vídeo.
 
 Para relacionar o alerta ao movimento da aeronave, examinaram-se os cinco segundos após a primeira aparição de cada recipiente. Incluíram-se as janelas completas de vídeo com lacunas de telemetria de até um segundo, mesmo que o recipiente saísse de vista antes. Comparou-se a proporção de alertas nesse prazo entre dois grupos. No de maior variação, o vetor de velocidade horizontal se afastou mais de 0,5~m/s de sua média na janela.
 
 Para medir a sobreposição entre vistas, comparou-se o recorte de entrada de um ponto da malha com o recorte da primeira mudança de quadrante na mesma passagem. Contou-se cada par uma vez, considerando apenas entradas posteriores ao quadro inicial. A partir da projeção dos quatro cantos no terreno, calcularam-se a IoU dos recortes pela Equação~\eqref{eq_iou} e a fração da primeira vista coberta pela segunda. Nos casos em que o centro anotado e a detecção correta de um recipiente apareciam em ambos os recortes, a trilha permitia identificá-lo nas duas vistas. Para esses recipientes, mediram-se a IoU e a distância entre centros no terreno tanto para as caixas previstas quanto para as anotadas.
 
-Para conferir a sobreposição diretamente nas imagens, selecionaram-se 30 pares por voo a intervalos regulares, com início sorteado. O SIFT identificou pontos correspondentes \cite{lowe2004sift}, a partir dos quais o RANSAC estimou a homografia que alinha a superfície predominante nas duas vistas \cite{fischler1981ransac}. Reservou-se um quinto dos pontos para verificar o ajuste, com duas exigências para esse conjunto. O erro mediano devia ser de até dois pixels, e pelo menos metade dos pontos devia apresentar erro de até três pixels. Os pontos aceitos também precisavam abranger ao menos 15\% de cada recorte. Para os pares que atenderam aos critérios, calculou-se a IoU dos contornos alinhados na segunda imagem.
+Para conferir a sobreposição diretamente nas imagens, selecionaram-se 30 pares por voo a intervalos regulares, com início sorteado. O SIFT identificou pontos correspondentes \cite{lowe2004sift}, a partir dos quais o RANSAC estimou a homografia que alinha a superfície predominante nas duas vistas \cite{fischler1981ransac}. Exigiram-se 40 correspondências recíprocas para iniciar o ajuste e reservou-se um quinto delas para validação. O erro de cada correspondência foi o maior dos dois erros de reprojeção, um em cada sentido. Pelo menos metade das correspondências de cada conjunto precisava apresentar erro de até três pixels, com no mínimo 20 aceitas no ajuste e oito na validação. Na validação, exigiu-se também erro mediano de até dois pixels. A envoltória convexa dos pontos aceitos precisava cobrir pelo menos 15\% de cada recorte. Calculou-se a IoU no plano da segunda imagem quando o contorno transformado permaneceu convexo e preservou a orientação.
 
 \subsection{Referência integral e simulação da altura de voo}
 \label{sec_metodo_altura_integral}
@@ -324,11 +324,11 @@ Para relacionar a detecção de cada classe ao tamanho dos objetos, atribuiu-se 
 
 \subsection{Equipamento e configuração de execução}
 
-O ensaio foi realizado em um NVIDIA Jetson Orin Nano Super de 8~GB, no modo de potência de 25~W, com L4T 36.4.4, CUDA 12.6, TensorRT 10.3, ONNX Runtime 1.23 e PyTorch 2.8. Foi mantido o controle dinâmico de tensão e frequência (DVFS), sem fixar os relógios com \texttt{jetson\_clocks}. O valor de 25~W identifica o modo configurado; o consumo usado nos cálculos é a potência medida na entrada da placa.
+O ensaio foi realizado em um NVIDIA Jetson Orin Nano Super de 8~GB, no modo de potência de 25~W, com L4T 36.4.4, CUDA 12.6, TensorRT 10.3, ONNX Runtime 1.23 e PyTorch 2.8. Foi mantido o controle dinâmico de tensão e frequência (DVFS), sem fixar os relógios com \texttt{jetson\_clocks}. Os cálculos de consumo usam a potência medida na entrada da placa.
 
 Na bancada, o YOLO11n com pesos para as 80 classes do COCO recebeu uma entrada de $640\times640$~pixels por inferência. O modelo foi exportado com Ultralytics 8.3.40 e executado em nove configurações. O TensorRT nativo usou FP32, FP16 e INT8. O ONNX Runtime usou o provedor TensorRT em FP32 e FP16, o provedor CUDA em FP32 e a CPU com seis \textit{threads} em FP32. O PyTorch executou o modelo TorchScript em CUDA, em FP32 e FP16. Os termos FP32 e FP16 designam formatos de ponto flutuante de 32 e 16 bits, respectivamente. A configuração INT8 empregou quantização inteira de 8 bits, com operações em FP16 permitidas.
 
-Para verificar o efeito da precisão numérica na detecção, calculou-se a mAP$_{50\text{--}95}$ em 500 imagens sorteadas do conjunto de validação COCO 2017. A calibração INT8 por entropia usou outras 512 imagens do mesmo conjunto, sem sobreposição com as 500 de avaliação. Nos voos, a avaliação dos recipientes usou os pesos treinados na MBG-V2 e a estação de trabalho (Seção~\ref{sec_metodo_alertas}). Para a projeção embarcada, transferiu-se da bancada o custo por recorte do TensorRT FP16, com a mesma arquitetura, dimensão de entrada e tamanho de lote.
+Para verificar o efeito da precisão numérica na detecção, calculou-se a mAP$_{50\text{--}95}$ em 500 imagens sorteadas do conjunto de validação COCO 2017. A calibração INT8 por entropia usou outras 512 imagens do mesmo conjunto, sem sobreposição com as 500 de avaliação. Nos voos, a avaliação dos recipientes usou os pesos treinados na MBG-V2 e a estação de trabalho (Seção~\ref{sec_metodo_alertas}). Para estimar o consumo a bordo, adotou-se o custo por recorte medido com os pesos COCO em TensorRT FP16. A arquitetura YOLO11n, a dimensão de entrada e o lote unitário são comuns aos ensaios. O custo do pós-processamento pode variar com as classes e com a quantidade de caixas previstas nas imagens de voo.
 
 \subsection{Latência, potência e energia por inferência}
 
@@ -350,6 +350,6 @@ A razão entre a demanda de recortes dos voos $r$ e a vazão de bancada $r_b$ é
   \rho_b=\frac{r}{r_b}.
   \label{eq_demanda_bancada}
 \end{equation}
-Com $\rho_b<1$, a vazão medida comporta a demanda média. O prazo de cada recorte depende também das filas, da seleção e da associação. Para projetar a potência em voo, considerou-se apenas o tempo em que a placa processaria recortes antes do fim de cada vídeo. Quando todos os recortes solicitados são processados, a taxa executada $r_{\mathrm{exec}}$ da Equação~\eqref{eq_pc} coincide com a taxa solicitada $r$. Na inferência integral, a fila mantém a placa ocupada durante todo o voo e a taxa executada fica limitada à vazão de bancada $r_b$.
+Com $\rho_b<1$, a vazão medida comporta a demanda média. O tempo até a emissão de cada alerta depende também da fila, da seleção de recortes e da associação das detecções. Para projetar a potência em voo, considerou-se apenas o tempo em que a placa processaria recortes antes do fim de cada vídeo. Quando todos os recortes solicitados são processados, a taxa executada $r_{\mathrm{exec}}$ da Equação~\eqref{eq_pc} coincide com a taxa solicitada $r$. Na inferência integral, a fila mantém a placa ocupada durante todo o voo e a taxa executada fica limitada à vazão de bancada $r_b$.
 
 Para estimar a espera na Jetson, simularam-se os envios nos instantes observados em cada voo. Os recortes de um quadro entram juntos na fila e são processados em ordem de chegada, um por vez. Mediram-se o tempo até o início do primeiro recorte e o tempo até o fim do último, ambos a partir da chegada do quadro. Em simulações separadas, usaram-se a média e o percentil 99 da latência por recorte do TensorRT FP16.

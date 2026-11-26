@@ -1,0 +1,25 @@
+# Revisão do capítulo 3 — Materiais e métodos
+
+## Origem dos voos e das contagens
+
+Wesley Lobato Passos, tese de doutorado (COPPE/UFRJ, 2024), seção 3.6, pp. 37–43, em especial pp. 39–40 e Tabela 3.4, identifica os 26 vídeos de 13 regiões, o DJI Phantom 4 Pro e a aquisição em Tubiacanga em 1º de junho de 2019. A seção 3.3 documenta a retificação da câmera. O capítulo agora identifica a aeronave e justifica o GSD efetivo pelas medidas por voo. A tabela do TCC preserva as características observadas nos arquivos de A. [Tese do responsável pela aquisição](https://w1files.solucaoatrio.net.br/atrio/ufrj-pee_upl/THESIS/10004445/20241104_dsc_thesis_wlpassos_final_20241104154148344.pdf)
+
+A tese publica 1.702.737 caixas. A recontagem direta dos 26 documentos em data/mbg_v2/ann encontrou 193.901 quadros, 8.441 elementos track, 1.657.466 elementos box, dos quais 8.238 têm outside="1". Restam 1.649.228 caixas com o objeto presente, também a soma de nbox em objetos_por_trilha.csv. A exclusão de registros outside sozinha não explica a diferença para o total publicado. A versão local e o critério estão explícitos no texto. Entre 8.441 trilhas, 900 têm lado mediano abaixo de 32 pixels; as seis classes frequentes somam 8.161. As contagens por classe foram recalculadas com o arquivo por trilha.
+
+## Escala, bateria e divisão em conjuntos
+
+Os arquivos doc/dados/ajuste_gsd_voo03/metadados.json e doc/dados/trilha_real_gsd_voo03/metadados.json confirmam 292 trilhas, 13.228 caixas e passo de cinco quadros, GSD de 1,35 cm/pixel e dispersão de 0,548 m no voo. O código plot_ajuste_gsd.py seleciona caixas com índice de quadro divisível por cinco. O arquivo balanco_telemetria.csv soma 97.280 linhas brutas, 99 inválidas e 713 repetidas, removendo 0,835%. A equação de energia integra a potência pelo tempo. As grades de 1 m (densidade) e 0,5 m (balanço de energia e cobertura das estratégias) atendem a análises distintas.
+
+Em code/mbg_splits.py, region_table e search, o mínimo de 45% vale para sete grupos, que compreendem as seis classes principais e as demais agrupadas. A mesma agregação é usada para as distâncias L1. O denominador de 49% dos pneus é 435 nas regiões B–M, dos quais 213 estão no treinamento. Os agrupamentos do manifesto data/mbg_v2/yolo_640/recortes.csv reproduzem a tabela. Para o teste de velocidade, a linha sentinela com n_boxes = -1 identifica o PNG 3552 ilegível do voo 01. A exclusão dessa linha resulta em 655 quadros, 18.340 recortes e 5.438 caixas. O histórico de treinamento culmina na época 27, e a maior mAP50–95 ocorre na época 17. O programa train_mbg.py identifica os pesos iniciais COCO.
+
+## Seleção, alertas e registro visual
+
+Os protocolos em doc/dados/qualidade_memoria e quadrantes identificam o mesmo hash de pesos, GSD 0,0135 m/pixel, NMS 0,70, confiança 0,50, raio de associação 1,5 m e tolerância de avaliação 1,0 m. A função calibrate de code/avaliacao_mbg/avaliar.py usa previsões TorchScript FP32 e cinco estratégias históricas em oito trechos de quatro segundos de F/I. A escolha maximiza a média de cinco F1 calculados com as contagens agregadas das seis classes. A função pairs de metricas.py prioriza a cardinalidade dos pares válidos e minimiza a distância total. alertas_cobertura.py inclui no denominador as referências dos quadros omitidos. O resumo por método confirma 1.924 referências.
+
+A função temporal em seguimento.py usa o orçamento conhecido a posteriori para espaçar os quadros, com um único quadro parcial se necessário. No ensaio de altura, a comparação mantém as janelas de referência selecionadas. A sobreposição visual exige pelo menos 40 correspondências, 20 no ajuste e oito na reserva, entre outros critérios. O protocolo registro_visual_passagens.py descreve erro bidirecional, envoltórias convexas, orientação e amostragem sistemática com início aleatório por voo. Os limites são decisões próprias do ensaio. A fundamentação para o descritor e o pareamento está em Lowe (2004), seção 7.1. [Artigo do autor](https://www.cs.ubc.ca/~lowe/papers/ijcv04.pdf)
+
+## Bancada e limites
+
+A documentação da rodada em data/yolo11n-jetson24-20261116, seu perf_energy.csv e a implementação src/analyze.py distinguem o ensaio infer e o ensaio e2e. Recalcular com a linha trt_fp16/e2e fornece 44,8723 inferências/s, 22,2804 ms por chamada e 45,7234 mJ incrementais por inferência. As listas raw/eval_list.txt e raw/calib_list.txt contêm 500 e 512 itens distintos e têm interseção vazia. A bancada usa pesos COCO e imagens já decodificadas de duas câmeras de um carrinho. A avaliação de focos usa pesos ajustados na MBG-V2 na estação de trabalho. A transferência do custo para projeção embarcada supõe que a carga no pós-processamento seja representativa.
+
+Revisei o texto contra o material arquivado e os critérios em código. Não repeti as inferências nem as medições físicas, e a página original do SMT não respondeu à consulta web. A verificação de aquisição usa a tese e os arquivos locais distribuídos pela base. A causa da diferença entre o total de caixas publicado e o conteúdo dos XML permanece indeterminada.

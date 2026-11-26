@@ -21,15 +21,32 @@ def fisica(telemetria):
                                 hspace=.58)
     energia = fig.add_subplot(esquerda[0])
     duracao = fig.add_subplot(esquerda[1], sharex=energia)
-    inclinacao = fig.add_axes([.78, .35, .21, .49])
-    paineis_fisicos(telemetria, energia, duracao, inclinacao)
+    inclinacao = fig.add_axes([.77, .24, .215, .55])
+    paineis_fisicos(telemetria, energia, duracao)
     handles, legendas = energia.get_legend_handles_labels()
     energia.get_legend().remove()
     fig.legend(handles, legendas, loc="upper left", bbox_to_anchor=(.058, .995),
                ncol=2, frameon=False, fontsize=8.3, handletextpad=.2)
-    inclinacao.set_title("(c) Inclinação entre\nas campanhas", loc="left", fontsize=9)
-    inclinacao.set_xticks([0,1,2], ["Observada", "Com V", "Com V²"], fontsize=7.4)
-    inclinacao.set_ylabel("Razão entre campanhas")
+    validos = telemetria.dropna(subset=["tilt", "cruise_speed"])
+    campanhas = validos.groupby(validos.region.eq("A"))[["tilt", "cruise_speed"]].median()
+    # Equilíbrio em cruzeiro: tan(theta) = D/(mg), com fe = 0,02 m².
+    tangente_modelo = .5 * 1.225 * .02 * campanhas.cruise_speed**2 / (BASE_KG * 9.81)
+    observada = np.degrees(np.arctan(campanhas.tilt))
+    prevista = np.degrees(np.arctan(tangente_modelo))
+    pos = np.arange(len(campanhas))
+    inclinacao.vlines(pos, prevista, observada, color=".65", lw=1.4)
+    inclinacao.scatter(pos, observada, color=BLUE, s=21, label="Telemetria", zorder=3)
+    inclinacao.scatter(pos, prevista, facecolor="white", edgecolor=".22", marker="s",
+                       s=24, label="Modelo", zorder=3)
+    for x, med, mod in zip(pos, observada, prevista):
+        for valor in (med, mod):
+            inclinacao.annotate(decimal(valor, 1), (x, valor), xytext=(5, 0),
+                                textcoords="offset points", va="center", fontsize=8)
+    inclinacao.set_title("(c) Inclinação em cruzeiro", loc="left", fontsize=9, pad=15)
+    inclinacao.set(xticks=pos, xticklabels=["4,1", "7,9"], xlim=(-.4, 1.65), ylim=(0, 13.4),
+                   yticks=[0, 3, 6, 9, 12], xlabel="Velocidade (m/s)", ylabel="Inclinação (°)")
+    inclinacao.legend(frameon=False, fontsize=7.4, loc="upper left", handlelength=1)
+    inclinacao.grid(axis="y", color=".89", lw=.6)
     return fig
 
 

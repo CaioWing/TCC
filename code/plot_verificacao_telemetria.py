@@ -84,7 +84,7 @@ def observed_errors():
     return pd.DataFrame(rows, columns=["flight", "region", "energy", "duration", "tilt", "cruise_speed"])
 
 
-def paineis_fisicos(errors, energy, duration, tilt):
+def paineis_fisicos(errors, energy, duration):
     flights = errors.sort_values("flight")
     regions = flights.groupby("region", sort=False).flight.agg(["min", "max"])
     for ax, column, title in [(energy, "energy", "(a) Energia por área"),
@@ -124,6 +124,8 @@ def paineis_fisicos(errors, energy, duration, tilt):
         duration.annotate(label, (0, 0), xycoords="axes fraction", xytext=(-5, offset),
                           textcoords="offset points", ha="right", va="top", fontsize=8.3)
 
+
+def razao_inclinacao(errors, tilt):
     campaign = errors.groupby(errors.region.eq("A"))[["tilt", "cruise_speed"]].median()
     ratio = campaign.loc[True] / campaign.loc[False]
     ratios = [ratio.tilt, ratio.cruise_speed, ratio.cruise_speed**2]
@@ -153,7 +155,8 @@ def render(errors):
         tilt = fig.add_subplot(comparison_grid[0])
         coverage = fig.add_subplot(comparison_grid[1])
 
-        paineis_fisicos(errors, energy, duration, tilt)
+        paineis_fisicos(errors, energy, duration)
+        razao_inclinacao(errors, tilt)
 
         coverage.set_title("(d) Área que fica sem análise", loc="left")
         lo, mid, hi = np.min(missed, axis=0), np.median(missed, axis=0), np.max(missed, axis=0)

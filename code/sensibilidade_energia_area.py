@@ -10,7 +10,7 @@ import pandas as pd
 
 from balanco_telemetria import DATA, JETSON
 from memoria_sim import CELL, grade_projecao
-from paleta_tcc import BLUE
+from paleta_tcc import BLUE, GREEN, ORANGE
 from plot_ajuste_gsd import fit_gsd, load_tracks
 from plot_energia_por_area import cenarios
 from simular_potencia_missao import BASE_KG, KIT_KG, FIG, OUT, eficiencia_ajustada, mechanical
@@ -78,18 +78,31 @@ def faixas_paralelas(dados):
     return pd.DataFrame(linhas)
 
 
-def figura_altura(dados):
-    fig, ax = plt.subplots(figsize=(5.5, 2.5), layout="constrained")
+def figura_altura(dados, deteccoes):
+    fig, (ax, rx) = plt.subplots(1, 2, figsize=(7.25, 2.65), layout="constrained")
     energia = dados.groupby("altura_m").energia_Wh_km2
     mediana = energia.median()
-    ax.fill_between(mediana.index, energia.min(), energia.max(), color=BLUE, alpha=.18, lw=0,
-                    label="Mínimo a máximo dos seis voos")
-    ax.plot(mediana.index, mediana, "o-", ms=4, lw=1.6, color=BLUE, label="Mediana")
-    ax.set(xlabel="Altura sobre o terreno (m)", ylabel="Energia por área (Wh/km²)",
-           xticks=mediana.index)
-    ax.axvline(ALTURA_BASE, color=".45", ls=":", lw=.9, zorder=0)
-    ax.grid(axis="y", color=".9", lw=.6)
-    ax.legend(frameon=False, fontsize=8)
+    ax.plot(mediana.index, mediana, "o-", ms=4, lw=1.6, color=GREEN, label="Mediana")
+    ax.fill_between(mediana.index, energia.min(), energia.max(), color=GREEN, alpha=.22, lw=0,
+                    label="Mínimo a máximo")
+    ax.set_title("(a) Energia nos seis percursos", loc="left")
+    ax.set(xlabel="Altura projetada (m)", ylabel="Energia por área (Wh/km²)",
+           xticks=mediana.index, ylim=(120, 590))
+    rx.set_title("(b) Detecção nos vídeos de 40 m", loc="left")
+    for metodo, nome, cor, estilo, tamanho in [
+        ("intervalo_pareado", "Intervalo", ORANGE, "s--", 5.8),
+        ("quadrantes", "Quadrantes", BLUE, "o-", 3.7),
+    ]:
+        serie = deteccoes.loc[deteccoes.metodo == metodo].sort_values("altura_m")
+        rx.plot(serie.altura_m, 100 * serie.vp / serie.referencias, estilo, color=cor,
+                ms=tamanho, mfc="white" if metodo == "intervalo_pareado" else cor, lw=1.4,
+                label=nome)
+    rx.set(xlabel="Altura equivalente (m)", ylabel="Recipientes localizados (%)",
+           xticks=sorted(deteccoes.altura_m.unique()), yticks=range(44, 59, 2), ylim=(43.4, 58))
+    for eixo in (ax, rx):
+        eixo.axvline(ALTURA_BASE, color=".5", ls=":", lw=.9, zorder=0)
+        eixo.grid(axis="y", color=".87", lw=.65)
+        eixo.legend(frameon=False, fontsize=8, loc="upper right")
     return fig
 
 
@@ -120,7 +133,8 @@ if __name__ == "__main__":
     with plt.rc_context({"font.family": "DejaVu Sans", "font.size": 8.5, "axes.titlesize": 9.5,
                          "axes.titlepad": 8, "axes.spines.top": False, "axes.spines.right": False,
                          "axes.axisbelow": True, "pdf.fonttype": 42}):
-        for nome, fig in [("fig_altura_percursos", figura_altura(rotas)),
+        deteccoes = pd.read_csv(OUT / "qualidade_memoria/quadrantes/altitude/resumo_seis_voos.csv")
+        for nome, fig in [("fig_altura_percursos", figura_altura(rotas, deteccoes)),
                           ("fig_altura_sobreposicao", figura_faixas(faixas))]:
             fig.savefig(FIG / f"{nome}.pdf", bbox_inches="tight", pad_inches=.055)
             plt.close(fig)

@@ -7,10 +7,12 @@ import numpy as np
 import pandas as pd
 from matplotlib.lines import Line2D
 from matplotlib.patches import Polygon, Rectangle
+from matplotlib.colors import LinearSegmentedColormap
 
 from dados import OUT, ROOT, folder
 from figura_altitude_quadrantes import CLASSES
 from memoria_sim import T
+from paleta_tcc import BLUE, GRAY, ORANGE
 from passagens import carregar_voo
 from registro_visual_passagens import JANELA, cantos, carregar_recortes, transformar
 from sobreposicao_passagens import poligono
@@ -33,12 +35,28 @@ def salvar(figura, nome):
 
 
 def distribuicoes(pares, trilhas):
-    fig, eixo = plt.subplots(figsize=(5.7, 2.55), layout="constrained")
+    fig, (vistas, eixo) = plt.subplots(1, 2, figsize=(7.55, 2.9), layout="constrained",
+                                       gridspec_kw={"width_ratios": [1, 1.55]})
+    entrada = trilhas.confianca_entrada.notna()
+    travessia = trilhas.confianca_travessia.notna()
+    contagens = [(entrada & travessia).sum(), (entrada & ~travessia).sum(),
+                 (~entrada & travessia).sum(), (~entrada & ~travessia).sum()]
+    barras = vistas.barh(["Nas duas", "Só na entrada", "Só na travessia", "Em nenhuma"],
+                         contagens, color=[BLUE, GRAY, ORANGE, GRAY], height=.55)
+    vistas.bar_label(barras, padding=3, fontsize=8.5)
+    vistas.invert_yaxis()
+    vistas.set(xlabel="Oportunidades (contagem)", xlim=(0, max(contagens) * 1.24))
+    vistas.set_title("(a) Reconhecimento nas vistas", loc="left", fontsize=9.2)
+    vistas.spines[["top", "right", "left"]].set_visible(False)
+    vistas.tick_params(axis="y", length=0, labelsize=8.2)
+    vistas.grid(axis="x", lw=.55, color=".88")
+    vistas.set_axisbelow(True)
+    duplas = trilhas.loc[entrada & travessia]
     limites = [0, .25, .5, .75, 1]
     faixas = ["0 (sem interseção)", "0 < IoU ≤ 0,25", "0,25 < IoU ≤ 0,50",
               "0,50 < IoU ≤ 0,75", "0,75 < IoU ≤ 1"]
-    colunas = {"Recortes inteiros": pares.iou_recortes, "Caixas previstas": trilhas.iou_deteccoes,
-               "Caixas anotadas": trilhas.iou_anotacoes}
+    colunas = {"Recortes": pares.iou_recortes, "Caixas previstas": duplas.iou_deteccoes,
+               "Caixas anotadas": duplas.iou_anotacoes}
     percentuais, rotulos = [], []
     for nome, serie in colunas.items():
         if serie.empty or not serie.between(0, 1).all():
@@ -48,7 +66,8 @@ def distribuicoes(pares, trilhas):
         amostra = f"{len(serie):,}".replace(",", ".")
         rotulos.append(f"{nome}\n(n = {amostra})")
     valores = np.array(percentuais).T
-    eixo.imshow(valores, vmin=0, vmax=100, cmap="Blues", aspect="auto", interpolation="nearest")
+    gradiente = LinearSegmentedColormap.from_list("sobreposicao", ["#f1f5f7", "#93b1c0", "#294e67"])
+    eixo.imshow(valores, vmin=0, vmax=100, cmap=gradiente, aspect="auto", interpolation="nearest")
     for (linha, coluna), valor in np.ndenumerate(valores):
         eixo.text(coluna, linha, f"{decimal(valor, 1)}%", ha="center", va="center",
                   fontsize=8.6, color="white" if valor > 60 else "#172c38")
@@ -61,7 +80,8 @@ def distribuicoes(pares, trilhas):
     for pos in np.arange(.5, len(colunas) - 1):
         eixo.axvline(pos, color="white", lw=1.5)
     eixo.spines[:].set_visible(False)
-    eixo.set_ylabel("IoU no terreno", fontsize=8.5)
+    eixo.set_title("(b) Sobreposição no terreno (IoU)", loc="left", fontsize=9.2, pad=7)
+    fig.align_titles()
     salvar(fig, "fig_sobreposicao_distribuicao")
 
 
@@ -188,7 +208,6 @@ def exemplos(trilhas, registros, alinhadas):
 if __name__ == "__main__":
     pares = pd.read_csv(PASTA / "pares_recortes.csv").query("origem == 'media_do_voo'")
     trilhas = pd.read_csv(PASTA / "pares_trilhas.csv").query("origem == 'media_do_voo'")
-    trilhas = trilhas.dropna(subset=["iou_deteccoes", "iou_anotacoes"])
     with plt.rc_context({"font.size": 9, "axes.titlesize": 10, "axes.spines.top": False,
                          "axes.spines.right": False, "pdf.fonttype": 42}):
         distribuicoes(pares, trilhas)
@@ -196,4 +215,4 @@ if __name__ == "__main__":
         alinhadas = pd.read_csv(PASTA / "trilhas_registro_visual.csv")
         registros = registros.set_index(CHAVE)
         assert registros.index.is_unique
-        exemplos(trilhas, registros, alinhadas)
+        exemplos(trilhas.dropna(subset=["iou_deteccoes", "iou_anotacoes"]), registros, alinhadas)
