@@ -345,7 +345,7 @@ A demanda $r$ é o número de recortes enviados ao detector por segundo. Para um
 
 O modelo estima a energia das inferências multiplicando o número de recortes por $E_{\mathrm{inf}}$. Se o detector e a energia por inferência se mantêm constantes, processar a mesma quantidade de recortes ao longo de um percurso leva ao mesmo consumo estimado nessa etapa. O gasto adicional com a seleção dos recortes e a associação das detecções depende da implementação a bordo.
 
-\section{Formulação do problema de co-projeto}
+\section{Energia por área e requisitos de detecção e processamento}
 \label{sec_coprojeto}
 
 O balanço combina a energia de voo por área coberta \cite{difranco2016coverage} com o custo de transportar e alimentar o computador embarcado \cite{boroujerdian2018mavbench}. Em uma passada retilínea com vento nulo, o numerador reúne a propulsão convertida em potência elétrica (Equações~\eqref{eq_pv} e~\eqref{eq_pel}), os aviônicos e o consumo da placa (Equação~\eqref{eq_pc}). O denominador é a taxa de cobertura $Vw(h)$, com $w(h)=N_x\,GSD(h)$ (Equações~\eqref{eq_e_area} e~\eqref{eq_pegada}). Para a estratégia de seleção $\pi$ e o hardware $H$, obtém-se
