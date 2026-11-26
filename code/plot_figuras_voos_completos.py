@@ -65,7 +65,7 @@ def jetson():
     a = fig.add_axes([.157, .245, .245, .56])
     b = fig.add_axes([.571, .245, .414, .56])
     fig.text(.005, .98, "(a) Demanda e vazão de bancada", va="top", size=9.3)
-    fig.text(.464, .98, "(b) Ocupação do detector no início do voo 09", va="top", size=9.3)
+    fig.text(.464, .98, "(b) Ocupação simulada do detector no início do voo 09", va="top", size=9.3)
     a.set_xscale("log")
     for y, valor, cor in [(2, total / duracao, BLUE), (1, bancada.fps, ".3"),
                           (0, total_integral / duracao, BLUE)]:

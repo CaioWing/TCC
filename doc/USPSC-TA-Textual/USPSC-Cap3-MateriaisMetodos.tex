@@ -109,12 +109,12 @@ Os 26 vídeos analisados contêm 193.901 quadros (1,83~h). Nos arquivos XML, con
 
 \begin{table}[htb]
   \centering
-  \caption{Classes da base MBG-V2: número de trilhas, presença nos voos e nas regiões e tamanho dos objetos}
+  \caption{Classes da base MBG-V2: número de trilhas, presença nos voos e nas regiões e tamanho estimado pelas caixas anotadas}
   \label{tab_classes}
   \resizebox{\textwidth}{!}{%
   \begin{tabular}{lrrrrrrr}
     \hline
-    Classe (rótulo na base) & Trilhas & \% & Voos & Regiões & Lado (pixels) & Lado (cm) & $<$ 32 pixels (\%) \\
+    Classe (rótulo na base) & Trilhas & \% & Voos & Regiões & Lado (pixels) & \shortstack{Lado equivalente\\estimado no solo (cm)} & $<$ 32 pixels (\%) \\
     \hline
     caixa d'água (\texttt{watertank}) & 4.283 & 50,7 & 26 & 13 & 114 & 157 (135--173) & 0 \\
     vaso de planta (\texttt{potted\_plant}) & 1.203 & 14,3 & 26 & 13 & 40 & 56 (41--80) & 32 \\
@@ -137,10 +137,10 @@ Em 10,7\% das trilhas, o lado do objeto na imagem ficou abaixo de 32~pixels, sob
 
 \begin{figure}[htb]
   \centering
-  \caption{Densidade, composição e tamanho dos objetos anotados na base MBG-V2}
+  \caption{Densidade, composição e tamanho estimado dos objetos anotados na base MBG-V2}
   \label{fig_anotacoes}
   \includegraphics[width=\textwidth]{figuras/fig_mbgv2_anotacoes.pdf}
-  \fonte{Elaborado pelo autor a partir das anotações e da telemetria da base MBG-V2 \cite{smt2024mbgv2}. (a) Trilhas por km$^2$ de área imageada em cada voo; os voos marcados com asterisco são da campanha de 2019. (b) Número de trilhas por classe e número de voos em que a classe aparece; as miniaturas são exemplos reais de cada classe. (c) Lado dos objetos no solo; as caixas indicam os percentis 25 e 75, e as hastes se estendem até 1,5 vez o intervalo interquartil. A linha pontilhada corresponde a 32 pixels com o $GSD$ mediano de 1,42~cm/pixel.}
+  \fonte{Elaborado pelo autor a partir das anotações e da telemetria da base MBG-V2 \cite{smt2024mbgv2}. (a) Trilhas por km$^2$ de área imageada em cada voo; os voos marcados com asterisco são da campanha de 2019. (b) Número de trilhas por classe e número de voos em que a classe aparece; as miniaturas são exemplos reais de cada classe. (c) Lado equivalente estimado no solo (cm) a partir das caixas anotadas e do $GSD$ ajustado de cada voo. Os limites das caixas do gráfico indicam os percentis 25 e 75, e as hastes se estendem até 1,5 vez o intervalo interquartil. A linha pontilhada corresponde a 32 pixels com o $GSD$ mediano de 1,42~cm/pixel.}
 \end{figure}
 
 Para comparar a densidade entre voos (Figura~\ref{fig_anotacoes}a), dividiu-se a contagem de trilhas pela área imageada. A área de cada voo é a união das projeções dos quadros numa grade de 1~m, usando o $GSD$ ajustado e a guinada da câmera. Os dois voos de uma região podem cobrir parte do mesmo terreno (Figura~\ref{fig_regioes}b), de modo que suas trilhas podem incluir o mesmo recipiente em passagens distintas.

@@ -58,7 +58,7 @@ A diferença se concentrou nos voos 16 e 23, em cada um dos quais a memória loc
 
 \begin{table}[!htbp]
   \centering
-  \caption{Localização no mapa e primeiro alerta visual nos seis voos originais a 40~m}
+  \caption{Recipientes localizados no mapa e tempo até a primeira detecção correta nos vídeos dos seis voos a 40~m}
   \label{tab_resultados_quadrantes}
   \small
   \setlength{\tabcolsep}{5pt}
@@ -73,12 +73,12 @@ A diferença se concentrou nos voos 16 e 23, em cada um dos quais a memória loc
     Precisão dos alertas no mapa (\%) & 45,53 & 37,91 & 19,20 \\
     \hline
     Trilhas confirmadas na imagem & 1.160 & 1.137 & 1.448 \\
-    Trilhas com alerta em até 1~s (\%) & 21,6 & 11,9 & 63,0 \\
-    Mediana do primeiro alerta (s) & 1,37 & 2,40 & 0,07 \\
-    Percentil 90 do primeiro alerta (s) & 4,31 & 4,75 & 1,31 \\
+    Trilhas com detecção correta em até 1~s (\%) & 21,6 & 11,9 & 63,0 \\
+    Tempo até a primeira detecção: mediana (s) & 1,37 & 2,40 & 0,07 \\
+    Tempo até a primeira detecção: percentil 90 (s) & 4,31 & 4,75 & 1,31 \\
     \hline
   \end{tabular}
-  \fonte{Elaborado pelo autor. Cada recipiente conta uma vez por voo. A precisão no mapa é a fração dos focos previstos que correspondem a um recipiente anotado da mesma classe a até 1,0~m. Os demais focos previstos contam como falsos alarmes. A fração com alerta em até 1~s considera os 1.924 recipientes. A mediana e o percentil 90 consideram as trilhas que cada método confirmou na imagem.}
+  \fonte{Elaborado pelo autor. Cada recipiente conta uma vez por voo. A precisão no mapa é a fração dos focos previstos que correspondem a um recipiente anotado da mesma classe a até 1,0~m. Os demais focos previstos contam como falsos alarmes. O tempo é contado no vídeo desde a primeira aparição anotada. A fração com detecção correta em até 1~s considera os 1.924 recipientes. A mediana e o percentil 90 consideram as trilhas que cada método confirmou na imagem.}
 \end{table}
 
 Pela contagem das células de 0,5~m cujo centro apareceu em pelo menos um recorte, o intervalo mostrou ao detector 98,17\% do terreno filmado e a memória, 94,49\%. Embora tenha coberto mais terreno, o intervalo localizou menos recipientes. No cálculo da área, basta que uma célula apareça uma vez, por mais breve que seja a vista. Já a localização exige que ao menos uma vista permita reconhecer o recipiente e que a posição estimada fique a até 1,0~m da referência no mapa.
@@ -87,10 +87,10 @@ A inferência integral examinou os 24 recortes de todos os quadros. Com cerca de
 
 \begin{figure}[!htbp]
   \centering
-  \caption{Diferenças de localização por voo e tempo até o primeiro alerta a 40~m}
+  \caption{Recipientes localizados, falsos alarmes e tempo até a primeira detecção correta no vídeo}
   \label{fig_resultados_quadrantes}
   \includegraphics[width=\textwidth]{figuras/fig_resultados_quadrantes.pdf}
-  \fonte{Elaborado pelo autor. Em (a) e (b), subtrai-se o resultado do intervalo do obtido pelos quadrantes. Em (c), as curvas mostram, a cada instante, a fração das 1.924 trilhas anotadas que já receberam confirmação visual. Em (d), contam-se apenas as 1.035 trilhas que tanto a memória quanto o intervalo confirmaram.}
+  \fonte{Elaborado pelo autor. Em (a) e (b), cada diferença é o resultado dos quadrantes menos o do intervalo no mesmo voo a 40~m. Em (c), o tempo começa na primeira aparição anotada, e as curvas mostram a fração das 1.924 trilhas já detectadas naquele instante do vídeo. Em (d), comparam-se os quadros da primeira detecção nas 1.035 trilhas que ambas as estratégias confirmaram.}
 \end{figure}
 
 \subsection{Tempo até a primeira detecção correta no vídeo}
@@ -117,10 +117,10 @@ Ao passar de 40 para 80~m de altura equivalente, o mesmo recipiente ocupa metade
 
 \begin{figure}[!htbp]
   \centering
-  \caption{Recall geográfico e tamanho aparente dos recipientes por classe e altura equivalente}
+  \caption{Recipientes localizados no mapa e tamanho aparente por classe na simulação de altura}
   \label{fig_escala_por_classe}
   \includegraphics[width=\textwidth]{figuras/fig_escala_classes_quadrantes.pdf}
-  \fonte{Elaborado pelo autor. O eixo de recall tem escala própria em cada classe. O cabeçalho indica o total anotado e o recall da integral a 40~m. As barras mostram o lado médio das caixas em pixels e usam a mesma escala nos três painéis de cada linha. Para cada recipiente, usa-se a mediana de $\sqrt{\text{largura}\times\text{altura}}$ de suas caixas anotadas a 40~m e aplica-se o fator $40/h$ à altura $h$.}
+  \fonte{Elaborado pelo autor. Os vídeos foram gravados a 40~m. Para a detecção, as demais alturas foram simuladas por mudança de escala das imagens. O eixo de recall tem escala própria em cada classe. O cabeçalho indica o total anotado e o recall da integral a 40~m. As barras mostram o lado médio das caixas em pixels e usam a mesma escala nos três painéis de cada linha. Para cada recipiente, usa-se a mediana de $\sqrt{\text{largura}\times\text{altura}}$ de suas caixas anotadas a 40~m e aplica-se o fator $40/h$ à altura $h$.}
 \end{figure}
 
 Os baldes, com as menores caixas na imagem, já eram difíceis de localizar na altura original. Mesmo a inferência integral localizou apenas 16 dos 105 baldes a 40~m. A partir de 60~m, nenhum dos dois métodos de seleção localizou um balde. Os pneus também se tornaram raros no mapa. Dos 108 anotados, apenas um foi localizado pelos quadrantes e três pelo intervalo a 80~m.
@@ -131,10 +131,10 @@ Nos seis voos, o recall das duas estratégias caiu para cerca de 46\% a 80~m (Fi
 
 \begin{figure}[!htbp]
   \centering
-  \caption{Efeito da altura equivalente sobre a localização no mapa e o alerta no primeiro segundo}
+  \caption{Localização no mapa e detecção no primeiro segundo do vídeo por altura simulada}
   \label{fig_deteccao_escala}
   \includegraphics[width=\textwidth]{figuras/fig_escala_quadrantes.pdf}
-  \fonte{Elaborado pelo autor. Cada ponto reúne as 1.924 trilhas dos seis voos com 8.796 recortes por estratégia. O recall e os falsos alarmes referem-se ao mapa. A confirmação até o primeiro segundo é medida na imagem desde a primeira aparição de cada recipiente.}
+  \fonte{Elaborado pelo autor. Os vídeos foram gravados a 40~m. Para a detecção, as demais alturas foram simuladas por mudança de escala das imagens. Cada ponto reúne as 1.924 trilhas dos seis voos com 8.796 recortes por estratégia. O recall e os falsos alarmes referem-se ao mapa. A confirmação até o primeiro segundo é medida na imagem desde a primeira aparição de cada recipiente.}
 \end{figure}
 
 Em todas as alturas simuladas, os quadrantes produziram menos falsos alarmes no mapa e confirmaram mais recipientes no primeiro segundo. Mesmo a 80~m, confirmaram quase o dobro nesse prazo (333 contra 170). A simulação isola a mudança de escala e de contexto visual nos recortes. Em um voo real a outra altura, também mudariam a faixa de terreno visível e os instantes de passagem pelos quadrantes.
@@ -179,10 +179,10 @@ Dos 2.370 focos previstos e das 1.924 referências, formaram-se 1.079 pares no r
 
 \begin{figure}[!htbp]
   \centering
-  \caption{Mapa final da memória por quadrantes e posições de referência dos recipientes nos seis voos}
+  \caption{Mapa das detecções por quadrantes e das anotações projetadas no terreno nos seis voos}
   \label{fig_mapa_final_quadrantes}
   \includegraphics[width=\textwidth]{figuras/fig_mapa_final_quadrantes.pdf}
-  \fonte{Elaborado pelo autor a partir das detecções e das trilhas anotadas da MBG-V2 \cite{smt2024mbgv2}. Os pontos cinza mostram a malha que orientou a seleção dos recortes. Os painéis (g) a (i) ampliam o quadrado de 21,6~m de lado marcado no voo~09 e mostram, na mesma escala, a referência, o resultado da memória e a sobreposição. Em (i), os círculos pontilhados indicam o raio de avaliação de 1,0~m.}
+  \fonte{Elaborado pelo autor a partir das detecções e das trilhas anotadas da MBG-V2 \cite{smt2024mbgv2}. Os pontos cinza mostram a malha que orientou a seleção dos recortes. Os painéis (g) a (i) ampliam o quadrado de 21,6~m de lado marcado no voo~09 e mostram, na mesma escala, as anotações projetadas, o resultado da memória e a sobreposição. A posição de referência de cada recipiente é a mediana das posições projetadas de suas caixas anotadas. Em (i), os círculos pontilhados indicam o raio de avaliação de 1,0~m.}
 \end{figure}
 
 No detalhe do voo~09, havia seis recipientes anotados e cinco focos previstos. Quatro focos encontraram par. O quinto estava a 1,06~m da referência mais próxima da mesma classe, já associada a outro foco a 0,52~m.
@@ -250,7 +250,7 @@ em que $\bar{P}_{el}=E/t_{\mathrm{voo}}$ e $\bar{V}=s/t_{\mathrm{voo}}$ são as 
 
 \begin{figure}[H]
   \centering
-  \caption{Energia por área, tempo de visibilidade e inclinação nos voos da MBG-V2}
+  \caption{Comparação entre o modelo e os dados dos voos: energia por área, tempo de visibilidade e inclinação}
   \label{fig_verificacao_telemetria}
   \includegraphics[width=\textwidth]{figuras/fig_telemetria_fisica.pdf}
   \fonte{Elaborado pelo autor a partir da MBG-V2 \cite{smt2024mbgv2}. Em (a) e (b), cada ponto representa um voo e cada letra, uma região. A linha de zero indica concordância com a previsão de cruzeiro (Equações~\eqref{eq_e_area} e~\eqref{eq_visibilidade}) e a faixa cinza cobre desvios de até 10\% em ambos os sentidos. Em (c), os círculos mostram a inclinação obtida da mediana das tangentes de 23 voos a 4,1~m/s e de dois a 7,9~m/s. Os quadrados mostram a previsão para a velocidade mediana de cada grupo.}
@@ -339,7 +339,7 @@ Nos quadrantes, 14 envios encontraram o detector ocupado e a maior espera até o
   \caption{Demanda de recortes nos seis voos e ocupação projetada do detector na Jetson}
   \label{fig_jetson_demanda}
   \includegraphics[width=\textwidth]{figuras/fig_jetson_quadrantes_intervalo.pdf}
-  \fonte{Elaborado pelo autor a partir dos horários de envio e da Tabela~\ref{tab_jetson_configuracoes}. Em (a), a demanda é a razão entre o total de recortes e a duração dos seis voos. Em (b), as faixas coloridas mostram os períodos de processamento nos primeiros seis segundos do voo~09 e o cinza indica o tempo livre.}
+  \fonte{Elaborado pelo autor a partir dos horários de envio e da Tabela~\ref{tab_jetson_configuracoes}. Em (a), a demanda é a razão entre o total de recortes e a duração dos seis voos. Em (b), as faixas coloridas indicam quando o detector estaria ocupado nos primeiros seis segundos do vídeo do voo~09, usando a latência média medida em bancada. O cinza indica os intervalos livres na simulação.}
 \end{figure}
 
 Como as duas estratégias concluiriam os mesmos 8.796 recortes, cada uma acrescentaria 0,112~Wh ao consumo da placa nos seis voos, admitindo que se mantenham os 45,72~mJ por recorte medidos acima do repouso. Distribuído pela duração dos voos, o acréscimo equivale a 0,26~W. Com a placa ligada durante todo o percurso, sua potência média estimada chega a 5,02~W, dos quais 4,76~W correspondem ao repouso (Equação~\eqref{eq_pc}). A projeção usa os pesos COCO e começa com a imagem em memória. Para avaliar a cadeia completa com os pesos treinados na MBG-V2, ainda é preciso medir a captura e a decodificação em 4K, a seleção dos recortes e a associação das detecções no mapa.
@@ -373,10 +373,10 @@ Dividindo a energia de transporte do kit pela duração total dos seis voos, obt
 
 \begin{figure}[H]
   \centering
-  \caption{Acréscimo médio de potência em relação ao drone sem o kit, por estratégia e configuração da Jetson}
+  \caption{Acréscimo médio de potência estimado para transportar e operar a Jetson, por estratégia e configuração}
   \label{fig_potencia_estrategias_motores}
   \includegraphics[width=\textwidth]{figuras/fig_potencia_estrategias_motores.pdf}
-  \fonte{Elaborado pelo autor para uma Jetson com o kit de 174~g. Quadrantes e intervalo compartilham as barras porque as estimativas coincidem a uma casa decimal nas nove configurações. Na integral, a placa trabalha continuamente e a barra inclui apenas o processamento realizado durante o voo. ORT designa o ONNX Runtime. O PyTorch foi executado com TorchScript.}
+  \fonte{Elaborado pelo autor para uma Jetson com o kit de 174~g. Quadrantes e intervalo compartilham as barras porque as estimativas coincidem a uma casa decimal nas nove configurações. Na simulação da estratégia integral, a placa permanece ocupada durante todo o voo. A barra inclui o processamento que caberia nesse período. ORT designa o ONNX Runtime. O PyTorch foi executado com TorchScript.}
 \end{figure}
 
 Em TensorRT FP16, os quadrantes e o intervalo concluiriam o processamento dos 8.796 recortes de cada estratégia. Transportar o kit e executar qualquer uma das duas estratégias consumiria 10,61~Wh adicionais nos 26,2~min de voo, o que corresponde a um acréscimo médio de 24,3~W. Na integral, a potência adicional chegaria a 26,1~W, mas a placa concluiria apenas 6,2\% dos 1.131.600 recortes até o fim dos vídeos. Mesmo a configuração mais rápida, TensorRT INT8, alcançaria 7,0\% da demanda integral.
@@ -398,11 +398,11 @@ A parcela de alimentação se anula com a placa desligada. Em repouso, $r_i=0$ e
 
 \begin{table}[!htbp]
   \centering
-  \caption{Mediana da energia por área imageada nos seis voos, sem o kit e com o kit de 174~g}
+  \caption{Mediana da energia por área nos seis voos: referência sem o kit e cenários estimados com a Jetson}
   \label{tab_balanco_telemetria}
   \begin{tabular}{@{}lr@{}}
     \hline
-    Estado & Energia por área (Wh/km$^2$) \\
+    Cenário & Energia por área (Wh/km$^2$) \\
     \hline
     Aeronave sem o kit & 239,0 \\
     Kit transportado, placa desligada & 263,9 \\
@@ -410,14 +410,14 @@ A parcela de alimentação se anula com a placa desligada. Em repouso, $r_i=0$ e
     Placa ativa, quadrantes ou intervalo & 270,3 \\
     \hline
   \end{tabular}
-  \fonte{Elaborado pelo autor. A primeira linha usa a energia medida e a área reconstruída pela telemetria. Nas demais, somaram-se os custos estimados em cada voo antes de calcular a mediana dos seis.}
+  \fonte{Elaborado pelo autor. A primeira linha usa a energia medida e a área reconstruída pela telemetria. Nas demais, somaram-se os custos estimados para o kit de 174~g em cada voo antes de calcular a mediana dos seis.}
 \end{table}
 
 Com o kit de 174~g ativo, a mediana da energia por área passaria de 239,0 para 270,3~Wh/km$^2$, um aumento de 13,1\% entre as duas medianas (Tabela~\ref{tab_balanco_telemetria}). Os voos 10 e 15 mostram por que um acréscimo de potência semelhante, de cerca de 24,3~W, tem custos diferentes por unidade de área (Figura~\ref{fig_energia_por_area}). O voo~10 cobriu 1,13~ha por minuto, a um custo adicional de 35,7~Wh/km$^2$. Como o voo~15 cobriu mais terreno no mesmo tempo, 1,37~ha por minuto, o acréscimo foi menor, de 29,5~Wh/km$^2$.
 
 \begin{figure}[!htbp]
   \centering
-  \caption{Energia total por área imageada em cada voo, sem o kit e com a Jetson em TensorRT FP16}
+  \caption{Energia por área em cada voo: referência sem o kit e estimativa com a Jetson em FP16}
   \label{fig_energia_por_area}
   \includegraphics[width=.80\textwidth]{figuras/fig_energia_por_area.pdf}
   \fonte{Elaborado pelo autor com a telemetria da MBG-V2 e a Equação~\eqref{eq_placa_por_area}. Em cada linha, o círculo usa a energia medida na bateria e o quadrado inclui a energia estimada para transportar e alimentar o kit com o número de recortes observado nas duas estratégias. Ambos usam a mesma área imageada no voo.}
@@ -429,10 +429,10 @@ Com o detector ativo em FP16, variar a massa do kit de 100 para 250~g elevaria a
 
 \begin{figure}[!htbp]
   \centering
-  \caption{Energia por área reprojetada e recall geográfico dos recipientes originais em função da altura nos seis voos}
+  \caption{Energia por área nos percursos reprojetados e detecção dos recipientes originais por altura simulada}
   \label{fig_altura_percursos}
   \includegraphics[width=\textwidth]{figuras/fig_altura_percursos.pdf}
-  \fonte{Elaborado pelo autor com as trajetórias e anotações da MBG-V2. No painel de energia, cada percurso mantém a energia estimada para o kit ativo de 174~g. A área varia com a altura, e a faixa abrange os valores mínimo e máximo dos seis percursos. No painel de detecção, o denominador permanece em 1.924 recipientes e cada estratégia mantém os 8.796 recortes escolhidos no vídeo original. Os voos foram filmados a 40~m.}
+  \fonte{Elaborado pelo autor com as trajetórias e anotações da MBG-V2. Os vídeos foram gravados a 40~m. Para a detecção, as demais alturas foram simuladas por mudança de escala das imagens. No painel de energia, cada percurso mantém a energia estimada para o kit ativo de 174~g. A área varia com a altura, e a faixa abrange os valores mínimo e máximo dos seis percursos. No painel de detecção, o denominador permanece em 1.924 recipientes e cada estratégia mantém os 8.796 recortes escolhidos no vídeo original.}
 \end{figure}
 
 Na reprojeção dos percursos de 40 para 80~m, a mediana da energia por área caiu de 270,3 para 172,3~Wh/km$^2$ (Figura~\ref{fig_altura_percursos}). A queda de 36,3\% ficou abaixo dos 50\% previstos para uma passada retilínea isolada (Equação~\eqref{eq_e_h}), pois parte da faixa ampliada recobriu terreno já filmado. Entre os recipientes do vídeo original, os quadrantes localizaram 191 a menos na simulação a 80~m, e o intervalo, 170 a menos. Como a área reprojetada inclui terreno fora da imagem original, esses resultados não permitem calcular quantos recipientes seriam encontrados por unidade de energia em um voo real a 80~m.

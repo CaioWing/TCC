@@ -107,7 +107,7 @@ def figura(dados):
         ax.spines[["top", "right", "left"]].set_visible(False)
         ax.tick_params(axis="y", length=0)
     eixos[0].set_yticks(y, MOTORES.values(), fontsize=8.1)
-    fig.text(.60, .115, "Acréscimo médio de potência do drone (W)", ha="center")
+    fig.text(.60, .115, "Acréscimo estimado de potência (W)", ha="center")
     fig.legend(*eixos[0].get_legend_handles_labels(), loc="lower center", ncol=2, frameon=False,
                handlelength=1.35, columnspacing=2, bbox_to_anchor=(.58, 0))
     return fig

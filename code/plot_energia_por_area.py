@@ -42,7 +42,7 @@ def figura(cen):
     pos = np.arange(len(base))
     voos.hlines(pos, base.bateria_Wh_km2, base.ativa, color=".69", linewidth=1.4)
     voos.scatter(base.bateria_Wh_km2, pos, s=28, facecolor="white", edgecolor=".20",
-                 linewidth=1.2, label="Sem kit (medição)", zorder=3)
+                 linewidth=1.2, label="Sem kit (telemetria)", zorder=3)
     voos.scatter(base.ativa, pos, s=28, marker="s", color=GREEN,
                  label="Com kit de 174 g (estimativa)", zorder=3)
     voos.set_yticks(pos, [f"Voo {n:02d}" for n in base.voo])

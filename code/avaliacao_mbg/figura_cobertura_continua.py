@@ -79,14 +79,14 @@ def figura():
             c.scatter([1], [ate_um_segundo], s=14, facecolor="white",
                       edgecolor=cor, linewidth=1.1, zorder=4)
         c.axvline(1, lw=.65, color=".5", ls=":", zorder=1)
-        c.set_title("(c) Primeiro alerta visual", loc="left", pad=7)
+        c.set_title("(c) Primeira detecção correta no vídeo", loc="left", pad=7)
         c.set_xscale("symlog", linthresh=2., base=2)
         c.set(xlim=(0,t_final*1.03), ylim=(0,80), xlabel="Tempo desde a primeira aparição (s)",
               ylabel="Trilhas confirmadas (%)", yticks=[0,20,40,60,80])
         c.set_xticks([0,1,2,4,8,16], ["0","1","2","4","8","16"])
         c.grid(axis="y", alpha=.2)
         c.legend(title="Em até 1 s", title_fontsize=7.5, loc="lower right", frameon=False, fontsize=7.2)
-        d.set_title("(d) Quem alertou primeiro?", loc="left", pad=7)
+        d.set_title("(d) Qual estratégia detectou primeiro?", loc="left", pad=7)
         barras = d.barh([2, 1, 0], contagens, color=[BLUE, GRAY, ORANGE], height=.48)
         d.bar_label(barras, labels=[str(n) for n in contagens], padding=4, fontsize=8)
         d.set(yticks=[2, 1, 0], yticklabels=["Quadrantes", "Mesmo quadro", "Intervalo"],

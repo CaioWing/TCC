@@ -1,4 +1,4 @@
-"""Converte o eixo de densidade da figura vetorial existente para trilhas/km².
+"""Atualiza os rótulos de densidade e tamanho da figura vetorial de anotações.
 
 O PDF original é preservado em doc/dados para permitir a reprodução. Como a
 conversão é linear, multiplicar todos os valores do eixo por 100 preserva a
@@ -27,11 +27,12 @@ def main():
     spans = [span for block in page.get_text("dict")["blocks"]
              for line in block.get("lines", []) for span in line["spans"]]
     label = next(s for s in spans if s["text"] == "trilhas por hectare imageado")
+    size_label = next(s for s in spans if s["text"] == "lado da caixa, √área (cm no solo)")
     ticks = [s for s in spans if s["text"] in {"0", "20", "40", "60", "80", "100", "120"}
              and 60 < s["bbox"][0] < 75 and s["bbox"][1] < 155]
     assert len(ticks) == 7, "O eixo original não corresponde à figura esperada."
 
-    for span in [label, *ticks]:
+    for span in [label, size_label, *ticks]:
         page.add_redact_annot(fitz.Rect(span["bbox"]), fill=False)
     page.apply_redactions(images=0, graphics=0)
 
@@ -49,6 +50,11 @@ def main():
     width = font.text_length(value, fontsize=label["size"])
     page.insert_text((43, center_y + width / 2), value,
                      fontname="DensityUnits", fontsize=label["size"], rotate=90)
+    value = "Lado equivalente estimado no solo (cm)"
+    center_x = (size_label["bbox"][0] + size_label["bbox"][2]) / 2
+    width = font.text_length(value, fontsize=size_label["size"])
+    page.insert_text((center_x - width / 2, size_label["origin"][1]), value,
+                     fontname="DensityUnits", fontsize=size_label["size"])
     doc.subset_fonts()
     doc.save(OUTPUT, garbage=4, deflate=True)
     doc.close()
@@ -58,6 +64,7 @@ def main():
         text = result[0].get_text()
         assert "hectare" not in text
         assert "trilhas por km² imageado" in text and "12.000" in text
+        assert "Lado equivalente estimado no solo (cm)" in text
         result[0].get_pixmap(matrix=fitz.Matrix(2, 2), alpha=False).save(
             ROOT / "tmp/revisao/anotacoes-km2.png")
     print(OUTPUT)

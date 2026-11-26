@@ -65,7 +65,7 @@ def figura(r, metodos=("cobertura", "intervalo"), nomes=NOMES):
             ax.set_xlabel("Altura equivalente (m)")
             ax.grid(axis="y",lw=.5,color=".85")
             ax.set_xticks(grupo.altura_m)
-    for ax,titulo in zip(paineis,["Recall geográfico (%)","Falsos alarmes no mapa","Trilhas com alerta até 1 s (%)"]):
+    for ax,titulo in zip(paineis,["Recall geográfico (%)","Falsos alarmes no mapa","Trilhas detectadas em até 1 s (%)"]):
         ax.set_title(titulo, fontsize=9.5)
     paineis[0].legend(frameon=False,fontsize=7)
     return fig

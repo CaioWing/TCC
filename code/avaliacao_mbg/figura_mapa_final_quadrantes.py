@@ -173,7 +173,7 @@ def desenhar(mapa):
             eixo.text(.985, .045, "N ↑", transform=eixo.transAxes, ha="right", color="#374347", fontsize=7.5)
 
     parte = grade[2].subgridspec(1, 3, wspace=.12)
-    for j, (titulo, refs, inf) in enumerate([("Referência", True, False), ("Memória", False, True),
+    for j, (titulo, refs, inf) in enumerate([("Anotações projetadas", True, False), ("Memória", False, True),
                                             ("Sobreposição", True, True)]):
         eixo = fig.add_subplot(parte[j])
         mostrar(eixo, detalhe, malhas[VOOS[0]], detalhe=True, referencias=refs, inferencias=inf)
