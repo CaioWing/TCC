@@ -11,23 +11,23 @@ Processar o vídeo a bordo permite alertar a equipe mesmo quando a conexão não
 
 \section{Problema de pesquisa e delimitação}
 
-O detector recebe regiões menores do quadro, os recortes. O momento do envio importa porque um pneu que surge na borda pode só ficar inteiramente visível alguns quadros depois. A memória por quadrantes acompanha pontos fixos do terreno e solicita um recorte quando um ponto entra na imagem ou chega a um quadrante pela primeira vez naquela passagem. A amostragem por intervalo distribui o mesmo total de recortes em quadros regularmente espaçados.
+O detector recebe partes do quadro, os recortes. Um pneu que surge na borda pode só ficar inteiro na imagem alguns quadros depois. A memória por quadrantes acompanha pontos fixos do terreno e solicita um recorte quando um ponto entra na imagem ou alcança um novo quadrante naquela passagem. A amostragem por intervalo distribui o mesmo total de recortes em quadros regularmente espaçados.
 
-\textit{Com o mesmo número de recortes por voo, como a escolha entre essas estratégias afeta a localização dos recipientes no mapa, os falsos alarmes e o tempo até a primeira detecção correta no vídeo? Nas alturas simuladas, como variam a proporção de recipientes localizados e a energia estimada por quilômetro quadrado imageado?}
+\textit{Com o mesmo número de recortes por voo, como a escolha entre essas estratégias afeta a localização dos recipientes no mapa, os falsos alarmes e o tempo até a primeira detecção correta no vídeo? Nas alturas simuladas, como variam a proporção de recipientes localizados na faixa original e a energia estimada por quilômetro quadrado da faixa reprojetada?}
 
-Os 26 voos da MBG-V2 cobrem 13 regiões urbanas do Rio de Janeiro, filmadas à altura nominal de 40~m. A comparação entre as estratégias usa os seis vídeos completos reservados para teste e toma como referência a inferência integral, que examina todos os recortes de todos os quadros. No vídeo, mede-se o tempo entre a primeira aparição anotada de um recipiente e sua primeira detecção correta. No mapa, cada recipiente conta uma vez por voo. Um ponto previsto sem correspondência com um recipiente anotado da mesma classe a até 1,0~m conta como falso alarme.
+Os 26 voos da MBG-V2 cobrem 13 regiões urbanas do Rio de Janeiro, à altura nominal de 40~m. Os seis vídeos completos da comparação ficaram fora do treinamento do detector e orientaram a escolha da estratégia por quadrantes. A inferência integral, usada como referência, examina todos os recortes de cada quadro. No vídeo, mede-se o tempo da primeira aparição anotada à primeira detecção correta. No mapa, cada recipiente conta uma vez por voo. Uma marcação sem correspondência com um recipiente anotado da mesma classe a até 1,0~m conta como falso alarme.
 
-Voar mais alto amplia a faixa imageada a cada passada, mas reduz o número de pixels que representam cada recipiente. Para estudar a detecção entre 50 e 80~m equivalentes, simula-se a mudança de escala nos mesmos instantes e locais selecionados a 40~m. Para estimar a energia por área entre 20 e 80~m, recalcula-se a faixa imageada a cada altura, mantendo o percurso, a duração e a energia da etapa de imageamento. A tensão e a corrente registradas durante os voos fornecem a referência de consumo da aeronave sem o computador.
+Voar mais alto amplia a faixa imageada e reduz o número de pixels por recipiente. Para simular alturas de 50 a 80~m, altera-se a escala das imagens nos instantes e locais selecionados a 40~m. Para estimar a energia por área de 20 a 80~m, recalcula-se a faixa a cada altura, mantendo o percurso, a duração e a energia da etapa de imageamento. A tensão e a corrente da bateria fornecem a referência de consumo sem o computador.
 
-Na estação de trabalho, o YOLO11n treinado na MBG-V2 processa recortes de $640\times640$~pixels extraídos dos quadros 4K. Em bancada, a Jetson Orin Nano de 8~GB, em modo de 25~W, executa a mesma arquitetura com pesos treinados na base de imagens COCO. A taxa de processamento e a energia por recorte medidas nesse ensaio permitem confrontar a capacidade da placa com a demanda dos vídeos e estimar o consumo a bordo. Medir quanto tempo o alerta leva para chegar à equipe em solo exigiria um ensaio de transmissão em campo.
+Na estação de trabalho, o YOLO11n treinado na MBG-V2 processa recortes de $640\times640$~pixels dos quadros 4K. Em bancada, medem-se a vazão e a energia por recorte na Jetson Orin Nano de 8~GB, em modo de 25~W, com o YOLO11n treinado na base COCO. Medir o tempo da captura à recepção do alerta em solo exigiria um ensaio em voo com o detector treinado na MBG-V2 a bordo e a transmissão do alerta.
 
 \section{Objetivos}
 
-O objetivo é comparar estratégias de seleção de recortes para a detecção de potenciais criadouros e avaliar o compromisso entre detecção e energia por área à medida que varia a altura de voo. Para isso, busca-se
+O objetivo é comparar estratégias de seleção de recortes para detectar potenciais criadouros em vídeos gravados a 40~m e avaliar, por simulação, como alturas superiores afetam a detecção e a energia estimada por área nos mesmos percursos. Para isso, busca-se
 
 \begin{itemize}
-    \item comparar a potência prevista pelo modelo com a potência medida em cruzeiro e estimar a energia adicional para transportar o computador;
+    \item comparar a potência elétrica prevista pelo modelo em cruzeiro com a obtida da telemetria da bateria nos voos sem o kit da Jetson e estimar a energia adicional para transportá-lo;
     \item comparar a memória por quadrantes e a amostragem por intervalo quanto aos recipientes localizados, aos falsos alarmes no mapa e ao tempo até a primeira detecção correta no vídeo;
-    \item comparar a demanda de recortes dos voos de teste com a taxa de processamento medida na Jetson;
-    \item comparar, entre 40 e 80~m, a proporção de recipientes localizados nas imagens com a energia estimada por área nos mesmos percursos.
+    \item comparar a demanda de recortes dos seis vídeos com a vazão da Jetson medida em bancada com imagens já decodificadas;
+    \item avaliar a proporção de recipientes anotados na faixa original que o detector localiza nas imagens gravadas a 40~m e nas escalas simuladas de 50 a 80~m, e estimar a energia por área recalculando a faixa imageada dos mesmos percursos para alturas de 20 a 80~m.
 \end{itemize}
